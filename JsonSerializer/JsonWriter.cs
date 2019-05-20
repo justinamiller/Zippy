@@ -278,24 +278,6 @@ namespace JsonSerializer
             }
         }
 
-        public static bool CanDeserializeObject(string value)
-        {
-            var objJson = new JavaScriptSerializer();
-            try
-            {
-                return objJson.DeserializeObject(value) != null;
-            }
-            catch (Exception)
-            {
-                //do nothing
-                return false;
-            }
-            finally
-            {
-                objJson = null;
-            }
-        }
-
         public static bool ValidJsonFormat(string value, bool deserialize)
         {
             if (value != null)
