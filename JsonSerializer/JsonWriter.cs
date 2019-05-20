@@ -291,10 +291,6 @@ namespace JsonSerializer
                         (trimValue[0] == '{' && trimValue[length - 1] == '}') //For object
                         ||
                         (trimValue[0] == '[' && trimValue[length - 1] == ']');//For array
-                    if (firstPass && deserialize)
-                    {
-                        return CanDeserializeObject(trimValue);
-                    }
                     return firstPass;
                 }
             }

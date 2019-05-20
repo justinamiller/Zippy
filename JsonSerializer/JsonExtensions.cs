@@ -37,6 +37,10 @@ namespace JsonSerializer
             {
                 return SerializePrimitiveObject(instance);
             }
+            else if (instance is System.Xml.XmlNode)
+            {
+                return SerializeXmlObject(((System.Xml.XmlNode)instance));
+            }
 
             return SerializeComplexObject(instance);
         }
@@ -103,12 +107,8 @@ namespace JsonSerializer
 
         private static string SerializeComplexObject(object instance)
         {
-            if (instance is System.Xml.XmlNode)
-            {
-                return SerializeXmlObject(((System.Xml.XmlNode)instance));
-            }
             //check if we can serialize complex object.
-            else if (!CanSerializeComplexObject(instance))
+            if (!CanSerializeComplexObject(instance))
             {
                 return GetBadJson(instance, new Exception("Can not Serialize."));
             }
