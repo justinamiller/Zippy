@@ -42,13 +42,13 @@ namespace ConsoleTest
             var dd1 = sw.Elapsed.TotalMilliseconds;
 
             sw.Restart();
-            for(var i = 0; i < 1000; i++)
+            for(var i = 0; i < 100000; i++)
             {
                 Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 100000; i++)
             {
                 JsonSerializer.Serializer.SerializeObject(c);
             }

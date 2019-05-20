@@ -35,7 +35,7 @@ namespace JsonSerializer
                 return _sb.Length;
             }
         }
-        
+
         /// <summary>
         /// indicate if json is valid format.
         /// </summary>
@@ -43,7 +43,7 @@ namespace JsonSerializer
         {
             get
             {
-                return  _arrayIndex ==0 && _objectIndex ==0 &&  ValidJsonFormat(this._sb.ToString());
+                return _arrayIndex == 0 && _objectIndex == 0 && ValidJsonFormat(this._sb.ToString());
             }
         }
 
@@ -56,7 +56,7 @@ namespace JsonSerializer
             if (!Valid)
             {
                 //bad json log it
-               throw new Exception("Bad Json format", new InvalidDataException(_sb.ToString()));
+                throw new Exception("Bad Json format", new InvalidDataException(_sb.ToString()));
             }
 
             return _sb.ToString();
@@ -242,7 +242,7 @@ namespace JsonSerializer
             else
             {
                 // Serialize all public fields and properties. very slow!
-                this.WriteRawValue(Serializer.SerializeObject(obj));                   
+                this.WriteRawValue(Serializer.SerializeObject(obj));
             }
         }
 
@@ -343,8 +343,55 @@ namespace JsonSerializer
 
         internal void WriteValue(int value)
         {
-            this._textWriter.Write(value.ToString(s_cultureInfo));
+            if (value >= 0 && value <= 9)
+            {
+                this._textWriter.Write((char)('0' + value));
+            }
+            else
+            {
+                bool negative = value < 0;
+                WriteIntegerValue(negative ? (uint)-value : (uint)value, negative);
+            }
         }
+
+        private void WriteIntegerValue(uint value, bool negative)
+        {
+            if (!negative && value <= 9)
+            {
+                this._textWriter.Write((char)('0' + value));
+            }
+            else
+            {
+                int length = 0;
+                var buffer = WriteNumberToBuffer(value, negative, ref length);
+                this._textWriter.Write(buffer, 0, length);
+            }
+        }
+
+        private static char[] WriteNumberToBuffer(uint value, bool negative, ref int totalLength)
+        {
+            char[] buffer = new char[35];
+            totalLength = MathUtils.IntLength(value);
+
+            if (negative)
+            {
+                totalLength++;
+                buffer[0] = '-';
+            }
+
+            int index = totalLength;
+
+            do
+            {
+                uint quotient = value / 10;
+                uint digit = value - (quotient * 10);
+                buffer[--index] = (char)('0' + digit);
+                value = quotient;
+            } while (value != 0);
+
+            return buffer;
+        }
+
 
         public void WriteProperty(string name, double value)
         {
@@ -508,14 +555,14 @@ namespace JsonSerializer
                 this._propertyInUse = true;
             }
 
-                string propertyName = name ?? string.Empty;
-                if (IsElasticSearchReady)
-                {
-                    propertyName = FormatElasticName(propertyName);
-                }
+            string propertyName = name ?? string.Empty;
+            if (IsElasticSearchReady)
+            {
+                propertyName = FormatElasticName(propertyName);
+            }
 
-                this.WriteValue(propertyName);
-                this._textWriter.Write(':');
+            this.WriteValue(propertyName);
+            this._textWriter.Write(':');
         }
 
         private readonly static char[] s_Null = new char[4] { 'n', 'u', 'l', 'l' };
@@ -641,7 +688,7 @@ namespace JsonSerializer
                     default:
                         // Append the unhandled characters (that do not require special treament)
                         // to the string builder when special characters are detected.
-                        var isPrintable = char.IsLetterOrDigit(chr) || char.IsPunctuation(chr) || char.IsSymbol(chr) ||  char.IsWhiteSpace(chr);
+                        var isPrintable = char.IsLetterOrDigit(chr) || char.IsPunctuation(chr) || char.IsSymbol(chr) || char.IsWhiteSpace(chr);
                         if (isPrintable | !char.IsControl(chr))
                         {
                             //no encoding required.

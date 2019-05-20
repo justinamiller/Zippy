@@ -28,7 +28,7 @@ namespace JsonSerializer
         /// <summary>
         /// ensure format takes account for elastic search
         /// </summary>
-        public bool IsElasticSearchReady { get; set; } = true;
+        public bool IsElasticSearchReady { get; set; } = false;
 
         public int MaxJsonLength
         {
