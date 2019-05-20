@@ -43,7 +43,7 @@ namespace JsonSerializer
         {
             get
             {
-                return  _arrayIndex ==0 && _objectIndex ==0 &&  ValidJsonFormat(this.ToString());
+                return  _arrayIndex ==0 && _objectIndex ==0 &&  ValidJsonFormat(this._sb.ToString());
             }
         }
 

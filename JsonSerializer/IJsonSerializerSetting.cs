@@ -10,6 +10,9 @@ namespace JsonSerializer
 
         int RecursionLimit { get; set; }
 
+        /// <summary>
+        /// Addtional encoding for supporting direct elastic search write.
+        /// </summary>
         bool IsElasticSearchReady { get; set; }
     }
 }

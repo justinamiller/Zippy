@@ -178,15 +178,6 @@ namespace JsonSerializer.Internal
                         //perform reflection here.
                         jsonObjects.Add(key, value(input));
                     }
-                    catch (TargetInvocationException)
-                    {
-                        if (fromCache)
-                        {
-                            ErrorFields.Add(key);
-                            hasErrorsInFields = true;
-                        }
-
-                    }
                     catch (Exception)
                     {
                         if (fromCache)

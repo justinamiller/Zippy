@@ -107,7 +107,7 @@ namespace JsonSerializer
             this.CurrentJsonSetting = DefaultJsonSetting;
         }
 
-        public Serializer(IJsonSerializerSetting setting) : this()
+        public Serializer(IJsonSerializerSetting setting) 
         {
             this.CurrentJsonSetting = setting ?? DefaultJsonSetting;
         }
