@@ -804,7 +804,9 @@ namespace JsonSerializer
             recursiveCount += 1;
             //recursion limit or max char length
             if (recursiveCount >= this.CurrentJsonSetting.RecursionLimit || _builder.Length > this.CurrentJsonSetting.MaxJsonLength)
+            {
                 return SerializeNull();
+            }
 
             //check ValueType
             if (value is ValueType)

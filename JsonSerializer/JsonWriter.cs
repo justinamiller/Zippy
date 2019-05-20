@@ -43,7 +43,7 @@ namespace JsonSerializer
         {
             get
             {
-                return  _arrayIndex ==0 && _objectIndex ==0 &&  (_hasObject || _hasArray);
+                return  _arrayIndex ==0 && _objectIndex ==0 &&  ValidJsonFormat(this.ToString());
             }
         }
 
@@ -145,7 +145,7 @@ namespace JsonSerializer
         private void WriteValueInternalString(string stringData)
         {
             //check if json format
-            if (ValidJsonFormat(stringData, true))
+            if (ValidJsonFormat(stringData))
             {
                 //string is json
                 WriteRawValue(stringData);
@@ -241,16 +241,8 @@ namespace JsonSerializer
             }
             else
             {
-                try
-                {
-                    // Serialize all public fields and properties. very slow!
-                    this._textWriter.Write(SerializeCustomObject(obj));
-                }
-                catch (Exception ex)
-                {
-                    //write the error object output
-                    this._textWriter.Write(JsonExtensions.GetBadJson(obj, ex));
-                }
+                // Serialize all public fields and properties. very slow!
+                this.WriteRawValue(Serializer.SerializeObject(obj));                   
             }
         }
 
@@ -268,7 +260,7 @@ namespace JsonSerializer
 
             string trimValue = value.Trim();
 
-            if (!(ValidJsonFormat(trimValue, false)))
+            if (!(ValidJsonFormat(trimValue)))
             {
                 WriteNull();
             }
@@ -278,7 +270,7 @@ namespace JsonSerializer
             }
         }
 
-        public static bool ValidJsonFormat(string value, bool deserialize)
+        public static bool ValidJsonFormat(string value)
         {
             if (value != null)
             {
@@ -291,22 +283,23 @@ namespace JsonSerializer
                         (trimValue[0] == '{' && trimValue[length - 1] == '}') //For object
                         ||
                         (trimValue[0] == '[' && trimValue[length - 1] == ']');//For array
+
                     return firstPass;
                 }
             }
             return false;
         }
 
-        public void WriteProperty(string name, string value, bool isSafeName = true)
+        public void WriteProperty(string name, string value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             this.WriteValue(value);
         }
 
 
-        public void WriteProperty(string name, Guid value, bool isSafeName = true)
+        public void WriteProperty(string name, Guid value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             WriteValue(value);
         }
 
@@ -325,9 +318,9 @@ namespace JsonSerializer
             _textWriter.Write('\"');
         }
 
-        public void WriteProperty(string name, bool value, bool isSafeName = true)
+        public void WriteProperty(string name, bool value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             WriteValue(value);
         }
 
@@ -336,15 +329,15 @@ namespace JsonSerializer
             this._textWriter.Write(value ? "true" : "false");
         }
 
-        public void WriteProperty(string name, int value, bool isSafeName = true)
+        public void WriteProperty(string name, int value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             this.WriteValue(value);
         }
 
-        public void WriteProperty(string name, char value, bool isSafeName = true)
+        public void WriteProperty(string name, char value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             this.WriteValue(value);
         }
 
@@ -353,9 +346,9 @@ namespace JsonSerializer
             this._textWriter.Write(value.ToString(s_cultureInfo));
         }
 
-        public void WriteProperty(string name, double value, bool isSafeName = true)
+        public void WriteProperty(string name, double value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             this.WriteValue(value);
         }
 
@@ -378,9 +371,9 @@ namespace JsonSerializer
             }
         }
 
-        public void WriteProperty(string name, long value, bool isSafeName = true)
+        public void WriteProperty(string name, long value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             this.WriteValue(value);
         }
 
@@ -409,9 +402,9 @@ namespace JsonSerializer
             this._textWriter.Write(value.ToString("D"));
         }
 
-        public void WriteProperty(string name, DateTime value, bool isSafeName = true)
+        public void WriteProperty(string name, DateTime value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             WriteValue(value);
         }
 
@@ -438,15 +431,15 @@ namespace JsonSerializer
             return convertDateTime.ToString("yyyy-MM-dd\\THH:mm:ss.FFFFFFF\\Z", s_cultureInfo);
         }
 
-        public void WriteProperty(string name, object value, bool isSafeName = true)
+        public void WriteProperty(string name, object value)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             this.WriteValueInternal(value);
         }
 
-        public void WriteProperty(string name, IDictionary<string, string> values, bool isSafeName = true)
+        public void WriteProperty(string name, IDictionary<string, string> values)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             if ((values?.Count ?? 0) == 0)
             {
                 this.WriteNull();
@@ -461,14 +454,14 @@ namespace JsonSerializer
             this.WriteStartObject();
             foreach (KeyValuePair<string, string> keyValuePair in (IEnumerable<KeyValuePair<string, string>>)values)
             {
-                this.WriteProperty(keyValuePair.Key, keyValuePair.Value, false);
+                this.WriteProperty(keyValuePair.Key, keyValuePair.Value);
             }
             this.WriteEndObject();
         }
 
-        public void WriteProperty(string name, object[] values, bool isSafeName = true)
+        public void WriteProperty(string name, object[] values)
         {
-            this.WritePropertyName(name, isSafeName);
+            this.WritePropertyName(name);
             this.WriteValue(values);
         }
 
@@ -504,7 +497,7 @@ namespace JsonSerializer
         /// </summary>
         /// <param name="name"></param>
         /// <param name="isSafeName">when true will not do addtional checks</param>
-        public void WritePropertyName(string name, bool isSafeName = false)
+        public void WritePropertyName(string name)
         {
             if (this._propertyInUse)
             {
@@ -515,31 +508,6 @@ namespace JsonSerializer
                 this._propertyInUse = true;
             }
 
-            if (isSafeName)
-            {
-                //no need to check constant
-                int length = name?.Length ?? 0;
-                int bufferLength = 3 + length;
-                char[] buffer = new char[bufferLength];
-                //first quote
-                buffer[0] = '\"';
-                if (length > 0)
-                {
-                    //the name
-                    Array.Copy(name.ToCharArray(), 0, buffer, 1, length);
-                }
-
-                //end quote
-                buffer[bufferLength - 2] = '\"';
-                //colon
-                buffer[bufferLength - 1] = ':';
-
-
-                //flush it
-                this._textWriter.Write(buffer, 0, bufferLength);
-            }
-            else
-            {
                 string propertyName = name ?? string.Empty;
                 if (IsElasticSearchReady)
                 {
@@ -548,7 +516,6 @@ namespace JsonSerializer
 
                 this.WriteValue(propertyName);
                 this._textWriter.Write(':');
-            }
         }
 
         private readonly static char[] s_Null = new char[4] { 'n', 'u', 'l', 'l' };
@@ -731,42 +698,5 @@ namespace JsonSerializer
                 intValue >>= 4;
             }
         }
-
-        #region Support for JavaScriptSerializer
-        private static readonly long s_Date1970_Ticks = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).Ticks;
-        private static readonly Regex s_DateSerialization = new Regex(@"\\/Date\((?<ticks>-?\d+)\)\\/", RegexOptions.Compiled);
-
-        internal static string Iso8601Serialization(string input)
-        {
-            return s_DateSerialization.Replace(input, match =>
-            {
-                long ticks = 0;
-                if (long.TryParse(match.Groups["ticks"].Value, out ticks) && ticks >= 0)
-                {
-                    return GetDateTimeUtcString(new DateTime((ticks * 10000) + s_Date1970_Ticks, DateTimeKind.Utc));
-                }
-                else
-                {
-                    return string.Concat("\\/Date(", match.Groups["ticks"].Value, ")\\/");
-                }
-            });
-        }
-
-        public static string SerializeCustomObject(object instance)
-        {
-            if (instance == null)
-            {
-                return "null";
-            }
-
-            var serializer = new JavaScriptSerializer()
-            {
-                MaxJsonLength = 2097152,
-                RecursionLimit = 10
-            };
-
-            return Iso8601Serialization(serializer.Serialize(instance));
-        }
-        #endregion
     }
 }

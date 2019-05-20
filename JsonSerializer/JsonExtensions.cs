@@ -25,105 +25,11 @@ namespace JsonSerializer
             {
                 return ((IJsonSerializeImplementation)instance).SerializeAsJson();
             }
-            else if (instance is string)
-            {
-                return SerializeStringObject((string)instance);
-            }
-            else if (instance is IDictionary<string, string>)
-            {
-                return SerializeIDictionaryObject((IDictionary<string, string>)instance);
-            }
-            else if (instance.GetType().IsPrimitive)
-            {
-                return SerializePrimitiveObject(instance);
-            }
-            else if (instance is System.Xml.XmlNode)
-            {
-                return SerializeXmlObject(((System.Xml.XmlNode)instance));
-            }
-
-            return SerializeComplexObject(instance);
+           
+            return Serializer.SerializeObject(instance);
         }
 
-        private static string SerializeIDictionaryObject(IDictionary<string, string> instance)
-        {
-            using (var writer = new JsonWriter())
-            {
-                writer.WriteStartObject();
-
-                foreach (KeyValuePair<string, string> item in instance)
-                {
-                    if (!item.Key.IsNullOrWhiteSpace())
-                    {
-                        writer.WriteProperty(item.Key, item.Value, false);
-                    }
-                }
-                writer.WriteEndObject();
-
-                return writer.ToString();
-            }
-        }
-
-        private static string SerializePrimitiveObject(object instance)
-        {
-            using (var writer = new JsonWriter())
-            {
-                writer.WriteStartObject();
-                writer.WriteProperty(string.Concat("_", instance.GetType().Name), instance.ToString(), false);
-                writer.WriteEndObject();
-                return writer.ToString();
-            }
-        }
-
-
-        private static string SerializeXmlObject(System.Xml.XmlNode xml)
-        {
-            using (var writer = new JsonWriter())
-            {
-                writer.WriteStartObject();
-                writer.WriteProperty("_XmlNode", xml.OuterXml);
-                writer.WriteEndObject();
-                return writer.ToString();
-            }
-        }
-
-
-        private static string SerializeStringObject(string str)
-        {
-            //check if json format
-            if (JsonWriter.ValidJsonFormat(str, true))
-            {
-                return str;
-            }//end json valid check
-
-            using (var writer = new JsonWriter())
-            {
-                writer.WriteStartObject();
-                writer.WriteProperty("_String", str);
-                writer.WriteEndObject();
-                return writer.ToString();
-            }
-        }
-
-        private static string SerializeComplexObject(object instance)
-        {
-            //check if we can serialize complex object.
-            if (!CanSerializeComplexObject(instance))
-            {
-                return GetBadJson(instance, new Exception("Can not Serialize."));
-            }
-
-            try
-            {
-                return JsonWriter.SerializeCustomObject(instance);
-            }
-            catch (Exception ex)
-            {
-                return GetBadJson(instance, ex);
-            }
-        }
-
-        public static string GetBadJson(object instance, Exception ex)
+        internal static string GetBadJson(object instance, Exception ex)
         {
             using (var writer = new JsonWriter())
             {
