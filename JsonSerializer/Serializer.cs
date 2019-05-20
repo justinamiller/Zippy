@@ -94,10 +94,9 @@ namespace JsonSerializer
                 IJsonSerializerStrategy defaultJsonSerializerStrategy = s_defaultJsonSerializerStrategy;
                 if (defaultJsonSerializerStrategy == null)
                 {
-                    IJsonSerializerStrategy defaultJsonSerializerStrategy1 = new LambdaJsonSerializerStrategy();//new  DelegateJsonSerializerStrategy();
-                    IJsonSerializerStrategy defaultJsonSerializerStrategy2 = defaultJsonSerializerStrategy1;
-                    s_defaultJsonSerializerStrategy = defaultJsonSerializerStrategy1;
-                    defaultJsonSerializerStrategy = defaultJsonSerializerStrategy2;
+                    //IJsonSerializerStrategy defaultJsonSerializerStrategy1 = new LambdaJsonSerializerStrategy();
+                    s_defaultJsonSerializerStrategy = new  DelegateJsonSerializerStrategy();
+                    defaultJsonSerializerStrategy = s_defaultJsonSerializerStrategy;
                 }
                 return defaultJsonSerializerStrategy;
             }

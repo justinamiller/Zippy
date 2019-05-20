@@ -98,6 +98,43 @@ namespace JsonSerializer.Internal
             return (data != null);
         }
 
+        private static bool CanSerialize(Type type)
+        {
+            string typeFullName = type.FullName;
+
+            //filter out unknown type
+            if (typeFullName == null)
+            {
+                return false;
+            }
+
+            //filter out by namespace & Types
+            if (typeFullName.IndexOf("System.", StringComparison.Ordinal) == 0)
+            {
+                if (typeFullName == "System.RuntimeType")
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Runtime.Serialization", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Runtime.CompilerServices", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Reflection", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Threading.Task", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         protected virtual bool TrySerializeUnknownTypes(object input, out IDictionary<string, object> output)
         {
@@ -107,36 +144,20 @@ namespace JsonSerializer.Internal
                 return false;
 
             Type type = input.GetType();
-            string typeFullName = type.FullName;
-
-            //filter out unknown type
-            if (typeFullName == null)
-                return false;
-
-            //filter out by namespace & Types
-            if (typeFullName.IndexOf("System.", StringComparison.Ordinal) == 0)
+            if (!CanSerialize(type))
             {
-                if (typeFullName == "System.RuntimeType")
-                    return false;
-                if (typeFullName.IndexOf("System.Runtime.Serialization", StringComparison.Ordinal) == 0)
-                    return false;
-                if (typeFullName.IndexOf("System.Runtime.CompilerServices", StringComparison.Ordinal) == 0)
-                    return false;
-                if (typeFullName.IndexOf("System.Reflection", StringComparison.Ordinal) == 0)
-                    return false;
-                if (typeFullName.IndexOf("System.Threading.Task", StringComparison.Ordinal) == 0)
-                    return false;
+                return false;
             }
-
 
             IDictionary<string, object> jsonObjects = new JsonSerializerObject();
             IDictionary<string, ReflectionExtension.GetDelegate> data;
 
             bool fromCache;
             if (!GetValue(type, out data, out fromCache))
+            {
                 return false;
-
-
+            }
+     
             if (data != null && data.Count > 0)
             {
                 bool hasErrorsInFields = false;
@@ -146,8 +167,10 @@ namespace JsonSerializer.Internal
                 {
                     var value = datas[i].Value;
                     if (value == null)
+                    {
                         continue;
-
+                    }
+                       
                     string key = datas[i].Key;
 
                     try
