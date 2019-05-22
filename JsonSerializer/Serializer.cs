@@ -120,45 +120,6 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeList(IList anList, int recursiveCount)
-        {
-            if (!AddObjectAsReferenceCheck(anList))
-                return true;
-
-            bool flag;
-            bool flag1 = true;
-
-            _builder.WriteStartArray();
-            try
-            {
-                // note that an error in the IEnumerable won't be caught
-                for (int i = 0; i < anList.Count; i++)
-                {
-                    if (!flag1)
-                    {
-                        _builder.WriteComma();
-                    }
-                    if (this.SerializeValue(anList[i], recursiveCount))
-                    {
-                        flag1 = false;
-                    }
-                    else
-                    {
-                        flag = false;
-                        return flag;
-                    }
-                }
-            }
-            finally
-            {
-                _builder.WriteEndArray();
-                RemoveObjectAsReferenceCheck(anList);
-            }
-
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value, int recursiveCount)
         {
             if (!AddObjectAsReferenceCheck(value))
@@ -194,7 +155,7 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeEnumerable(IEnumerable anEnumerable, int recursiveCount)
         {
-            Array anArray = anEnumerable as Array;
+            var anArray = anEnumerable as Array;
             if (anArray != null && anArray.Rank > 1)
             {
                 return SerializeMultidimensionalArray(anArray, recursiveCount);
@@ -243,47 +204,6 @@ namespace JsonSerializer
             {
                 _builder.WriteEndArray();
                 RemoveObjectAsReferenceCheck(anEnumerable);
-            }
-
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeArray(Array anArray, int recursiveCount)
-        {
-            if (anArray.Rank > 1)
-                return SerializeMultidimensionalArray(anArray, recursiveCount);
-
-            if (!AddObjectAsReferenceCheck(anArray))
-                return true;
-
-
-            bool flag1 = true;
-
-            _builder.WriteStartArray();
-            try
-            {
-                for (int i = 0; i < anArray.Length; i++)
-                {
-                    if (!flag1)
-                    {
-                        _builder.WriteComma();
-                    }
-                    if (this.SerializeValue(anArray.GetValue(i), recursiveCount))
-                    {
-                        flag1 = false;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-
-            }
-            finally
-            {
-                _builder.WriteEndArray();
-                RemoveObjectAsReferenceCheck(anArray);
             }
 
             return true;
