@@ -90,29 +90,7 @@ namespace JsonSerializer.Internal
                 return false;
 
             Type type = input.GetType();
-            string typeFullName = type.FullName;
-
-            //filter out unknown type
-            if (typeFullName == null)
-                return false;
-
-
-            //filter out by namespace & Types
-            if (typeFullName.IndexOf("System.", StringComparison.Ordinal) == 0)
-            {
-                if (typeFullName == "System.RuntimeType")
-                    return false;
-                if (typeFullName.IndexOf("System.Runtime.Serialization", StringComparison.Ordinal) == 0)
-                    return false;
-                if (typeFullName.IndexOf("System.Runtime.CompilerServices", StringComparison.Ordinal) == 0)
-                    return false;
-                if (typeFullName.IndexOf("System.Reflection", StringComparison.Ordinal) == 0)
-                    return false;
-                if (typeFullName.IndexOf("System.Threading.Task", StringComparison.Ordinal) == 0)
-                    return false;
-            }
-
-
+           
             IDictionary<string, object> jsonObjects = new Dictionary<string, object>();// new PocoJsonObject();
             IDictionary<string, Func<object, object>> data;
             bool fromCache;
@@ -124,48 +102,25 @@ namespace JsonSerializer.Internal
             {
                 bool hasErrorsInFields = false;
                 List<string> ErrorFields = new List<string>();
-                var datas = data.ToArray();
-                for (int i = 0; i < datas.Length; i++)
-                {
-                    Func<object, object> value = datas[i].Value;
-                    if (value == null)
-                        continue;
 
-                    string key = datas[i].Key;
+                foreach (var item in data)
+                {
+                    Func<object, object> value = item.Value;
 
                     try
                     {
                         //perform reflection here.
-                        jsonObjects.Add(key, value(input));
-                    }
-                    catch (TargetInvocationException)
-                    {
-                        if (fromCache)
-                        {
-                            ErrorFields.Add(key);
-                            hasErrorsInFields = true;
-                        }
-
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        if (fromCache)
-                        {
-                            ErrorFields.Add(key);
-                            hasErrorsInFields = true;
-                        }
-
+                        jsonObjects.Add(item.Key, value(input));
                     }
                     catch (Exception)
                     {
                         if (fromCache)
                         {
-                            ErrorFields.Add(key);
+                            ErrorFields.Add(item.Key);
                             hasErrorsInFields = true;
                         }
                     }
                 }
-
                 //switch out object
                 output = jsonObjects;
 

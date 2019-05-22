@@ -9,7 +9,7 @@ namespace JsonSerializer.Utility
 {
     static class ReflectionExtension
     {
-        private static readonly BindingFlags s_DefaultFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;//BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        private static readonly BindingFlags s_DefaultFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
 
         public static IEnumerable<FieldInfo> GetFields(Type type, BindingFlags bindingFlags)
         {
@@ -57,16 +57,6 @@ namespace JsonSerializer.Utility
         }
 
 
-        public static ReflectionExtension.GetDelegate GetGetMethod(MethodInfo getterMethodInfo)
-        {
-            if (getterMethodInfo == null)
-                return null;
-            object[] objArray = new object[0];
-
-            return (object source) => getterMethodInfo.Invoke(source, objArray);
-        }
-
-
         private static Expression EnsureCastExpression(Expression expression, Type targetType, bool allowWidening = false)
         {
             Type expressionType = expression.Type;
@@ -104,50 +94,68 @@ namespace JsonSerializer.Utility
             return Expression.Convert(expression, targetType);
         }
 
+        public static Func<T, object> CreateGet1<T>(PropertyInfo propertyInfo)
+        {
+
+            Type instanceType = typeof(T);
+            Type resultType = typeof(object);
+
+            ParameterExpression parameterExpression = Expression.Parameter(instanceType, "instance");
+            Expression resultExpression;
+
+            MethodInfo getMethod = propertyInfo.GetGetMethod(true);
+
+            if (getMethod.IsStatic)
+            {
+                resultExpression = Expression.MakeMemberAccess(null, propertyInfo);
+            }
+            else
+            {
+                Expression readParameter = EnsureCastExpression(parameterExpression, propertyInfo.DeclaringType);
+
+                resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
+            }
+
+            resultExpression = EnsureCastExpression(resultExpression, resultType);
+
+            LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<T, object>), resultExpression, parameterExpression);
+
+            Func<T, object> compiled = (Func<T, object>)lambdaExpression.Compile();
+            return compiled;
+        }
+
         public static Func<TKey, TValue> CreateGet<TKey, TValue>(PropertyInfo propertyInfo)
         {
             if (propertyInfo == null)
                 return null;
+            if (propertyInfo.PropertyType.IsByRef)
+                return null;//https://github.com/dotnet/corefx/issues/26053
 
-            ParameterExpression instance = Expression.Parameter(typeof(TKey), "instance");
+            ParameterExpression parameterExpression = Expression.Parameter(typeof(TKey), "instance");
             Expression resultExpression;
 
             try
             {
-                MethodInfo getMethod = propertyInfo.GetGetMethod(false);
+                MethodInfo getMethod = propertyInfo.GetGetMethod(true);
 
                 if (getMethod == null)
                     return null;
 
                 if (getMethod.IsStatic)
                 {
-                    resultExpression = EnsureCastExpression(Expression.MakeMemberAccess(null, propertyInfo), typeof(TValue));
+                    resultExpression = Expression.MakeMemberAccess(null, propertyInfo);//  EnsureCastExpression(Expression.MakeMemberAccess(null, propertyInfo), typeof(TValue));
                 }
                 else
                 {
-                    Type declareType = propertyInfo.DeclaringType;
-                    if (declareType != null)
-                    {
-                        UnaryExpression instanceCast = (!declareType.IsValueType) ? Expression.TypeAs(instance, declareType) : Expression.Convert(instance, declareType);
-                        if (instanceCast == null)
-                            return null;
+                    Expression readParameter = EnsureCastExpression(parameterExpression, propertyInfo.DeclaringType);
 
-                        resultExpression = Expression.Call(instanceCast, getMethod);
-                    }
-                    else
-                    {
-                        Expression readParameter = EnsureCastExpression(instance, propertyInfo.DeclaringType);
-                        if (readParameter == null)
-                            return null;
-
-                        resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
-                    }
+                    resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
                 }
 
-                if (resultExpression == null)
-                    return null;
-
-                return Expression.Lambda<Func<TKey, TValue>>(Expression.TypeAs(resultExpression, typeof(TValue)), instance).Compile();
+                resultExpression = EnsureCastExpression(resultExpression, typeof(object));
+                LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<TKey, TValue>), resultExpression, parameterExpression);
+                
+                return (Func<TKey, TValue>)lambdaExpression.Compile();
             }
             catch (Exception)
             {
@@ -162,25 +170,25 @@ namespace JsonSerializer.Utility
             {
                 if (item is PropertyInfo)
                 {
-                    Func<TKey, TValue> method = CreateGet<TKey, TValue>((PropertyInfo)item);
-                    if (method != null)
-                        return method;
+                    return CreateGet<TKey, TValue>((PropertyInfo)item);
                 }
                 else if (item is FieldInfo)
                 {
-                    Func<TKey, TValue> method = CreateGet<TKey, TValue>((FieldInfo)item);
-                    if (method != null)
-                        return method;
+                    return CreateGet<TKey, TValue>((FieldInfo)item);
                 }
             }
             catch (Exception)
             {
+                //do nothing
             }
             return null;
         }
 
         public static Func<TKey, TValue> CreateGet<TKey, TValue>(FieldInfo fieldInfo)
         {
+            if (fieldInfo == null)
+                return null;
+
             try
             {
                 ParameterExpression sourceParameter = Expression.Parameter(typeof(TKey), "source");
@@ -214,20 +222,14 @@ namespace JsonSerializer.Utility
             return ReflectionExtension.GetGetMethodByReflection(fieldInfo);
         }
 
-        public static ReflectionExtension.GetDelegate GetGetMethodByReflection(PropertyInfo propertyInfo)
+        public static GetDelegate GetGetMethodByReflection(PropertyInfo propertyInfo)
         {
-            MethodInfo getterMethodInfo = ReflectionExtension.GetGetterMethodInfo(propertyInfo, false);
-            return GetGetMethod(getterMethodInfo);
+            return (object source) => propertyInfo.GetValue(source, null);
         }
 
         public static ReflectionExtension.GetDelegate GetGetMethodByReflection(FieldInfo fieldInfo)
         {
             return (object source) => fieldInfo.GetValue(source);
-        }
-
-        public static MethodInfo GetGetterMethodInfo(PropertyInfo propertyInfo, bool nonPublic)
-        {
-            return propertyInfo.GetGetMethod(nonPublic);
         }
 
         public static IEnumerable<PropertyInfo> GetProperties(Type type, BindingFlags bindingFlags)
@@ -574,8 +576,44 @@ namespace JsonSerializer.Utility
 
         public delegate object GetDelegate(object source);
 
-
-
         public delegate TValue DictionaryValueFactory<TKey, TValue>(TKey key);
+
+        public static bool CanSerialize(Type type)
+        {
+            string typeFullName = type.FullName;
+
+            //filter out unknown type
+            if (typeFullName == null)
+            {
+                return false;
+            }
+
+            //filter out by namespace & Types
+            if (typeFullName.IndexOf("System.", StringComparison.Ordinal) == 0)
+            {
+                if (typeFullName == "System.RuntimeType")
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Runtime.Serialization", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Runtime.CompilerServices", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Reflection", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+                if (typeFullName.IndexOf("System.Threading.Task", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }
