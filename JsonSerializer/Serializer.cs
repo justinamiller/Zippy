@@ -330,15 +330,7 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static string SerializeObject(object Object, IJsonSerializerSetting settings)
         {
-            Serializer json = new Serializer(settings);
-            try
-            {
-                return json.SerializeObjectInternal(Object);
-            }
-            finally
-            {
-                json = null;
-            }
+            return new Serializer(settings).SerializeObjectInternal(Object);
         }
 
 
@@ -399,42 +391,6 @@ namespace JsonSerializer
             }
 
             return true;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeObject(IEnumerable keys, IEnumerable values, int recursiveCount)
-        {
-            _builder.WriteStartObject();
-            try
-            {
-                IEnumerator enumerator = keys.GetEnumerator();
-                IEnumerator enumerator1 = values.GetEnumerator();
-                bool flag = true;
-                while (enumerator.MoveNext() && enumerator1.MoveNext())
-                {
-                    string current = (enumerator.Current as string);
-                    if (current == null)
-                        continue;
-
-                    object obj = enumerator1.Current;
-                    _builder.WritePropertyName(current);
-
-                    if (obj is string)
-                    {
-                        _builder.WriteValue((string)obj);
-                    }
-                    else if (!this.SerializeValue(obj, recursiveCount))
-                    {
-                        return false;
-                    }
-                    flag = false;
-                }
-                return true;
-            }
-            finally
-            {
-                _builder.WriteEndObject();
-            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
