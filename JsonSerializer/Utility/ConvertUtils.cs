@@ -54,6 +54,17 @@ namespace JsonSerializer.Utility
             DBNull = 41
         }
 
+        internal enum ObjectTypeCode
+        {
+            Empty = 0,
+            Custom = 1,
+            DataTable=2,
+            DataSet = 3,
+            Dictionary = 4,
+            NameValueCollection = 5,
+             Enumerable=6
+        }
+
         private static readonly Dictionary<Type, PrimitiveTypeCode> TypeCodeMap =
     new Dictionary<Type, PrimitiveTypeCode>
     {
@@ -99,6 +110,16 @@ namespace JsonSerializer.Utility
                 { typeof(DBNull), PrimitiveTypeCode.DBNull }
     };
 
+        private static readonly Dictionary<Type, ObjectTypeCode> ObjectTypeCodeMap =
+new Dictionary<Type, ObjectTypeCode>
+{
+                { typeof(System.Data.DataTable), ObjectTypeCode.DataTable },
+                { typeof(System.Data.DataSet), ObjectTypeCode.DataSet },
+                { typeof(System.Collections.IDictionary), ObjectTypeCode.Dictionary },
+                { typeof(System.Collections.Specialized.NameValueCollection), ObjectTypeCode.NameValueCollection },
+                { typeof(Array), ObjectTypeCode.Enumerable }
+};
+
         internal class TypeInformation
         {
             public Type Type { get; set; }
@@ -128,6 +149,53 @@ namespace JsonSerializer.Utility
             new TypeInformation { Type = typeof(object), TypeCode = PrimitiveTypeCode.Empty }, // no 17 in TypeCode for some reason
             new TypeInformation { Type = typeof(string), TypeCode = PrimitiveTypeCode.String }
         };
+
+        public static ObjectTypeCode GetObjectTypeCode(Type t)
+        {
+            if (ObjectTypeCodeMap.TryGetValue(t, out ObjectTypeCode typeCode))
+            {
+                return typeCode;
+            }
+            var baseType = t.BaseType;
+            if (baseType!=null && baseType != typeof(object))
+            {
+                return GetObjectTypeCode(t.BaseType);
+            }
+
+
+            return ObjectTypeCode.Empty;
+        }
+
+
+        public static ObjectTypeCode GetInstanceObjectTypeCode(object value)
+        {
+            if (value is System.Collections.IEnumerable)
+            {
+                if (value is System.Collections.IDictionary)
+                {
+                    return ObjectTypeCode.Dictionary;
+                }
+
+                if (value is System.Collections.Specialized.NameValueCollection)
+                {
+                    return ObjectTypeCode.NameValueCollection;
+                }
+
+                return ObjectTypeCode.Enumerable;
+
+            }//IEnumerable
+
+            if (value is System.ComponentModel.IListSource)
+            {
+                if (value is System.Data.DataSet)
+                    return ObjectTypeCode.DataSet;
+                if (value is System.Data.DataTable)
+                    return ObjectTypeCode.DataTable;
+            }
+
+            return ObjectTypeCode.Custom;
+        }
+
 
         public static PrimitiveTypeCode GetTypeCode(Type t)
         {

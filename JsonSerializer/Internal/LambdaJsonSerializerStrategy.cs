@@ -13,8 +13,7 @@ namespace JsonSerializer.Internal
 
         public LambdaJsonSerializerStrategy()
         {
-            LambdaJsonSerializerStrategy defaultJsonSerializerStrategy1 = this;
-            this.GetCache = new FactoryDictionary<Type, IDictionary<string, Func<object, object>>>(new ReflectionExtension.DictionaryValueFactory<Type, IDictionary<string, Func<object, object>>>(defaultJsonSerializerStrategy1.GetterValueFactory));
+            this.GetCache = new FactoryDictionary<Type, IDictionary<string, Func<object, object>>>(new ReflectionExtension.DictionaryValueFactory<Type, IDictionary<string, Func<object, object>>>(this.GetterValueFactory));
         }
 
 
@@ -29,6 +28,7 @@ namespace JsonSerializer.Internal
 
                 if (item != null && !item.Name.IsNullOrEmpty())
                 {
+
                     Func<object, object> method = ReflectionExtension.CreateGet<object, object>(item);
                     if (method != null)
                         strs[item.Name] = method;
@@ -54,16 +54,9 @@ namespace JsonSerializer.Internal
             fromCache = false;
             data = null;
 
-
             if (this.GetCache.TryGetValue(type, out data))
             {
                 //cache type
-                fromCache = true;
-            }
-            else if (type.Assembly == typeof(LambdaJsonSerializerStrategy).Assembly)
-            {
-                //cache type
-                data = this.GetCache[type];
                 fromCache = true;
             }
             else if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) >= 0)
@@ -135,6 +128,11 @@ namespace JsonSerializer.Internal
             }//end if
 
             return (output != null);
+        }
+
+        public bool TrySerializeNonPrimitiveObjectImproved(object input, out IList<ValueMemberInfo> output)
+        {
+            throw new NotImplementedException();
         }
     }
 }

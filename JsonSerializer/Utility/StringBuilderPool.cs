@@ -12,7 +12,7 @@ namespace JsonSerializer.Utility
         //Avoid stringbuilder block fragmentation
         private const int MAX_BUILDER_SIZE = 360;
         //internal stringbuilder default capacity
-        private const int DEFAULT_CAPACITY = 16;
+        private const int DEFAULT_CAPACITY = 256;
 
         [ThreadStatic]
         private static StringBuilder _cachedInstance;

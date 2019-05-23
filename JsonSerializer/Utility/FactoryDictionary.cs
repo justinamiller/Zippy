@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace JsonSerializer.Utility
 {
-    sealed class FactoryDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable
+    sealed class FactoryDictionary<TKey, TValue> : IDictionary<TKey, TValue>//, ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable
     {
         private readonly object _lock = new object();
 

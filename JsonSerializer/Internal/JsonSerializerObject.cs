@@ -5,7 +5,7 @@ using System.Text;
 
 namespace JsonSerializer.Internal
 {
-    sealed class JsonSerializerObject : IDictionary<string, object>, ICollection<KeyValuePair<string, object>>, IEnumerable<KeyValuePair<string, object>>, IEnumerable
+    sealed class JsonSerializerObject : IDictionary<string, object>//, ICollection<KeyValuePair<string, object>>, IEnumerable<KeyValuePair<string, object>>, IEnumerable
     {
         private readonly Dictionary<string, object> _members;
 
@@ -29,7 +29,7 @@ namespace JsonSerializer.Internal
         {
             get
             {
-                return this.GetAtIndex(this._members, index);
+                return GetAtIndex(this._members, index);
             }
         }
 
@@ -122,7 +122,7 @@ namespace JsonSerializer.Internal
             }
         }
 
-        internal object GetAtIndex(IDictionary<string, object> obj, int index)
+        static object GetAtIndex(IDictionary<string, object> obj, int index)
         {
             object value;
             if (obj == null)

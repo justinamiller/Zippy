@@ -20,36 +20,38 @@ namespace ConsoleTest
             public bool IsGood { get; set; }
         }
 
+        public string Version = "1.0";
+
         public TType Type { get; set; } = TType.Expert;
         public string Name { get; set; }
         public string Address { get; set; }
         public int[] Items { get; set; }
         public int? Age { get; set; } = 10;
-        public IDictionary<string, string> Data = new Dictionary<string, string>();
-        public DataTable DT = new DataTable();
-        public DataSet DS = new DataSet();
+    //    public IDictionary<string, string> Data = new Dictionary<string, string>();
+     public DataTable DT = new DataTable();
+      //  public DataSet DS = new DataSet();
         public Result[] Results { get; set; } = Array.Empty<Result>();
         public IList<Result> ResultList { get; set; } = new List<Result>();
-        public System.Collections.ArrayList ResultAL { get; set; } = new System.Collections.ArrayList();
-        public System.Collections.IList ResultSL { get; set; } = new System.Collections.ArrayList();
-        public Dictionary<string, int> ChildrenAges { get; set; }=new Dictionary<string,int>();
+      //  public System.Collections.ArrayList ResultAL { get; set; } = new System.Collections.ArrayList();
+       // public System.Collections.IList ResultSL { get; set; } = new System.Collections.ArrayList();
+       // public Dictionary<string, int> ChildrenAges { get; set; }=new Dictionary<string,int>();
         public TestObject()
         {
             this.Name = "Test";
             this.Address = "Here";
             this.Items = (new List<int>() { 1, 3, 5, 6, 7, 88 }).ToArray();
-            Data.Add("Item1", "is ready");
-            DT.Columns.Add("Column1", typeof(string));
-            var r=DT.NewRow();
-            r[0] = "Test";
-            DT.Rows.Add(r);
+           // Data.Add("Item1", "is ready");
+        //    DT.Columns.Add("Column1", typeof(string));
+         //   var r=DT.NewRow();
+         //   r[0] = "Test";
+           // DT.Rows.Add(r);
         }
 
-        public void Testing()
+        public static void Testing()
         {
-
+            //do nothing
         }
-        public bool IsReady()
+        public static bool  IsReady()
         {
             return true;
         }
@@ -59,10 +61,13 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
+
+            System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+
             var c = new TestObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-          var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
+        // var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
             var d = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
             var a2 = JsonSerializer.Serializer.SerializeObject(c);
@@ -70,7 +75,7 @@ namespace ConsoleTest
             dd.ToString();
 
             sw.Restart();
-           Newtonsoft.Json.JsonConvert.SerializeObject(c);
+         //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
             var d1 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
             var aa2 = JsonSerializer.Serializer.SerializeObject(c);
@@ -79,7 +84,7 @@ namespace ConsoleTest
             sw.Restart();
             for(var i = 0; i < 100000; i++)
             {
-                Newtonsoft.Json.JsonConvert.SerializeObject(c);
+        //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
@@ -91,6 +96,13 @@ namespace ConsoleTest
             dd.ToString();
 
             dd.ToString();
+        }
+
+        private static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
+            var ex = e.Exception;
+
+            throw new NotImplementedException();
         }
     }
 }

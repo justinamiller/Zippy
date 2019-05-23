@@ -7,5 +7,7 @@ namespace JsonSerializer.Internal
     interface IJsonSerializerStrategy
     {
         bool TrySerializeNonPrimitiveObject(object input, out IDictionary<string, object> output);
+
+        bool TrySerializeNonPrimitiveObjectImproved(object input, out IList<ValueMemberInfo> output);
     }
 }

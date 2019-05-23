@@ -33,7 +33,7 @@ namespace JsonSerializer
         {
             get
             {
-                return _sb.Length;
+                return  _sb.Length;
             }
         }
 
@@ -44,8 +44,21 @@ namespace JsonSerializer
         {
             get
             {
-                return _arrayIndex == 0 && _objectIndex == 0 && ValidJsonFormat(this._sb.ToString());
+                return IsValid();
             }
+        }
+
+        private bool IsValid(string json = null)
+        {
+            if(_arrayIndex == 0 && _objectIndex == 0)
+            {
+                if (json == null)
+                {
+                    json = _sb.ToString();
+                }
+                return ValidJsonFormat(json);
+            }
+            return false;
         }
 
         /// <summary>
@@ -54,13 +67,14 @@ namespace JsonSerializer
         /// <returns></returns>
         public override string ToString()
         {
-            if (!Valid)
+            var json=_sb.ToString();
+            if (!IsValid(json))
             {
                 //bad json log it
-                throw new Exception("Bad Json format", new InvalidDataException(_sb.ToString()));
+                throw new InvalidCastException("Bad Json format", new InvalidDataException(json));
             }
 
-            return _sb.ToString();
+            return json;
         }
 
         public void Dispose()
@@ -69,12 +83,10 @@ namespace JsonSerializer
             _textWriter.Dispose();
         }
 
-        public JsonWriter(TextWriter writer)
-        {
-            _sb = StringBuilderPool.Get();
-
-            _textWriter = writer;
-        }
+        //public JsonWriter(TextWriter writer)
+        //{
+        //    _textWriter = writer;
+        //}
 
         public JsonWriter()
         {
@@ -135,6 +147,7 @@ namespace JsonSerializer
                     {
                         WriteComma();
                     }
+
                     this.WriteValue(obj);
                     isFirstElement = false;
                 }
@@ -148,7 +161,7 @@ namespace JsonSerializer
             if (ValidJsonFormat(stringData))
             {
                 //string is json
-                WriteRawValue(stringData);
+                WriteRawValue(stringData,false);
             }//end json valid check
             else
             {
@@ -159,20 +172,22 @@ namespace JsonSerializer
 
         public void WriteValue(object value)
         {
-            var typeCode = GetTypeCode(value.GetType());
-            WriteObjectValue(value, typeCode);
-        }
-
-       internal void WriteObjectValue(object value, PrimitiveTypeCode typeCode)
-        {
-            if(value == null)
+            var json = value as IJsonSerializeImplementation;
+            if (json != null)
             {
-                WriteNull();
+                WriteRawValue(json.SerializeAsJson(),true);
                 return;
             }
-            if (value is IJsonSerializeImplementation)
+
+            var valueType = GetTypeCode(value.GetType());
+            WriteObjectValue(value, valueType);
+        }
+
+        internal void WriteObjectValue(object value, PrimitiveTypeCode typeCode)
+        {
+            if (value == null)
             {
-                WriteRawValue(((IJsonSerializeImplementation)value).SerializeAsJson());
+                WriteNull();
                 return;
             }
 
@@ -261,7 +276,7 @@ namespace JsonSerializer
                             return;
                         }
 
-                        this.WriteRawValue(Serializer.SerializeObject(value));
+                        this.WriteRawValue(Serializer.SerializeObject(value),false);
                         return;
                 }
             }
@@ -271,7 +286,7 @@ namespace JsonSerializer
         /// call for json string
         /// </summary>
         /// <param name="value"></param>
-        public void WriteRawValue(string value)
+        public void WriteRawValue(string value, bool doValidate)
         {
             if (value.IsNullOrWhiteSpace())
             {
@@ -281,7 +296,7 @@ namespace JsonSerializer
 
             string trimValue = value.Trim();
 
-            if (!(ValidJsonFormat(trimValue)))
+            if (doValidate && !ValidJsonFormat(trimValue))
             {
                 WriteNull();
             }
@@ -291,7 +306,7 @@ namespace JsonSerializer
             }
         }
 
-        public static bool ValidJsonFormat(string value)
+        private static bool ValidJsonFormat(string value)
         {
             if (value != null)
             {
@@ -300,10 +315,11 @@ namespace JsonSerializer
 
                 if (length >= 2)
                 {
+                    char firstchr = trimValue[0];
                     bool firstPass =
-                        (trimValue[0] == '{' && trimValue[length - 1] == '}') //For object
+                        (firstchr == '{' && trimValue[length - 1] == '}') //For object
                         ||
-                        (trimValue[0] == '[' && trimValue[length - 1] == ']');//For array
+                        (firstchr == '[' && trimValue[length - 1] == ']');//For array
 
                     return firstPass;
                 }
@@ -603,7 +619,7 @@ namespace JsonSerializer
             else
             {
                 WriteValue(value.OriginalString);
-            }           
+            }
         }
 
         public void WriteProperty(string name, DateTime value)
@@ -714,7 +730,7 @@ namespace JsonSerializer
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="escape">A flag to indicate whether the text should be escaped when it is written as a JSON property name.</param>
-        public void WritePropertyName(string name, bool escape=true)
+        public void WritePropertyName(string name, bool escape = true)
         {
             if (this._propertyInUse)
             {
@@ -744,7 +760,7 @@ namespace JsonSerializer
                 this._textWriter.Write(_quoteChar);
             }
 
- 
+
             this._textWriter.Write(':');
         }
 
@@ -772,7 +788,7 @@ namespace JsonSerializer
             }
             else
             {
-                    WriteStringEncode(str);
+                WriteStringEncode(str);
             }
         }
 

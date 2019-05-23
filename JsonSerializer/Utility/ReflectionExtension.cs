@@ -9,7 +9,7 @@ namespace JsonSerializer.Utility
 {
     static class ReflectionExtension
     {
-        private static readonly BindingFlags s_DefaultFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+        private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
 
         public static IEnumerable<FieldInfo> GetFields(Type type, BindingFlags bindingFlags)
         {
@@ -94,36 +94,6 @@ namespace JsonSerializer.Utility
             return Expression.Convert(expression, targetType);
         }
 
-        public static Func<T, object> CreateGet1<T>(PropertyInfo propertyInfo)
-        {
-
-            Type instanceType = typeof(T);
-            Type resultType = typeof(object);
-
-            ParameterExpression parameterExpression = Expression.Parameter(instanceType, "instance");
-            Expression resultExpression;
-
-            MethodInfo getMethod = propertyInfo.GetGetMethod(true);
-
-            if (getMethod.IsStatic)
-            {
-                resultExpression = Expression.MakeMemberAccess(null, propertyInfo);
-            }
-            else
-            {
-                Expression readParameter = EnsureCastExpression(parameterExpression, propertyInfo.DeclaringType);
-
-                resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
-            }
-
-            resultExpression = EnsureCastExpression(resultExpression, resultType);
-
-            LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<T, object>), resultExpression, parameterExpression);
-
-            Func<T, object> compiled = (Func<T, object>)lambdaExpression.Compile();
-            return compiled;
-        }
-
         public static Func<TKey, TValue> CreateGet<TKey, TValue>(PropertyInfo propertyInfo)
         {
             if (propertyInfo == null)
@@ -136,7 +106,7 @@ namespace JsonSerializer.Utility
 
             try
             {
-                MethodInfo getMethod = propertyInfo.GetGetMethod(true);
+                MethodInfo getMethod = propertyInfo.GetGetMethod(false);
 
                 if (getMethod == null)
                     return null;
@@ -263,7 +233,7 @@ namespace JsonSerializer.Utility
 
         public static List<MemberInfo> GetFieldsAndProperties(Type type)
         {
-            return GetFieldsAndProperties(type, s_DefaultFlags);
+            return GetFieldsAndProperties(type, DefaultFlags);
         }
 
         public static List<MemberInfo> GetFieldsAndProperties(Type type, BindingFlags bindingAttr)
@@ -382,7 +352,6 @@ namespace JsonSerializer.Utility
         /// </returns>
         public static bool IsIndexedProperty(MemberInfo member)
         {
-
             if (member is PropertyInfo)
             {
                 return IsIndexedProperty((PropertyInfo)member);
@@ -549,7 +518,7 @@ namespace JsonSerializer.Utility
 
         public static MemberInfo GetMemberInfoFromType(Type targetType, MemberInfo memberInfo)
         {
-            BindingFlags bindingAttr = s_DefaultFlags; //BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+            BindingFlags bindingAttr = DefaultFlags; //BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
             switch (memberInfo.MemberType)
             {
