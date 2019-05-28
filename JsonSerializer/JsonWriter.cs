@@ -172,6 +172,12 @@ namespace JsonSerializer
 
         public void WriteValue(object value)
         {
+            if(value == null)
+            {
+                WriteNull();
+                return;
+            }
+
             var json = value as IJsonSerializeImplementation;
             if (json != null)
             {
@@ -185,12 +191,6 @@ namespace JsonSerializer
 
         internal void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
         {
-            if (value == null)
-            {
-                WriteNull();
-                return;
-            }
-
             while (true)
             {
                 switch (typeCode)
@@ -902,8 +902,14 @@ namespace JsonSerializer
             }
 
             //flush
-            Array.Resize(ref bufferWriter, bufferIndex);
-            return bufferWriter;
+            var buffer = new char[bufferIndex];
+            for(var i=0; i < bufferIndex; i++)
+            {
+                buffer[i] = bufferWriter[i];
+            }
+            return buffer;
+           // Array.Resize(ref bufferWriter, bufferIndex);
+          //  return bufferWriter;
             //_textWriter.Write(bufferWriter, 0, bufferIndex);
         }
 

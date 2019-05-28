@@ -151,7 +151,12 @@ namespace JsonSerializer
                         _builder.WriteComma();
                     }
 
-                    if (valueType >= ConvertUtils.TypeCode.NotSetObject)
+                    if (value == null)
+                    {
+                        _builder.WriteNull();
+                        flag1 = false;
+                    }
+                    else if (valueType >= ConvertUtils.TypeCode.NotSetObject)
                     {
                         //will require more reflection
                         if (this.SerializeValue(value, recursiveCount))
@@ -307,7 +312,12 @@ namespace JsonSerializer
                     _builder.WritePropertyName(item.Name,false);
 
                     var value = item.GetValue(instance);
-                    if (item.Code >= ConvertUtils.TypeCode.NotSetObject)
+          
+                    if(value == null)
+                    {
+                        _builder.WriteNull();
+                    }
+                    else if (item.Code >= ConvertUtils.TypeCode.NotSetObject)
                     {
                         if (!this.SerializeValue(value, recursiveCount, item.Code))
                         {
@@ -345,10 +355,14 @@ namespace JsonSerializer
 
                     string name = Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
                     _builder.WritePropertyName(name);
-
-                    if (valueCodeType > ConvertUtils.TypeCode.Enumerable)
+                    var value = entry.Value;
+                    if (value == null)
                     {
-                        if (!this.SerializeValue(entry.Value, recursiveCount))
+                        _builder.WriteNull();
+                    }
+                    else if (valueCodeType > ConvertUtils.TypeCode.Enumerable)
+                    {
+                        if (!this.SerializeValue(value, recursiveCount))
                         {
                             return false;
                         }
@@ -356,13 +370,12 @@ namespace JsonSerializer
                     else
                     {
                         //short cut.
-                        _builder.WriteObjectValue(entry.Value, valueCodeType);
+                        _builder.WriteObjectValue(value, valueCodeType);
                     }
                 }
             }
             finally
             {
-                (e as IDisposable)?.Dispose();
                 _builder.WriteEndObject();
             }
 
