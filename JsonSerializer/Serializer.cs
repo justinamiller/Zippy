@@ -141,14 +141,18 @@ namespace JsonSerializer
             _builder.WriteStartArray();
             try
             {
-                var valueType = ConvertUtils.GetEnumerableValueTypeCode(anEnumerable);
-
+                ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
                 // note that an error in the IEnumerable won't be caught
                 foreach (object value in anEnumerable)
                 {
-                    if (!flag1)
+                   if (!flag1)
                     {
                         _builder.WriteComma();
+                    }
+                    else
+                    {
+                        //first record.
+                        valueType = GetEnumerableValueTypeCode(anEnumerable);
                     }
 
                     if (value == null)

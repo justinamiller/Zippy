@@ -741,7 +741,7 @@ namespace JsonSerializer
                 this._propertyInUse = true;
             }
 
-            string propertyName = name ?? string.Empty;
+           // string propertyName = name ?? string.Empty;
             //if (IsElasticSearchReady)
             //{
             //    propertyName = FormatElasticName(propertyName);
@@ -750,16 +750,15 @@ namespace JsonSerializer
             if (escape)
             {
                 //slower
-                this.WriteValue(propertyName);
+                this.WriteValue(name);
             }
             else
             {
                 //fast
                 this._textWriter.Write(_quoteChar);
-                this._textWriter.Write(propertyName);
+                this._textWriter.Write(name);
                 this._textWriter.Write(_quoteChar);
             }
-
 
             this._textWriter.Write(':');
         }
@@ -910,6 +909,46 @@ namespace JsonSerializer
             return buffer;
            // Array.Resize(ref bufferWriter, bufferIndex);
           //  return bufferWriter;
+            //_textWriter.Write(bufferWriter, 0, bufferIndex);
+        }
+
+        internal static unsafe char[] GetStringBuffer(string str, bool quote = true)
+        {
+            char[] bufferWriter = new char[str.Length +   (quote ? 2 :0)];
+            int bufferIndex = 0;
+
+            if (quote)
+            {
+                //open quote
+                bufferWriter[bufferIndex] = _quoteChar;
+                bufferIndex++;
+            }
+
+            if (bufferWriter.Length > 2)
+            {
+                char c;
+                fixed (char* chr = str)
+                {
+                    char* ptr = chr;
+                    while ((c = *(ptr++)) != '\0')
+                    {
+                        bufferWriter[bufferIndex] = c;
+                        bufferIndex++;
+                    }
+                }
+            }
+
+            if (quote)
+            {
+                //close quote
+                bufferWriter[bufferIndex] = _quoteChar;
+                bufferIndex++;
+            }
+
+            //flush
+            return bufferWriter;
+            // Array.Resize(ref bufferWriter, bufferIndex);
+            //  return bufferWriter;
             //_textWriter.Write(bufferWriter, 0, bufferIndex);
         }
 
