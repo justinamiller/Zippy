@@ -8,10 +8,10 @@ namespace JsonSerializer.Utility
 {
     class ConvertUtils
     {
-        internal enum PrimitiveTypeCode
+        internal enum TypeCode
         {
             Empty = 0,
-            Object = 1,
+       //Object = 1,
             Char = 2,
             CharNullable = 3,
             Boolean = 4,
@@ -51,7 +51,15 @@ namespace JsonSerializer.Utility
             Uri = 38,
             String = 39,
             Bytes = 40,
-            DBNull = 41
+            DBNull = 41,
+            NotSetObject=100,
+            DataTable = 101,
+            DataSet = 102,
+            Dictionary = 103,
+            NameValueCollection = 104,
+            Enumerable = 105,
+            IJsonSerializeImplementation = 106,
+           Custom = 200
         }
 
         internal enum ObjectTypeCode
@@ -65,49 +73,49 @@ namespace JsonSerializer.Utility
              Enumerable=6
         }
 
-        private static readonly Dictionary<Type, PrimitiveTypeCode> TypeCodeMap =
-    new Dictionary<Type, PrimitiveTypeCode>
+        private static readonly Dictionary<Type, TypeCode> TypeCodeMap =
+    new Dictionary<Type, TypeCode>
     {
-                { typeof(char), PrimitiveTypeCode.Char },
-                { typeof(char?), PrimitiveTypeCode.CharNullable },
-                { typeof(bool), PrimitiveTypeCode.Boolean },
-                { typeof(bool?), PrimitiveTypeCode.BooleanNullable },
-                { typeof(sbyte), PrimitiveTypeCode.SByte },
-                { typeof(sbyte?), PrimitiveTypeCode.SByteNullable },
-                { typeof(short), PrimitiveTypeCode.Int16 },
-                { typeof(short?), PrimitiveTypeCode.Int16Nullable },
-                { typeof(ushort), PrimitiveTypeCode.UInt16 },
-                { typeof(ushort?), PrimitiveTypeCode.UInt16Nullable },
-                { typeof(int), PrimitiveTypeCode.Int32 },
-                { typeof(int?), PrimitiveTypeCode.Int32Nullable },
-                { typeof(byte), PrimitiveTypeCode.Byte },
-                { typeof(byte?), PrimitiveTypeCode.ByteNullable },
-                { typeof(uint), PrimitiveTypeCode.UInt32 },
-                { typeof(uint?), PrimitiveTypeCode.UInt32Nullable },
-                { typeof(long), PrimitiveTypeCode.Int64 },
-                { typeof(long?), PrimitiveTypeCode.Int64Nullable },
-                { typeof(ulong), PrimitiveTypeCode.UInt64 },
-                { typeof(ulong?), PrimitiveTypeCode.UInt64Nullable },
-                { typeof(float), PrimitiveTypeCode.Single },
-                { typeof(float?), PrimitiveTypeCode.SingleNullable },
-                { typeof(double), PrimitiveTypeCode.Double },
-                { typeof(double?), PrimitiveTypeCode.DoubleNullable },
-                { typeof(DateTime), PrimitiveTypeCode.DateTime },
-                { typeof(DateTime?), PrimitiveTypeCode.DateTimeNullable },
-                { typeof(DateTimeOffset), PrimitiveTypeCode.DateTimeOffset },
-                { typeof(DateTimeOffset?), PrimitiveTypeCode.DateTimeOffsetNullable },
-                { typeof(decimal), PrimitiveTypeCode.Decimal },
-                { typeof(decimal?), PrimitiveTypeCode.DecimalNullable },
-                { typeof(Guid), PrimitiveTypeCode.Guid },
-                { typeof(Guid?), PrimitiveTypeCode.GuidNullable },
-                { typeof(TimeSpan), PrimitiveTypeCode.TimeSpan },
-                { typeof(TimeSpan?), PrimitiveTypeCode.TimeSpanNullable },
-                { typeof(BigInteger), PrimitiveTypeCode.BigInteger },
-                { typeof(BigInteger?), PrimitiveTypeCode.BigIntegerNullable },
-                { typeof(Uri), PrimitiveTypeCode.Uri },
-                { typeof(string), PrimitiveTypeCode.String },
-                { typeof(byte[]), PrimitiveTypeCode.Bytes },
-                { typeof(DBNull), PrimitiveTypeCode.DBNull }
+                { typeof(char), TypeCode.Char },
+                { typeof(char?), TypeCode.CharNullable },
+                { typeof(bool), TypeCode.Boolean },
+                { typeof(bool?), TypeCode.BooleanNullable },
+                { typeof(sbyte), TypeCode.SByte },
+                { typeof(sbyte?), TypeCode.SByteNullable },
+                { typeof(short), TypeCode.Int16 },
+                { typeof(short?), TypeCode.Int16Nullable },
+                { typeof(ushort), TypeCode.UInt16 },
+                { typeof(ushort?), TypeCode.UInt16Nullable },
+                { typeof(int), TypeCode.Int32 },
+                { typeof(int?), TypeCode.Int32Nullable },
+                { typeof(byte), TypeCode.Byte },
+                { typeof(byte?), TypeCode.ByteNullable },
+                { typeof(uint), TypeCode.UInt32 },
+                { typeof(uint?), TypeCode.UInt32Nullable },
+                { typeof(long), TypeCode.Int64 },
+                { typeof(long?), TypeCode.Int64Nullable },
+                { typeof(ulong), TypeCode.UInt64 },
+                { typeof(ulong?), TypeCode.UInt64Nullable },
+                { typeof(float), TypeCode.Single },
+                { typeof(float?), TypeCode.SingleNullable },
+                { typeof(double), TypeCode.Double },
+                { typeof(double?), TypeCode.DoubleNullable },
+                { typeof(DateTime), TypeCode.DateTime },
+                { typeof(DateTime?), TypeCode.DateTimeNullable },
+                { typeof(DateTimeOffset), TypeCode.DateTimeOffset },
+                { typeof(DateTimeOffset?), TypeCode.DateTimeOffsetNullable },
+                { typeof(decimal), TypeCode.Decimal },
+                { typeof(decimal?), TypeCode.DecimalNullable },
+                { typeof(Guid), TypeCode.Guid },
+                { typeof(Guid?), TypeCode.GuidNullable },
+                { typeof(TimeSpan), TypeCode.TimeSpan },
+                { typeof(TimeSpan?), TypeCode.TimeSpanNullable },
+                { typeof(BigInteger), TypeCode.BigInteger },
+                { typeof(BigInteger?), TypeCode.BigIntegerNullable },
+                { typeof(Uri), TypeCode.Uri },
+                { typeof(string), TypeCode.String },
+                { typeof(byte[]), TypeCode.Bytes },
+                { typeof(DBNull), TypeCode.DBNull }
     };
 
         private static readonly Dictionary<Type, ObjectTypeCode> ObjectTypeCodeMap =
@@ -123,31 +131,31 @@ new Dictionary<Type, ObjectTypeCode>
         internal class TypeInformation
         {
             public Type Type { get; set; }
-            public PrimitiveTypeCode TypeCode { get; set; }
+            public TypeCode TypeCode { get; set; }
         }
 
         private static readonly TypeInformation[] PrimitiveTypeCodes =
 {
             // need all of these. lookup against the index with TypeCode value
-            new TypeInformation { Type = typeof(object), TypeCode = PrimitiveTypeCode.Empty },
-            new TypeInformation { Type = typeof(object), TypeCode = PrimitiveTypeCode.Object },
-            new TypeInformation { Type = typeof(object), TypeCode = PrimitiveTypeCode.DBNull },
-            new TypeInformation { Type = typeof(bool), TypeCode = PrimitiveTypeCode.Boolean },
-            new TypeInformation { Type = typeof(char), TypeCode = PrimitiveTypeCode.Char },
-            new TypeInformation { Type = typeof(sbyte), TypeCode = PrimitiveTypeCode.SByte },
-            new TypeInformation { Type = typeof(byte), TypeCode = PrimitiveTypeCode.Byte },
-            new TypeInformation { Type = typeof(short), TypeCode = PrimitiveTypeCode.Int16 },
-            new TypeInformation { Type = typeof(ushort), TypeCode = PrimitiveTypeCode.UInt16 },
-            new TypeInformation { Type = typeof(int), TypeCode = PrimitiveTypeCode.Int32 },
-            new TypeInformation { Type = typeof(uint), TypeCode = PrimitiveTypeCode.UInt32 },
-            new TypeInformation { Type = typeof(long), TypeCode = PrimitiveTypeCode.Int64 },
-            new TypeInformation { Type = typeof(ulong), TypeCode = PrimitiveTypeCode.UInt64 },
-            new TypeInformation { Type = typeof(float), TypeCode = PrimitiveTypeCode.Single },
-            new TypeInformation { Type = typeof(double), TypeCode = PrimitiveTypeCode.Double },
-            new TypeInformation { Type = typeof(decimal), TypeCode = PrimitiveTypeCode.Decimal },
-            new TypeInformation { Type = typeof(DateTime), TypeCode = PrimitiveTypeCode.DateTime },
-            new TypeInformation { Type = typeof(object), TypeCode = PrimitiveTypeCode.Empty }, // no 17 in TypeCode for some reason
-            new TypeInformation { Type = typeof(string), TypeCode = PrimitiveTypeCode.String }
+            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.Empty },
+            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.NotSetObject },
+            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.DBNull },
+            new TypeInformation { Type = typeof(bool), TypeCode = TypeCode.Boolean },
+            new TypeInformation { Type = typeof(char), TypeCode = TypeCode.Char },
+            new TypeInformation { Type = typeof(sbyte), TypeCode = TypeCode.SByte },
+            new TypeInformation { Type = typeof(byte), TypeCode = TypeCode.Byte },
+            new TypeInformation { Type = typeof(short), TypeCode = TypeCode.Int16 },
+            new TypeInformation { Type = typeof(ushort), TypeCode = TypeCode.UInt16 },
+            new TypeInformation { Type = typeof(int), TypeCode = TypeCode.Int32 },
+            new TypeInformation { Type = typeof(uint), TypeCode = TypeCode.UInt32 },
+            new TypeInformation { Type = typeof(long), TypeCode = TypeCode.Int64 },
+            new TypeInformation { Type = typeof(ulong), TypeCode = TypeCode.UInt64 },
+            new TypeInformation { Type = typeof(float), TypeCode = TypeCode.Single },
+            new TypeInformation { Type = typeof(double), TypeCode = TypeCode.Double },
+            new TypeInformation { Type = typeof(decimal), TypeCode = TypeCode.Decimal },
+            new TypeInformation { Type = typeof(DateTime), TypeCode = TypeCode.DateTime },
+            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.Empty }, // no 17 in TypeCode for some reason
+            new TypeInformation { Type = typeof(string), TypeCode = TypeCode.String }
         };
 
         public static ObjectTypeCode GetObjectTypeCode(Type t)
@@ -167,49 +175,69 @@ new Dictionary<Type, ObjectTypeCode>
         }
 
 
-        public static ObjectTypeCode GetInstanceObjectTypeCode(object value)
+        public static TypeCode GetInstanceObjectTypeCode(object value)
         {
             if (value is System.Collections.IEnumerable)
             {
                 if (value is System.Collections.IDictionary)
                 {
-                    return ObjectTypeCode.Dictionary;
+                    return TypeCode.Dictionary;
                 }
 
                 if (value is System.Collections.Specialized.NameValueCollection)
                 {
-                    return ObjectTypeCode.NameValueCollection;
+                    return TypeCode.NameValueCollection;
                 }
 
-                return ObjectTypeCode.Enumerable;
+                return TypeCode.Enumerable;
 
             }//IEnumerable
 
             if (value is System.ComponentModel.IListSource)
             {
                 if (value is System.Data.DataSet)
-                    return ObjectTypeCode.DataSet;
+                    return TypeCode.DataSet;
                 if (value is System.Data.DataTable)
-                    return ObjectTypeCode.DataTable;
+                    return TypeCode.DataTable;
             }
 
-            return ObjectTypeCode.Custom;
+            if(value is IJsonSerializeImplementation)
+            {
+                return TypeCode.IJsonSerializeImplementation;
+            }
+
+            return TypeCode.Custom;
         }
 
-
-        public static PrimitiveTypeCode GetTypeCode(Type t)
+        public static TypeCode GetTypeCode(Type type)
         {
-            if (TypeCodeMap.TryGetValue(t, out PrimitiveTypeCode typeCode))
+            if (TypeCodeMap.TryGetValue(type, out TypeCode typeCode))
             {
                 return typeCode;
             }
 
-            if (t.IsEnum)
+            if (type.IsEnum)
             {
-                return GetTypeCode(Enum.GetUnderlyingType(t));
+                return GetTypeCode(Enum.GetUnderlyingType(type));
             }
 
-            return PrimitiveTypeCode.Object;
+            return TypeCode.NotSetObject;
+        }
+
+        public static TypeCode GetTypeCode(object obj)
+        {
+            Type type = obj.GetType();
+            if (TypeCodeMap.TryGetValue(type, out TypeCode typeCode))
+            {
+                return typeCode;
+            }
+
+            if (type.IsEnum)
+            {
+                return GetTypeCode(Enum.GetUnderlyingType(type));
+            }
+
+            return GetInstanceObjectTypeCode(obj);
         }
 
         public static bool IsNullableType(Type t)
@@ -217,19 +245,19 @@ new Dictionary<Type, ObjectTypeCode>
             return (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>));
         }
 
-        public static void ResolveConvertibleValue(IConvertible convertible, out PrimitiveTypeCode typeCode, out object value)
+        public static void ResolveConvertibleValue(IConvertible convertible, out TypeCode typeCode, out object value)
         {
             // the value is a non-standard IConvertible
             // convert to the underlying value and retry
             TypeInformation typeInformation = PrimitiveTypeCodes[(int)convertible.GetTypeCode()];
 
             // if convertible has an underlying typecode of Object then attempt to convert it to a string
-            typeCode = typeInformation.TypeCode == PrimitiveTypeCode.Object ? PrimitiveTypeCode.String : typeInformation.TypeCode;
-            Type resolvedType = typeInformation.TypeCode == PrimitiveTypeCode.Object ? typeof(string) : typeInformation.Type;
+            typeCode = typeInformation.TypeCode == TypeCode.NotSetObject ? TypeCode.String : typeInformation.TypeCode;
+            Type resolvedType = typeInformation.TypeCode == TypeCode.NotSetObject ? typeof(string) : typeInformation.Type;
             value = convertible.ToType(resolvedType, CultureInfo.InvariantCulture);
         }
 
-        public static PrimitiveTypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
+        public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
         {
             if(anEnumerable is Array)
             {
@@ -237,7 +265,7 @@ new Dictionary<Type, ObjectTypeCode>
             }
             else if(anEnumerable is System.Collections.ArrayList)
             {
-                return PrimitiveTypeCode.Object;
+                return TypeCode.Custom;
             }
             else if(anEnumerable is System.Collections.IList)
             {
@@ -248,7 +276,7 @@ new Dictionary<Type, ObjectTypeCode>
                 }
             }
 
-             return PrimitiveTypeCode.Object;
+             return TypeCode.Custom;
         }
     }
 }

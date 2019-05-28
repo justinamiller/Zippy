@@ -26,7 +26,7 @@ namespace JsonSerializer
         private static readonly IFormatProvider s_cultureInfo = CultureInfo.InvariantCulture;
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
-        private readonly char _quoteChar = '\"';
+        private const char _quoteChar = '\"';
 
 
         internal int Length
@@ -183,7 +183,7 @@ namespace JsonSerializer
             WriteObjectValue(value, valueType);
         }
 
-        internal void WriteObjectValue(object value, PrimitiveTypeCode typeCode)
+        internal void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
         {
             if (value == null)
             {
@@ -195,71 +195,71 @@ namespace JsonSerializer
             {
                 switch (typeCode)
                 {
-                    case PrimitiveTypeCode.Char:
+                    case ConvertUtils.TypeCode.Char:
                         WriteValue((char)value);
                         return;
-                    case PrimitiveTypeCode.Boolean:
+                    case ConvertUtils.TypeCode.Boolean:
                         WriteValue((bool)value);
                         return;
-                    case PrimitiveTypeCode.SByte:
+                    case ConvertUtils.TypeCode.SByte:
                         WriteValue((sbyte)value);
                         return;
-                    case PrimitiveTypeCode.Int16:
+                    case ConvertUtils.TypeCode.Int16:
                         WriteValue((short)value);
                         return;
-                    case PrimitiveTypeCode.UInt16:
+                    case ConvertUtils.TypeCode.UInt16:
                         WriteValue((ushort)value);
                         return;
-                    case PrimitiveTypeCode.Int32:
+                    case ConvertUtils.TypeCode.Int32:
                         WriteValue((int)value);
                         return;
-                    case PrimitiveTypeCode.Byte:
+                    case ConvertUtils.TypeCode.Byte:
                         WriteValue((byte)value);
                         return;
-                    case PrimitiveTypeCode.UInt32:
+                    case ConvertUtils.TypeCode.UInt32:
                         WriteValue((uint)value);
                         return;
-                    case PrimitiveTypeCode.Int64:
+                    case ConvertUtils.TypeCode.Int64:
                         WriteValue((long)value);
                         return;
-                    case PrimitiveTypeCode.UInt64:
+                    case ConvertUtils.TypeCode.UInt64:
                         WriteValue((ulong)value);
                         return;
-                    case PrimitiveTypeCode.Single:
+                    case ConvertUtils.TypeCode.Single:
                         WriteValue((float)value);
                         return;
-                    case PrimitiveTypeCode.Double:
+                    case ConvertUtils.TypeCode.Double:
                         WriteValue((double)value);
                         return;
-                    case PrimitiveTypeCode.DateTime:
+                    case ConvertUtils.TypeCode.DateTime:
                         WriteValue((DateTime)value);
                         return;
-                    case PrimitiveTypeCode.DateTimeOffset:
+                    case ConvertUtils.TypeCode.DateTimeOffset:
                         WriteValue(((DateTimeOffset)value).UtcDateTime);
                         return;
-                    case PrimitiveTypeCode.Decimal:
+                    case ConvertUtils.TypeCode.Decimal:
                         WriteValue((decimal)value);
                         return;
-                    case PrimitiveTypeCode.Guid:
+                    case ConvertUtils.TypeCode.Guid:
                         WriteValue((Guid)value);
                         return;
-                    case PrimitiveTypeCode.TimeSpan:
+                    case ConvertUtils.TypeCode.TimeSpan:
                         WriteValue((TimeSpan)value);
                         return;
                     //case PrimitiveTypeCode.BigInteger:
                     //    // this will call to WriteValue(object)
                     //    WriteValue((BigInteger)value);
                     //    return;
-                    case PrimitiveTypeCode.Uri:
+                    case ConvertUtils.TypeCode.Uri:
                         WriteValue((Uri)value);
                         return;
-                    case PrimitiveTypeCode.String:
+                    case ConvertUtils.TypeCode.String:
                         WriteValueInternalString((string)value);
                         return;
-                    case PrimitiveTypeCode.Bytes:
+                    case ConvertUtils.TypeCode.Bytes:
                         WriteValue((byte[])value);
                         return;
-                    case PrimitiveTypeCode.DBNull:
+                    case ConvertUtils.TypeCode.DBNull:
                         WriteNull();
                         return;
                     default:
@@ -742,10 +742,10 @@ namespace JsonSerializer
             }
 
             string propertyName = name ?? string.Empty;
-            if (IsElasticSearchReady)
-            {
-                propertyName = FormatElasticName(propertyName);
-            }
+            //if (IsElasticSearchReady)
+            //{
+            //    propertyName = FormatElasticName(propertyName);
+            //}
 
             if (escape)
             {
@@ -788,7 +788,7 @@ namespace JsonSerializer
             }
             else
             {
-                WriteStringEncode(str);
+                this._textWriter.Write(GetEncodeString(str));
             }
         }
 
@@ -796,16 +796,20 @@ namespace JsonSerializer
         /// memory buffer; faster than using stringbuilder.
         /// </summary>
         /// <param name="str"></param>
+        /// <param name="quote">apply quotes</param>
         [SuppressMessage("brain-overload", "S1541")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe void WriteStringEncode(string str)
+        internal static unsafe char[] GetEncodeString(string str, bool quote=true)
         {
             char[] bufferWriter = new char[(str.Length * 2) + 2];
             int bufferIndex = 0;
 
-            //open quote
-            bufferWriter[bufferIndex] = _quoteChar;
-            bufferIndex++;
+            if (quote)
+            {
+                //open quote
+                bufferWriter[bufferIndex] = _quoteChar;
+                bufferIndex++;
+            }
 
             if (bufferWriter.Length > 2)
             {
@@ -890,12 +894,17 @@ namespace JsonSerializer
                 }
             }
 
-            //close quote
-            bufferWriter[bufferIndex] = _quoteChar;
-            bufferIndex++;
+            if (quote)
+            {
+                //close quote
+                bufferWriter[bufferIndex] = _quoteChar;
+                bufferIndex++;
+            }
 
             //flush
-            _textWriter.Write(bufferWriter, 0, bufferIndex);
+            Array.Resize(ref bufferWriter, bufferIndex);
+            return bufferWriter;
+            //_textWriter.Write(bufferWriter, 0, bufferIndex);
         }
 
         // Micro optimized

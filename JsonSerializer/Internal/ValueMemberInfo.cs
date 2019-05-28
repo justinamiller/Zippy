@@ -5,21 +5,18 @@ using System.Reflection;
 
 namespace JsonSerializer.Internal
 {
-  sealed  class ValueMemberInfo
+  sealed  class ValueMemberInfo: IValue
     {
-        private readonly MemberInfo _memberInfo;
+      //  private readonly MemberInfo _memberInfo;
         private readonly Func<object, object> _getter;
-        public Utility.ConvertUtils.PrimitiveTypeCode TypeCode { get;  }
+        public Utility.ConvertUtils.TypeCode Code { get; private set; }
         public string Name { get; }
         private bool _errored = false;
 
-        public Utility.ConvertUtils.ObjectTypeCode ObjectTypeCode { get; private set; }
-        public Utility.ConvertUtils.PrimitiveTypeCode CollectionTypeCode { get; }
-
         public ValueMemberInfo(MemberInfo memberInfo)
         {
-            this._memberInfo = memberInfo;
-            this.Name = memberInfo.Name;
+            //   this._memberInfo = memberInfo;
+            this.Name = new string(JsonWriter.GetEncodeString(memberInfo.Name,false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
 
             Type valueType = null;
@@ -33,11 +30,7 @@ namespace JsonSerializer.Internal
             }
             if (valueType != null)
             {
-                TypeCode = Utility.ConvertUtils.GetTypeCode(valueType);
-                if (TypeCode == Utility.ConvertUtils.PrimitiveTypeCode.Object)
-                {
-                    this.ObjectTypeCode = Utility.ConvertUtils.GetObjectTypeCode(valueType);
-                }
+                Code = Utility.ConvertUtils.GetTypeCode(valueType);
             }
         }
 
@@ -47,12 +40,12 @@ namespace JsonSerializer.Internal
             {
                 try
                 {
-                    var value= _getter(instance);
+                    object value= _getter(instance);
 
-                    if(TypeCode== Utility.ConvertUtils.PrimitiveTypeCode.Object && ObjectTypeCode== Utility.ConvertUtils.ObjectTypeCode.Empty)
+                    if(Code== Utility.ConvertUtils.TypeCode.NotSetObject)
                     {
                         //now try to get value type.
-                        ObjectTypeCode = Utility.ConvertUtils.GetInstanceObjectTypeCode(value);
+                        Code = Utility.ConvertUtils.GetInstanceObjectTypeCode(value);
                     }
                     return value;
                 }
