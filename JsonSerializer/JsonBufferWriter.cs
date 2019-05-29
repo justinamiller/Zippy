@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -11,11 +12,13 @@ namespace JsonSerializer
 {
     public class JsonBufferWriter : JsonWriter
     {
-        private static readonly Encoding UTF8 = new UTF8Encoding(false);
+        private static readonly Encoding s_UTF8 = new UTF8Encoding(false);
+        private static readonly IFormatProvider s_cultureInfo = CultureInfo.InvariantCulture;
 
         static readonly byte[] _emptyBytes = new byte[0];
         private byte[] _buffer;
         private int _offset = 0;
+        private bool _propertyInUse = false;
 
         public override bool Valid => base.Valid;
 
@@ -30,16 +33,6 @@ namespace JsonSerializer
         public override void Dispose()
         {
             base.Dispose();
-        }
-
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
         }
 
         public override string ToString()
@@ -75,6 +68,7 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void WriteEndObject()
         {
+            this._propertyInUse = true;
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
             _buffer[_offset++] = (byte)'}';
         }
@@ -82,11 +76,10 @@ namespace JsonSerializer
         public override void WriteNull()
         {
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, 4);
-            _buffer[_offset + 0] = (byte)'n';
-            _buffer[_offset + 1] = (byte)'u';
-            _buffer[_offset + 2] = (byte)'l';
-            _buffer[_offset + 3] = (byte)'l';
-            _offset += 4;
+            _buffer[_offset++] = (byte)'n';
+            _buffer[_offset++] = (byte)'u';
+            _buffer[_offset++] = (byte)'l';
+            _buffer[_offset++] = (byte)'l';
         }
 
         public override void WriteProperty(string name, string value)
@@ -181,8 +174,30 @@ namespace JsonSerializer
 
         public override void WritePropertyName(string name, bool escape = true)
         {
-            base.WritePropertyName(name, escape);
+            if (this._propertyInUse)
+            {
+                WriteComma();
+            }
+            else
+            {
+                this._propertyInUse = true;
+            }
+
+            if (escape)
+            {
+                WriteValue(name);
+            }
+            else
+            {
+                WriteQuotation();
+                WriteRawString(name);
+                WriteQuotation();
+            }
+
+            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
+            _buffer[_offset++] = (byte)':';
         }
+
 
         public override void WriteRawValue(string value, bool doValidate)
         {
@@ -199,6 +214,7 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void WriteStartObject()
         {
+            this._propertyInUse = false;
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
             _buffer[_offset++] = (byte)'{';
         }
@@ -220,7 +236,7 @@ namespace JsonSerializer
             var length = str.Length;
             // nonescaped-ensure
             var startoffset = _offset;
-            var max = UTF8.GetMaxByteCount(length) + 2;
+            var max = s_UTF8.GetMaxByteCount(length) + 2;
             BinaryUtil.EnsureCapacity(ref _buffer, startoffset, max);
 
             var from = 0;
@@ -348,7 +364,7 @@ namespace JsonSerializer
                 max += 2;
                 BinaryUtil.EnsureCapacity(ref _buffer, startoffset, max); // check +escape capacity
 
-                _offset += UTF8.GetBytes(str, from, i - from, _buffer, _offset);
+                _offset += s_UTF8.GetBytes(str, from, i - from, _buffer, _offset);
                 from = i + 1;
                 _buffer[_offset++] = (byte)'\\';
                 _buffer[_offset++] = escapeChar;
@@ -356,7 +372,7 @@ namespace JsonSerializer
 
             if (from != length)
             {
-                _offset += UTF8.GetBytes(str, from, length - from, _buffer, _offset);
+                _offset += s_UTF8.GetBytes(str, from, length - from, _buffer, _offset);
             }
 
             _buffer[_offset++] = (byte)'\"';
@@ -372,9 +388,28 @@ namespace JsonSerializer
             base.WriteValue(enumerable);
         }
 
+        private void WriteRawString(string value)
+        {
+            var length = value.Length;
+            BinaryUtil.EnsureCapacity(ref _buffer, _offset, length);
+            for (var i = 0; i < length; i++)
+            {
+                _buffer[_offset++] = (byte)value[i];
+            }
+        }
+
         internal override void WriteValue(Guid value)
         {
-            base.WriteValue(value);
+            WriteQuotation();
+            if (value == Guid.Empty)
+            {
+                WriteRawString("00000000-0000-0000-0000-000000000000");
+            }
+            else
+            {
+                WriteRawString(value.ToString("D", s_cultureInfo));
+            }
+            WriteQuotation();
         }
 
         internal override void WriteValue(bool value)
@@ -382,52 +417,51 @@ namespace JsonSerializer
             if (value)
             {
                 BinaryUtil.EnsureCapacity(ref _buffer, _offset, 4);
-                _buffer[_offset + 0] = (byte)'t';
-                _buffer[_offset + 1] = (byte)'r';
-                _buffer[_offset + 2] = (byte)'u';
-                _buffer[_offset + 3] = (byte)'e';
-                _offset += 4;
+                _buffer[_offset++] = (byte)'t';
+                _buffer[_offset++] = (byte)'r';
+                _buffer[_offset++] = (byte)'u';
+                _buffer[_offset++] = (byte)'e';
             }
             else
             {
                 BinaryUtil.EnsureCapacity(ref _buffer, _offset, 5);
-                _buffer[_offset + 0] = (byte)'f';
-                _buffer[_offset + 1] = (byte)'a';
-                _buffer[_offset + 2] = (byte)'l';
-                _buffer[_offset + 3] = (byte)'s';
-                _buffer[_offset + 4] = (byte)'e';
-                _offset += 5;
+                _buffer[_offset++] = (byte)'f';
+                _buffer[_offset++] = (byte)'a';
+                _buffer[_offset++] = (byte)'l';
+                _buffer[_offset++] = (byte)'s';
+                _buffer[_offset++] = (byte)'e';
             }
         }
 
         internal override void WriteValue(int value)
         {
-            base.WriteValue(value);
+            WriteValue((long)value);
         }
 
         internal override void WriteValue(uint value)
         {
-            base.WriteValue(value);
+            WriteValue((ulong)value);
         }
 
         internal override void WriteValue(sbyte value)
         {
-            base.WriteValue(value);
+            WriteValue((long)value);
         }
 
         internal override void WriteValue(byte value)
         {
-            base.WriteValue(value);
+            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
+            _buffer[_offset++] =  value;
         }
 
         internal override void WriteValue(short value)
         {
-            base.WriteValue(value);
+            WriteValue((long)value);
         }
 
         internal override void WriteValue(ushort value)
         {
-            base.WriteValue(value);
+            WriteValue((ulong)value);
         }
 
         internal override void WriteValue(double value)
@@ -437,7 +471,8 @@ namespace JsonSerializer
 
         internal override void WriteValue(char value)
         {
-            base.WriteValue(value);
+            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
+            _buffer[_offset++] = (byte)value;
         }
 
         internal override void WriteValue(long value)
@@ -452,22 +487,29 @@ namespace JsonSerializer
 
         internal override void WriteValue(float value)
         {
-            base.WriteValue(value);
+            WriteValue((double)value);
         }
 
         internal override void WriteValue(decimal value)
         {
-            base.WriteValue(value);
+            WriteValue((double)value);
         }
 
         internal override void WriteValue(Enum value)
         {
-            base.WriteValue(value);
+            base.WriteValue(long.Parse(value.ToString("D")));
         }
 
         internal override void WriteValue(Uri value)
         {
-            base.WriteValue(value);
+            if (value == null)
+            {
+                WriteNull();
+            }
+            else
+            {
+                WriteValue(value.OriginalString);
+            }
         }
 
         internal override void WriteValue(DateTime value)
