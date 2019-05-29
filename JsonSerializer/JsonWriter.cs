@@ -14,51 +14,29 @@ using static JsonSerializer.Utility.ConvertUtils;
 
 namespace JsonSerializer
 {
-    public sealed class JsonWriter : IDisposable
+    public abstract class JsonWriter : IDisposable
     {
-        private readonly TextWriter _textWriter;
-        //marker for writePropertyname is in use
-        private bool _propertyInUse;
         //used to format property names for elastic.
         public bool IsElasticSearchReady { get; set; } = true;
-        private readonly StringBuilder _sb;
-
-        private static readonly IFormatProvider s_cultureInfo = CultureInfo.InvariantCulture;
-        private int _arrayIndex = 0;
-        private int _objectIndex = 0;
-        private const char _quoteChar = '\"';
 
 
-        internal int Length
+        internal virtual int Length
         {
             get
             {
-                return  _sb.Length;
+                return 0;
             }
         }
 
         /// <summary>
         /// indicate if json is valid format.
         /// </summary>
-        public bool Valid
+        public virtual bool Valid
         {
             get
             {
-                return IsValid();
+                return false;
             }
-        }
-
-        private bool IsValid(string json = null)
-        {
-            if(_arrayIndex == 0 && _objectIndex == 0)
-            {
-                if (json == null)
-                {
-                    json = _sb.ToString();
-                }
-                return ValidJsonFormat(json);
-            }
-            return false;
         }
 
         /// <summary>
@@ -67,20 +45,12 @@ namespace JsonSerializer
         /// <returns></returns>
         public override string ToString()
         {
-            var json=_sb.ToString();
-            if (!IsValid(json))
-            {
-                //bad json log it
-                throw new InvalidCastException("Bad Json format", new InvalidDataException(json));
-            }
-
-            return json;
+            return string.Empty;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
-            StringBuilderPool.Release(_sb);
-            _textWriter.Dispose();
+            return;
         }
 
         //public JsonWriter(TextWriter writer)
@@ -88,884 +58,233 @@ namespace JsonSerializer
         //    _textWriter = writer;
         //}
 
-        public JsonWriter()
+        protected JsonWriter()
         {
-            _sb = StringBuilderPool.Get();
-
-            _textWriter = new StringWriter(_sb, s_cultureInfo);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartArray()
+        public virtual void WriteStartArray()
         {
-            this._textWriter.Write('[');
-            _arrayIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartObject()
+        public virtual void WriteStartObject()
         {
-            this._textWriter.Write('{');
-            this._propertyInUse = false;
-            _objectIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteEndArray()
+        public virtual void WriteEndArray()
         {
-            this._textWriter.Write(']');
-            _arrayIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteEndObject()
+        public virtual void WriteEndObject()
         {
-            this._propertyInUse = true;
-            this._textWriter.Write('}');
-            _objectIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteComma()
+        public virtual void WriteComma()
         {
-            this._textWriter.Write(',');
         }
 
-        internal void WriteValue(IEnumerable enumerable)
+        internal virtual void WriteValue(IEnumerable enumerable)
         {
-            if (enumerable == null)
-            {
-                this.WriteNull();
-            }
-            else
-            {
-                WriteStartArray();
-                bool isFirstElement = true;
-                foreach (object obj in enumerable)
-                {
-                    if (!isFirstElement)
-                    {
-                        WriteComma();
-                    }
-
-                    this.WriteValue(obj);
-                    isFirstElement = false;
-                }
-                WriteEndArray();
-            }
         }
 
-        private void WriteValueInternalString(string stringData)
+        public virtual void WriteValue(object value)
         {
-            //check if json format
-            if (ValidJsonFormat(stringData))
-            {
-                //string is json
-                WriteRawValue(stringData,false);
-            }//end json valid check
-            else
-            {
-                //string
-                WriteValue(stringData);
-            }
         }
 
-        public void WriteValue(object value)
+        internal virtual void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
         {
-            if(value == null)
-            {
-                WriteNull();
-                return;
-            }
-
-            var json = value as IJsonSerializeImplementation;
-            if (json != null)
-            {
-                WriteRawValue(json.SerializeAsJson(),true);
-                return;
-            }
-
-            var valueType = GetTypeCode(value.GetType());
-            WriteObjectValue(value, valueType);
-        }
-
-        internal void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
-        {
-            while (true)
-            {
-                switch (typeCode)
-                {
-                    case ConvertUtils.TypeCode.Char:
-                        WriteValue((char)value);
-                        return;
-                    case ConvertUtils.TypeCode.Boolean:
-                        WriteValue((bool)value);
-                        return;
-                    case ConvertUtils.TypeCode.SByte:
-                        WriteValue((sbyte)value);
-                        return;
-                    case ConvertUtils.TypeCode.Int16:
-                        WriteValue((short)value);
-                        return;
-                    case ConvertUtils.TypeCode.UInt16:
-                        WriteValue((ushort)value);
-                        return;
-                    case ConvertUtils.TypeCode.Int32:
-                        WriteValue((int)value);
-                        return;
-                    case ConvertUtils.TypeCode.Byte:
-                        WriteValue((byte)value);
-                        return;
-                    case ConvertUtils.TypeCode.UInt32:
-                        WriteValue((uint)value);
-                        return;
-                    case ConvertUtils.TypeCode.Int64:
-                        WriteValue((long)value);
-                        return;
-                    case ConvertUtils.TypeCode.UInt64:
-                        WriteValue((ulong)value);
-                        return;
-                    case ConvertUtils.TypeCode.Single:
-                        WriteValue((float)value);
-                        return;
-                    case ConvertUtils.TypeCode.Double:
-                        WriteValue((double)value);
-                        return;
-                    case ConvertUtils.TypeCode.DateTime:
-                        WriteValue((DateTime)value);
-                        return;
-                    case ConvertUtils.TypeCode.DateTimeOffset:
-                        WriteValue(((DateTimeOffset)value).UtcDateTime);
-                        return;
-                    case ConvertUtils.TypeCode.Decimal:
-                        WriteValue((decimal)value);
-                        return;
-                    case ConvertUtils.TypeCode.Guid:
-                        WriteValue((Guid)value);
-                        return;
-                    case ConvertUtils.TypeCode.TimeSpan:
-                        WriteValue((TimeSpan)value);
-                        return;
-                    //case PrimitiveTypeCode.BigInteger:
-                    //    // this will call to WriteValue(object)
-                    //    WriteValue((BigInteger)value);
-                    //    return;
-                    case ConvertUtils.TypeCode.Uri:
-                        WriteValue((Uri)value);
-                        return;
-                    case ConvertUtils.TypeCode.String:
-                        WriteValueInternalString((string)value);
-                        return;
-                    case ConvertUtils.TypeCode.Bytes:
-                        WriteValue((byte[])value);
-                        return;
-                    case ConvertUtils.TypeCode.DBNull:
-                        WriteNull();
-                        return;
-                    default:
-                        if (value is IConvertible convertible)
-                        {
-                            ResolveConvertibleValue(convertible, out typeCode, out value);
-                            continue;
-                        }
-
-                        // write an unknown null value
-                        if (value == null)
-                        {
-                            WriteNull();
-                            return;
-                        }
-
-                        this.WriteRawValue(Serializer.SerializeObject(value),false);
-                        return;
-                }
-            }
         }
 
         /// <summary>
         /// call for json string
         /// </summary>
         /// <param name="value"></param>
-        public void WriteRawValue(string value, bool doValidate)
+        public virtual void WriteRawValue(string value, bool doValidate)
         {
-            if (value.IsNullOrWhiteSpace())
-            {
-                WriteNull();
-                return;
-            }
-
-            string trimValue = value.Trim();
-
-            if (doValidate && !ValidJsonFormat(trimValue))
-            {
-                WriteNull();
-            }
-            else
-            {
-                this._textWriter.Write(trimValue);
-            }
         }
 
-        private static bool ValidJsonFormat(string value)
+        public virtual void WriteProperty(string name, string value)
         {
-            if (value != null)
-            {
-                string trimValue = value.Trim();
-                int length = trimValue.Length;
-
-                if (length >= 2)
-                {
-                    char firstchr = trimValue[0];
-                    bool firstPass =
-                        (firstchr == '{' && trimValue[length - 1] == '}') //For object
-                        ||
-                        (firstchr == '[' && trimValue[length - 1] == ']');//For array
-
-                    return firstPass;
-                }
-            }
-            return false;
-        }
-
-        public void WriteProperty(string name, string value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
 
-        public void WriteProperty(string name, Guid value)
+        public virtual void WriteProperty(string name, Guid value)
         {
-            this.WritePropertyName(name);
-            WriteValue(value);
         }
 
-        internal void WriteValue(Guid value)
+        internal virtual void WriteValue(Guid value)
         {
-            _textWriter.Write(_quoteChar);
-            if (value == Guid.Empty)
-            {
-                _textWriter.Write("00000000-0000-0000-0000-000000000000");
-            }
-            else
-            {
-                _textWriter.Write(value.ToString("D", s_cultureInfo));
-            }
-
-            _textWriter.Write(_quoteChar);
         }
 
-        public void WriteProperty(string name, bool value)
+        public virtual void WriteProperty(string name, bool value)
         {
-            this.WritePropertyName(name);
-            WriteValue(value);
         }
 
-        internal void WriteValue(bool value)
+        internal virtual void WriteValue(bool value)
         {
-            this._textWriter.Write(value ? "true" : "false");
         }
 
-        public void WriteProperty(string name, int value)
+        public virtual void WriteProperty(string name, int value)
         {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
-        public void WriteProperty(string name, char value)
+        public virtual void WriteProperty(string name, char value)
         {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
-        internal void WriteValue(int value)
+        internal virtual void WriteValue(int value)
         {
-            WriteIntegerValue(value);
         }
 
-        public void WriteProperty(string name, uint value)
+        public virtual void WriteProperty(string name, uint value)
         {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
-        internal void WriteValue(uint value)
+        internal virtual void WriteValue(uint value)
         {
-            WriteIntegerValue(value);
         }
 
-        public void WriteProperty(string name, sbyte value)
+        public virtual void WriteProperty(string name, sbyte value)
         {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
-        internal void WriteValue(sbyte value)
+        internal virtual void WriteValue(sbyte value)
         {
-            WriteIntegerValue(value);
         }
 
-        public void WriteProperty(string name, byte value)
+        public virtual void WriteProperty(string name, byte value)
         {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
-        internal void WriteValue(byte value)
+        internal virtual void WriteValue(byte value)
         {
-            WriteIntegerValue(value);
         }
 
-        public void WriteProperty(string name, short value)
+        public virtual void WriteProperty(string name, short value)
         {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
-        internal void WriteValue(short value)
+        internal virtual void WriteValue(short value)
         {
-            WriteIntegerValue(value);
         }
 
-        public void WriteProperty(string name, ushort value)
+        public virtual void WriteProperty(string name, ushort value)
         {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
-        internal void WriteValue(ushort value)
+        internal virtual void WriteValue(ushort value)
         {
-            WriteIntegerValue(value);
         }
 
-        private void WriteIntegerValue(int value)
+        public virtual void WriteProperty(string name, double value)
         {
-            if (value >= 0 && value <= 9)
-            {
-                this._textWriter.Write((char)('0' + value));
-            }
-            else
-            {
-                bool negative = value < 0;
-                WriteIntegerValue(negative ? (uint)-value : (uint)value, negative);
-            }
         }
 
-        private void WriteIntegerValue(uint value, bool negative)
+        internal virtual void WriteValue(double value)
         {
-            if (!negative && value <= 9)
-            {
-                this._textWriter.Write((char)('0' + value));
-            }
-            else
-            {
-                int length = 0;
-                var buffer = WriteNumberToBuffer(value, negative, ref length);
-                this._textWriter.Write(buffer, 0, length);
-            }
         }
 
-        private void WriteIntegerValue(long value)
+        internal virtual void WriteValue(char value)
         {
-            if (value >= 0 && value <= 9)
-            {
-                this._textWriter.Write((char)('0' + value));
-            }
-            else
-            {
-                bool negative = value < 0;
-                WriteIntegerValue(negative ? (ulong)-value : (ulong)value, negative);
-            }
         }
 
-        private void WriteIntegerValue(ulong value, bool negative)
+        public virtual void WriteProperty(string name, long value)
         {
-            if (!negative && value <= 9)
-            {
-                this._textWriter.Write((char)('0' + value));
-            }
-            else
-            {
-                int length = 0;
-                var buffer = WriteNumberToBuffer(value, negative, ref length);
-                this._textWriter.Write(buffer, 0, length);
-            }
         }
 
-        private static char[] WriteNumberToBuffer(uint value, bool negative, ref int totalLength)
+        internal virtual void WriteValue(long value)
         {
-            char[] buffer = new char[35];
-            totalLength = MathUtils.IntLength(value);
-
-            if (negative)
-            {
-                totalLength++;
-                buffer[0] = '-';
-            }
-
-            int index = totalLength;
-
-            do
-            {
-                uint quotient = value / 10;
-                uint digit = value - (quotient * 10);
-                buffer[--index] = (char)('0' + digit);
-                value = quotient;
-            } while (value != 0);
-
-            return buffer;
         }
 
-        private static char[] WriteNumberToBuffer(ulong value, bool negative, ref int totalLength)
+        internal virtual void WriteValue(ulong value)
         {
-            if (value <= uint.MaxValue)
-            {
-                // avoid the 64 bit division if possible
-                return WriteNumberToBuffer((uint)value, negative, ref totalLength);
-            }
+        }
 
+        internal virtual void WriteValue(float value)
+        {
+        }
 
-            char[] buffer = new char[35];
-            totalLength = MathUtils.IntLength(value);
+        internal virtual void WriteValue(decimal value)
+        {
 
-            if (negative)
-            {
-                totalLength++;
-                buffer[0] = '-';
-            }
+        }
 
-            int index = totalLength;
+        internal virtual void WriteValue(Enum value)
+        {
+        }
 
-            do
-            {
-                ulong quotient = value / 10;
-                ulong digit = value - (quotient * 10);
-                buffer[--index] = (char)('0' + digit);
-                value = quotient;
-            } while (value != 0);
+        public virtual void WriteProperty(string name, Uri value)
+        {
 
-            return buffer;
+        }
+
+        internal virtual void WriteValue(Uri value)
+        {
+
+        }
+
+        public virtual void WriteProperty(string name, DateTime value)
+        {
+        }
+
+        internal virtual void WriteValue(DateTime value)
+        {
+        }
+
+        public virtual void WriteProperty(string name, TimeSpan value)
+        {
+        }
+
+        internal virtual void WriteValue(TimeSpan value)
+        {
+        }
+
+        public virtual void WriteProperty(string name, object value)
+        {
+        }
+
+        public virtual void WriteProperty(string name, IDictionary<string, string> values)
+        {
+        }
+
+        internal virtual void WriteValue(IDictionary<string, string> values)
+        {
+        }
+
+        public virtual void WriteProperty(string name, object[] values)
+        {
+
         }
 
 
-        public void WriteProperty(string name, double value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
-        internal void WriteValue(double value)
-        {
-            //enforce decimal
-            this._textWriter.Write(value.ToString("0.0##############", s_cultureInfo));
-        }
-
-        internal void WriteValue(char value)
-        {
-            // Special case the null char as we don't want it to turn into a null string
-            if (value == '\0')
-            {
-                WriteNull();
-            }
-            else
-            {
-                this.WriteValue(value.ToString());
-            }
-        }
-
-        public void WriteProperty(string name, long value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
-        internal void WriteValue(long value)
-        {
-            WriteIntegerValue(value);
-        }
-
-        internal void WriteValue(ulong value)
-        {
-            WriteIntegerValue(value, false);
-        }
-
-        internal void WriteValue(float value)
-        {
-            this._textWriter.Write(value.ToString("0.0######", s_cultureInfo));
-        }
-
-        internal void WriteValue(decimal value)
-        {
-            this._textWriter.Write(value.ToString("0.0###########################", s_cultureInfo));
-        }
-
-        internal void WriteValue(Enum value)
-        {
-            this._textWriter.Write(value.ToString("D"));
-        }
-
-        public void WriteProperty(string name, Uri value)
-        {
-            this.WritePropertyName(name);
-            WriteValue(value);
-        }
-
-        internal void WriteValue(Uri value)
-        {
-            if (value == null)
-            {
-                WriteNull();
-            }
-            else
-            {
-                WriteValue(value.OriginalString);
-            }
-        }
-
-        public void WriteProperty(string name, DateTime value)
-        {
-            this.WritePropertyName(name);
-            WriteValue(value);
-        }
-
-        internal void WriteValue(DateTime value)
-        {
-            WriteValue(GetDateTimeUtcString(value));
-        }
-
-        public void WriteProperty(string name, TimeSpan value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
-        internal void WriteValue(TimeSpan value)
-        {
-            _textWriter.Write(_quoteChar);
-            _textWriter.Write(value.ToString(null, s_cultureInfo));
-            _textWriter.Write(_quoteChar);
-        }
-
-
-        public static string GetDateTimeUtcString(DateTime datetime)
-        {
-            DateTime convertDateTime;
-            switch (datetime.Kind)
-            {
-                case DateTimeKind.Local:
-                case DateTimeKind.Unspecified:
-                    convertDateTime = datetime.ToUniversalTime();
-                    break;
-                default:
-                    convertDateTime = datetime;
-                    break;
-            }
-
-            return convertDateTime.ToString("yyyy-MM-dd\\THH:mm:ss.FFFFFFF\\Z", s_cultureInfo);
-        }
-
-        public void WriteProperty(string name, object value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
-        public void WriteProperty(string name, IDictionary<string, string> values)
-        {
-            this.WritePropertyName(name);
-            if ((values?.Count ?? 0) == 0)
-            {
-                this.WriteNull();
-                return;
-            }
-
-            WriteValue(values);
-        }
-
-        internal void WriteValue(IDictionary<string, string> values)
-        {
-            this.WriteStartObject();
-            foreach (KeyValuePair<string, string> keyValuePair in (IEnumerable<KeyValuePair<string, string>>)values)
-            {
-                this.WriteProperty(keyValuePair.Key, keyValuePair.Value);
-            }
-            this.WriteEndObject();
-        }
-
-        public void WriteProperty(string name, object[] values)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(values);
-        }
-
-
-        /// <summary>
-        /// clean up invalid characters that is not support within elastic search.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        private static string FormatElasticName(string input)
-        {
-            char[] charArray = input.ToCharArray();
-            int length = charArray.Length;
-            char[] data = new char[length];
-            for (var i = 0; i < length; i++)
-            {
-                char ch = charArray[i];
-                if (char.IsLetterOrDigit(ch))
-                {
-                    data[i] = ch;
-                }
-                else
-                {
-                    data[i] = '_';
-                }
-
-            }
-            return new string(data);
-        }
 
         /// <summary>
         /// requires to be json compliant
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="escape">A flag to indicate whether the text should be escaped when it is written as a JSON property name.</param>
-        public void WritePropertyName(string name, bool escape = true)
+        public virtual void WritePropertyName(string name, bool escape = true)
         {
-            if (this._propertyInUse)
-            {
-                this._textWriter.Write(',');
-            }
-            else
-            {
-                this._propertyInUse = true;
-            }
-
-           // string propertyName = name ?? string.Empty;
-            //if (IsElasticSearchReady)
-            //{
-            //    propertyName = FormatElasticName(propertyName);
-            //}
-
-            if (escape)
-            {
-                //slower
-                this.WriteValue(name);
-            }
-            else
-            {
-                //fast
-                this._textWriter.Write(_quoteChar);
-                this._textWriter.Write(name);
-                this._textWriter.Write(_quoteChar);
-            }
-
-            this._textWriter.Write(':');
         }
 
-        private readonly static char[] s_Null = new char[4] { 'n', 'u', 'l', 'l' };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNull()
+        public virtual void WriteNull()
         {
-            this._textWriter.Write(s_Null, 0, 4);
         }
 
         /// <summary>
         /// use pointers to improve performance
         /// </summary>
         /// <param name="str"></param>
-        public void WriteValue(string str)
+        public virtual void WriteValue(string str)
         {
-            if (str == null)
-            {
-                WriteNull();
-            }
-            else if (str.Length == 0)
-            {
-                this._textWriter.Write(new char[2] { _quoteChar, _quoteChar }, 0, 2);
-            }
-            else
-            {
-                this._textWriter.Write(GetEncodeString(str));
-            }
+         
         }
 
-        /// <summary>
-        /// memory buffer; faster than using stringbuilder.
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="quote">apply quotes</param>
-        [SuppressMessage("brain-overload", "S1541")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static unsafe char[] GetEncodeString(string str, bool quote=true)
-        {
-            char[] bufferWriter = new char[(str.Length * 2) + 2];
-            int bufferIndex = 0;
-
-            if (quote)
-            {
-                //open quote
-                bufferWriter[bufferIndex] = _quoteChar;
-                bufferIndex++;
-            }
-
-            if (bufferWriter.Length > 2)
-            {
-                char c;
-                fixed (char* chr = str)
-                {
-                    char* ptr = chr;
-                    while ((c = *(ptr++)) != '\0')
-                    {
-                        switch (c)
-                        {
-                            case '"':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = '\"';
-                                bufferIndex++;
-                                break;
-                            case '\\':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                break;
-                            case '\u0007':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'a';
-                                bufferIndex++;
-                                break;
-                            case '\u0008':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'b';
-                                bufferIndex++;
-                                break;
-                            case '\u0009':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 't';
-                                bufferIndex++;
-                                break;
-                            case '\u000A':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'n';
-                                bufferIndex++;
-                                break;
-                            case '\u000B':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'v';
-                                bufferIndex++;
-                                break;
-                            case '\u000C':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'f';
-                                bufferIndex++;
-                                break;
-                            case '\u000D':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'r';
-                                bufferIndex++;
-                                break;
-                            default:
-                                if (31 >= c)
-                                {
-                                    bufferWriter[bufferIndex] = '\\';
-                                    bufferIndex++;
-                                    bufferWriter[bufferIndex] = c;
-                                    bufferIndex++;
-                                }
-                                else
-                                {
-                                    bufferWriter[bufferIndex] = c;
-                                    bufferIndex++;
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-
-            if (quote)
-            {
-                //close quote
-                bufferWriter[bufferIndex] = _quoteChar;
-                bufferIndex++;
-            }
-
-            //flush
-            var buffer = new char[bufferIndex];
-            for(var i=0; i < bufferIndex; i++)
-            {
-                buffer[i] = bufferWriter[i];
-            }
-            return buffer;
-           // Array.Resize(ref bufferWriter, bufferIndex);
-          //  return bufferWriter;
-            //_textWriter.Write(bufferWriter, 0, bufferIndex);
-        }
-
-        internal static unsafe char[] GetStringBuffer(string str, bool quote = true)
-        {
-            char[] bufferWriter = new char[str.Length +   (quote ? 2 :0)];
-            int bufferIndex = 0;
-
-            if (quote)
-            {
-                //open quote
-                bufferWriter[bufferIndex] = _quoteChar;
-                bufferIndex++;
-            }
-
-            if (bufferWriter.Length > 2)
-            {
-                char c;
-                fixed (char* chr = str)
-                {
-                    char* ptr = chr;
-                    while ((c = *(ptr++)) != '\0')
-                    {
-                        bufferWriter[bufferIndex] = c;
-                        bufferIndex++;
-                    }
-                }
-            }
-
-            if (quote)
-            {
-                //close quote
-                bufferWriter[bufferIndex] = _quoteChar;
-                bufferIndex++;
-            }
-
-            //flush
-            return bufferWriter;
-            // Array.Resize(ref bufferWriter, bufferIndex);
-            //  return bufferWriter;
-            //_textWriter.Write(bufferWriter, 0, bufferIndex);
-        }
-
-        // Micro optimized
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ConvertIntToHex(int intValue, char[] hex)
-        {
-            for (int i = 3; i >= 0; i--)
-            {
-                int num = intValue & 0xF; // intValue % 16
-
-                // 0x30 + num == '0' + num
-                // 0x37 + num == 'A' + (num - 10)
-                hex[i] = (char)((num < 10 ? 0x30 : 0x37) + num);
-
-                intValue >>= 4;
-            }
-        }
     }
 }

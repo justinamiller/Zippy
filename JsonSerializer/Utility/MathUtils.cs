@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace JsonSerializer.Utility
@@ -91,5 +92,23 @@ namespace JsonSerializer.Utility
                 return 20;
             }
         }
+
+        // Micro optimized
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ConvertIntToHex(int intValue, char[] hex)
+        {
+            for (int i = 3; i >= 0; i--)
+            {
+                int num = intValue & 0xF; // intValue % 16
+
+                // 0x30 + num == '0' + num
+                // 0x37 + num == 'A' + (num - 10)
+                hex[i] = (char)((num < 10 ? 0x30 : 0x37) + num);
+
+                intValue >>= 4;
+            }
+        }
+
+
     }
 }

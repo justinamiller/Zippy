@@ -34,7 +34,8 @@ namespace ConsoleTest
         public IList<Result> ResultList { get; set; } = new List<Result>();
       //  public System.Collections.ArrayList ResultAL { get; set; } = new System.Collections.ArrayList();
        // public System.Collections.IList ResultSL { get; set; } = new System.Collections.ArrayList();
-       // public Dictionary<string, int> ChildrenAges { get; set; }=new Dictionary<string,int>();
+       public Dictionary<string, int> ChildrenAges { get; set; }=new Dictionary<string,int>();
+        public System.Collections.Specialized.NameValueCollection Names = new System.Collections.Specialized.NameValueCollection();
         public TestObject()
         {
             this.Name = "Test";
@@ -93,7 +94,16 @@ namespace ConsoleTest
                 JsonSerializer.Serializer.SerializeObject(c);
             }
             var dd2 = sw.Elapsed.TotalMilliseconds;
-            dd.ToString();
+
+            //var a3 = Utf8Json.JsonSerializer.ToJsonString<object>(c); 
+
+            //sw.Restart();
+            //for (var i = 0; i < 100000; i++)
+            //{
+            //    Utf8Json.JsonSerializer.ToJsonString<object>(c);
+            //}
+            //var dd3 = sw.Elapsed.TotalMilliseconds;
+
 
             dd.ToString();
         }

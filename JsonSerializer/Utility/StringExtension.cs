@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -64,6 +65,153 @@ namespace JsonSerializer.Utility
                 //handles through internal calls
                 return source.StartsWith(value, StringComparison.OrdinalIgnoreCase);
             }
+        }
+
+        /// <summary>
+        /// memory buffer; faster than using stringbuilder.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="quote">apply quotes</param>
+        [SuppressMessage("brain-overload", "S1541")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static unsafe char[] GetEncodeString(string str, bool quote = true)
+        {
+            char[] bufferWriter = new char[(str.Length * 2) + 2];
+            int bufferIndex = 0;
+
+            if (quote)
+            {
+                //open quote
+                bufferWriter[bufferIndex] = '\"';
+                bufferIndex++;
+            }
+
+            if (bufferWriter.Length > 2)
+            {
+                char c;
+                fixed (char* chr = str)
+                {
+                    char* ptr = chr;
+                    while ((c = *(ptr++)) != '\0')
+                    {
+                        switch (c)
+                        {
+                            case '"':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = '\"';
+                                bufferIndex++;
+                                break;
+                            case '\\':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                break;
+                            case '\u0007':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'a';
+                                bufferIndex++;
+                                break;
+                            case '\u0008':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'b';
+                                bufferIndex++;
+                                break;
+                            case '\u0009':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 't';
+                                bufferIndex++;
+                                break;
+                            case '\u000A':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'n';
+                                bufferIndex++;
+                                break;
+                            case '\u000B':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'v';
+                                bufferIndex++;
+                                break;
+                            case '\u000C':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'f';
+                                bufferIndex++;
+                                break;
+                            case '\u000D':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'r';
+                                bufferIndex++;
+                                break;
+                            default:
+                                if (31 >= c)
+                                {
+                                    bufferWriter[bufferIndex] = '\\';
+                                    bufferIndex++;
+                                    bufferWriter[bufferIndex] = c;
+                                    bufferIndex++;
+                                }
+                                else
+                                {
+                                    bufferWriter[bufferIndex] = c;
+                                    bufferIndex++;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            if (quote)
+            {
+                //close quote
+                bufferWriter[bufferIndex] = '\"';
+                bufferIndex++;
+            }
+
+            //flush
+            var buffer = new char[bufferIndex];
+            for (var i = 0; i < bufferIndex; i++)
+            {
+                buffer[i] = bufferWriter[i];
+            }
+            return buffer;
+            // Array.Resize(ref bufferWriter, bufferIndex);
+            //  return bufferWriter;
+            //_textWriter.Write(bufferWriter, 0, bufferIndex);
+        }
+
+        /// <summary>
+        /// clean up invalid characters that is not support within elastic search.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string FormatElasticName(string input)
+        {
+            char[] charArray = input.ToCharArray();
+            int length = charArray.Length;
+            char[] data = new char[length];
+            for (var i = 0; i < length; i++)
+            {
+                char ch = charArray[i];
+                if (char.IsLetterOrDigit(ch))
+                {
+                    data[i] = ch;
+                }
+                else
+                {
+                    data[i] = '_';
+                }
+
+            }
+            return new string(data);
         }
     }
 }

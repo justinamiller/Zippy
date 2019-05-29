@@ -118,12 +118,20 @@ namespace JsonSerializer
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value, int recursiveCount)
         {
             _builder.WriteStartObject();
+            try
+            {
                 string[] keys = value.AllKeys;
 
                 for (int i = 0; i < keys.Length; i++)
                 {
                     _builder.WriteProperty(keys[i], value.Get(i));
                 }
+            }
+            finally
+            {
+                _builder.WriteEndObject();
+            }
+
             return true;
         }
 
@@ -251,7 +259,7 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private string SerializeObjectInternal(object json)
         {
-            _builder = new JsonWriter()
+            _builder = new JsonTextWriter()
             {
                 IsElasticSearchReady = this.CurrentJsonSetting.IsElasticSearchReady
             };
@@ -387,7 +395,7 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeDataset(System.Data.DataSet ds, int recursiveCount)
+        private bool SerializeDataSet(System.Data.DataSet ds, int recursiveCount)
         {
             _builder.WriteStartObject();
             try
@@ -410,17 +418,17 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SerializeDataTableData(System.Data.DataTable table, int recursiveCount)
         {
+            var rows = table.Rows;
+            if (rows.Count == 0)
+            {
+                return;
+            }
+
             _builder.WritePropertyName(table.TableName);
             _builder.WriteStartArray();
 
             try
             {
-                var rows = table.Rows;
-                if (rows.Count == 0)
-                {
-                    return;
-                }
-
                 System.Data.DataColumnCollection cols = table.Columns;
                 bool rowseparator = false;
                 foreach (System.Data.DataRow row in rows)
@@ -521,7 +529,7 @@ namespace JsonSerializer
                     case ConvertUtils.TypeCode.NameValueCollection:
                         return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value, recursiveCount);
                     case ConvertUtils.TypeCode.DataSet:
-                        return SerializeDataset((System.Data.DataSet)value, recursiveCount);
+                        return SerializeDataSet((System.Data.DataSet)value, recursiveCount);
                     case ConvertUtils.TypeCode.DataTable:
                         return SerializeDataTable((System.Data.DataTable)value, recursiveCount);
                     case ConvertUtils.TypeCode.IJsonSerializeImplementation:

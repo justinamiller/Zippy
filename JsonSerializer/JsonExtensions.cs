@@ -31,7 +31,7 @@ namespace JsonSerializer
 
         internal static string GetBadJson(object instance, Exception ex)
         {
-            using (var writer = new JsonWriter())
+            using (var writer = new JsonTextWriter())
             {
                 writer.WriteStartObject();
                 if (instance != null)

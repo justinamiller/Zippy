@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using JsonSerializer.Utility;
 
 namespace JsonSerializer.Internal
 {
@@ -16,7 +17,7 @@ namespace JsonSerializer.Internal
         public ValueMemberInfo(MemberInfo memberInfo)
         {
             //   this._memberInfo = memberInfo;
-            this.Name = new string(JsonWriter.GetEncodeString(memberInfo.Name,false));
+            this.Name = new string(StringExtension.GetEncodeString(memberInfo.Name,false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
 
             Type valueType = null;

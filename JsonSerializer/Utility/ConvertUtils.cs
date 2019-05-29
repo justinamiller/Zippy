@@ -115,7 +115,40 @@ namespace JsonSerializer.Utility
                 { typeof(Uri), TypeCode.Uri },
                 { typeof(string), TypeCode.String },
                 { typeof(byte[]), TypeCode.Bytes },
-                { typeof(DBNull), TypeCode.DBNull }
+                { typeof(DBNull), TypeCode.DBNull },
+               {typeof(List<>), TypeCode.Enumerable},
+            {typeof(LinkedList<>),TypeCode.Enumerable},
+            {typeof(Queue<>), TypeCode.Enumerable},
+            {typeof(Stack<>), TypeCode.Enumerable},
+            {typeof(HashSet<>), TypeCode.Enumerable},
+            {typeof(System.Collections.ObjectModel.ReadOnlyCollection<>), TypeCode.Enumerable},
+            {typeof(IList<>), TypeCode.Enumerable},
+            {typeof(ICollection<>), TypeCode.Enumerable},
+            {typeof(IEnumerable<>), TypeCode.Enumerable},
+            {typeof(Dictionary<,>), TypeCode.Dictionary},
+            {typeof(IDictionary<,>), TypeCode.Dictionary},
+            {typeof(SortedDictionary<,>), TypeCode.Dictionary},
+            {typeof(SortedList<,>), TypeCode.Dictionary},
+            {typeof(System.Linq.ILookup<,>), TypeCode.Enumerable},
+            {typeof(System.Linq.IGrouping<,>), TypeCode.Enumerable},
+            #if NETSTANDARD
+            {typeof(System.Collections.ObjectModel.ObservableCollection<>), TypeCode.Enumerable},
+            {typeof(System.Collections.ObjectModel.ReadOnlyObservableCollection<>),TypeCode.Enumerable},
+            {typeof(IReadOnlyList<>), TypeCode.Enumerable},
+            {typeof(IReadOnlyCollection<>),TypeCode.Enumerable},
+            {typeof(ISet<>), TypeCode.Enumerable},
+            {typeof(System.Collections.Concurrent.ConcurrentBag<>), TypeCode.Enumerable},
+            {typeof(System.Collections.Concurrent.ConcurrentQueue<>),TypeCode.Enumerable},
+            {typeof(System.Collections.Concurrent.ConcurrentStack<>), TypeCode.Enumerable},
+            {typeof(System.Collections.ObjectModel.ReadOnlyDictionary<,>), TypeCode.Dictionary},
+            {typeof(IReadOnlyDictionary<,>),TypeCode.Dictionary},
+            {typeof(System.Collections.Concurrent.ConcurrentDictionary<,>), TypeCode.Dictionary},
+            {typeof(System.Data.DataTable), TypeCode.DataTable},
+            {typeof(System.Data.DataSet), TypeCode.DataSet},
+             {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection}
+          //  {typeof(Lazy<>), typeof(LazyFormatter<>)},
+            //{typeof(Task<>), typeof(TaskValueFormatter<>)},
+            #endif
     };
 
         private static readonly Dictionary<Type, ObjectTypeCode> ObjectTypeCodeMap =
@@ -184,22 +217,9 @@ new Dictionary<Type, ObjectTypeCode>
                     return TypeCode.Dictionary;
                 }
 
-                if (value is System.Collections.Specialized.NameValueCollection)
-                {
-                    return TypeCode.NameValueCollection;
-                }
-
                 return TypeCode.Enumerable;
 
             }//IEnumerable
-
-            if (value is System.ComponentModel.IListSource)
-            {
-                if (value is System.Data.DataSet)
-                    return TypeCode.DataSet;
-                if (value is System.Data.DataTable)
-                    return TypeCode.DataTable;
-            }
 
             if(value is IJsonSerializeImplementation)
             {
@@ -215,10 +235,17 @@ new Dictionary<Type, ObjectTypeCode>
             {
                 return typeCode;
             }
-
-            if (type.IsEnum)
+            else if (type.IsEnum)
             {
                 return GetTypeCode(Enum.GetUnderlyingType(type));
+            }
+            else if (type.IsArray)
+            {
+                return TypeCode.Enumerable;
+            }
+            else if (type.IsGenericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
+            {
+                return typeCode;   
             }
 
             return TypeCode.NotSetObject;
