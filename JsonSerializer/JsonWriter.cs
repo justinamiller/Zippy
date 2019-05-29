@@ -131,9 +131,12 @@ namespace JsonSerializer
                     {
                         WriteComma();
                     }
+                    else
+                    {
+                        isFirstElement = false;
+                    }
 
                     this.WriteValue(obj);
-                    isFirstElement = false;
                 }
                 WriteEndArray();
             }
@@ -420,8 +423,9 @@ namespace JsonSerializer
 
         }
 
-        internal virtual void WriteValue(Enum value)
+        internal void WriteValue(Enum value)
         {
+         WriteRawString(value.ToString("D"));
         }
 
         public void WriteProperty(string name, Uri value)
@@ -430,9 +434,16 @@ namespace JsonSerializer
             this.WriteValue(value);
         }
 
-        internal virtual void WriteValue(Uri value)
+        internal void WriteValue(Uri value)
         {
-
+            if (value == null)
+            {
+                WriteNull();
+            }
+            else
+            {
+                WriteValue(value.OriginalString);
+            }
         }
 
         public void WriteProperty(string name, DateTime value)
@@ -491,7 +502,7 @@ namespace JsonSerializer
 
         internal virtual void WriteJsonSymbol(char value)
         {
-        
+            WriteRawString(value.ToString());
         }
 
         internal virtual void WriteRawString(string value)

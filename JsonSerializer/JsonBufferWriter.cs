@@ -350,23 +350,6 @@ namespace JsonSerializer
             WriteValue((double)value);
         }
 
-        internal override void WriteValue(Enum value)
-        {
-            base.WriteValue(long.Parse(value.ToString("D")));
-        }
-
-        internal override void WriteValue(Uri value)
-        {
-            if (value == null)
-            {
-                WriteNull();
-            }
-            else
-            {
-                WriteValue(value.OriginalString);
-            }
-        }
-
         internal override void WriteValue(DateTime value)
         {
             WriteQuotation();

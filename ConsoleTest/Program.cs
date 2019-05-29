@@ -85,7 +85,7 @@ namespace ConsoleTest
             sw.Restart();
             for(var i = 0; i < 100000; i++)
             {
-     Newtonsoft.Json.JsonConvert.SerializeObject(c);
+   //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();

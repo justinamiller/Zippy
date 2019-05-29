@@ -74,7 +74,7 @@ namespace JsonSerializer.Utility
         /// <param name="quote">apply quotes</param>
         [SuppressMessage("brain-overload", "S1541")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static unsafe char[] GetEncodeString(string str, bool quote = true)
+        public static unsafe char[] GetEncodeString(string str,  bool quote = true)
         {
             char[] bufferWriter = new char[(str.Length * 2) + 2];
             int bufferIndex = 0;

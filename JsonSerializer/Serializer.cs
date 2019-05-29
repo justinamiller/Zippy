@@ -29,7 +29,9 @@ namespace JsonSerializer
 
         private IJsonSerializerSetting _currentJsonSetting;
         // The following logic performs circular reference detection
-        private readonly Hashtable _serializeStack = new Hashtable(new ReferenceComparer());//new HashSet<object>();
+       private readonly Hashtable _serializeStack = new Hashtable(new ReferenceComparer());//new HashSet<object>();
+
+
 
         internal static IJsonSerializerStrategy CurrentJsonSerializerStrategy
         {
@@ -145,11 +147,11 @@ namespace JsonSerializer
                 return SerializeMultidimensionalArray(anArray, recursiveCount);
             }
 
+            ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
             bool flag1 = true;
             _builder.WriteStartArray();
             try
             {
-                ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
                 // note that an error in the IEnumerable won't be caught
                 foreach (object value in anEnumerable)
                 {
@@ -161,21 +163,17 @@ namespace JsonSerializer
                     {
                         //first record.
                         valueType = GetEnumerableValueTypeCode(anEnumerable);
+                        flag1 = false;
                     }
 
                     if (value == null)
                     {
                         _builder.WriteNull();
-                        flag1 = false;
                     }
                     else if (valueType >= ConvertUtils.TypeCode.NotSetObject)
                     {
                         //will require more reflection
-                        if (this.SerializeValue(value, recursiveCount, valueType))
-                        {
-                            flag1 = false;
-                        }
-                        else
+                       if (!this.SerializeValue(value, recursiveCount, valueType))
                         {
                             return false;
                         }
@@ -184,7 +182,6 @@ namespace JsonSerializer
                     {
                         //shortcut 
                         _builder.WriteObjectValue(value, valueType);
-                        flag1 = false;
                     }
                 }
             }
@@ -268,10 +265,16 @@ namespace JsonSerializer
             {
                 return null;
             }
-            
-            if (!this.SerializeValue(json, 0, ConvertUtils.GetTypeCode(json.GetType())))
+
+            var typeCode = ConvertUtils.GetTypeCode(json.GetType());
+            if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
-                return null;
+                //handle for object
+                SerializeNonPrimitiveValue(json, 0, typeCode);
+            }
+            else
+            {
+                _builder.WriteObjectValue(json, typeCode);
             }
 
             return _builder.ToString();
@@ -412,7 +415,6 @@ namespace JsonSerializer
             _builder.WriteStartObject();
             try
             {
-
                 foreach (System.Data.DataTable table in ds.Tables)
                 {
                     SerializeDataTableData(table, recursiveCount);
@@ -435,7 +437,6 @@ namespace JsonSerializer
             {
                 return;
             }
-
             _builder.WritePropertyName(table.TableName);
             _builder.WriteStartArray();
 
@@ -482,7 +483,6 @@ namespace JsonSerializer
                 _builder.WriteEndObject();
             }
             // end datatable
-
 
             return true;
         }
@@ -556,8 +556,6 @@ namespace JsonSerializer
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
                             if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, out obj))
                             {
-                                //add flag?
-                                //return   this.SerializeDictionaryInternal((IDictionary)obj, recursiveCount, ConvertUtils.PrimitiveTypeCode.Object);
                                 return this.SerializeValueMemberInfo(value, obj, recursiveCount);
                             }
                             else
@@ -592,7 +590,6 @@ namespace JsonSerializer
             {
                 return false;
             }
-
 
             if (this._serializeStack.ContainsKey(value))
             {
