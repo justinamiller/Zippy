@@ -55,7 +55,7 @@ namespace JsonSerializer
                 {
                     json = _sb.ToString();
                 }
-                return ValidJsonFormat(json);
+                return StringExtension.ValidJsonFormat(json);
             }
             return false;
         }
@@ -157,7 +157,7 @@ namespace JsonSerializer
         private void WriteValueInternalString(string stringData)
         {
             //check if json format
-            if (ValidJsonFormat(stringData))
+            if (StringExtension.ValidJsonFormat(stringData))
             {
                 //string is json
                 WriteRawValue(stringData, false);
@@ -295,7 +295,7 @@ namespace JsonSerializer
 
             string trimValue = value.Trim();
 
-            if (doValidate && !ValidJsonFormat(trimValue))
+            if (doValidate && !StringExtension.ValidJsonFormat(trimValue))
             {
                 WriteNull();
             }
@@ -303,27 +303,6 @@ namespace JsonSerializer
             {
                 this._textWriter.Write(trimValue);
             }
-        }
-
-        private static bool ValidJsonFormat(string value)
-        {
-            if (value != null)
-            {
-                string trimValue = value.Trim();
-                int length = trimValue.Length;
-
-                if (length >= 2)
-                {
-                    char firstchr = trimValue[0];
-                    bool firstPass =
-                        (firstchr == '{' && trimValue[length - 1] == '}') //For object
-                        ||
-                        (firstchr == '[' && trimValue[length - 1] == ']');//For array
-
-                    return firstPass;
-                }
-            }
-            return false;
         }
 
         public override void WriteProperty(string name, string value)
