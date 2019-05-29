@@ -160,7 +160,7 @@ namespace JsonSerializer
             if (StringExtension.ValidJsonFormat(stringData))
             {
                 //string is json
-                WriteRawValue(stringData, false);
+                WriteRawJson(stringData, false);
             }//end json valid check
             else
             {
@@ -180,7 +180,7 @@ namespace JsonSerializer
             var json = value as IJsonSerializeImplementation;
             if (json != null)
             {
-                WriteRawValue(json.SerializeAsJson(), true);
+                WriteRawJson(json.SerializeAsJson(), true);
                 return;
             }
 
@@ -275,7 +275,7 @@ namespace JsonSerializer
                             return;
                         }
 
-                        this.WriteRawValue(Serializer.SerializeObject(value), false);
+                        this.WriteRawJson(Serializer.SerializeObject(value), false);
                         return;
                 }
             }
@@ -285,7 +285,7 @@ namespace JsonSerializer
         /// call for json string
         /// </summary>
         /// <param name="value"></param>
-        public override void WriteRawValue(string value, bool doValidate)
+        public override void WriteRawJson(string value, bool doValidate)
         {
             if (value.IsNullOrWhiteSpace())
             {
@@ -305,19 +305,6 @@ namespace JsonSerializer
             }
         }
 
-        public override void WriteProperty(string name, string value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
-
-        public override void WriteProperty(string name, Guid value)
-        {
-            this.WritePropertyName(name);
-            WriteValue(value);
-        }
-
         internal override void WriteValue(Guid value)
         {
             _textWriter.Write(_quoteChar);
@@ -333,27 +320,10 @@ namespace JsonSerializer
             _textWriter.Write(_quoteChar);
         }
 
-        public override void WriteProperty(string name, bool value)
-        {
-            this.WritePropertyName(name);
-            WriteValue(value);
-        }
 
         internal override void WriteValue(bool value)
         {
             this._textWriter.Write(value ? "true" : "false");
-        }
-
-        public override void WriteProperty(string name, int value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
-        public override void WriteProperty(string name, char value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
         internal override void WriteValue(int value)
@@ -361,21 +331,9 @@ namespace JsonSerializer
             WriteIntegerValue(value);
         }
 
-        public override void WriteProperty(string name, uint value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
         internal override void WriteValue(uint value)
         {
             WriteIntegerValue(value);
-        }
-
-        public override void WriteProperty(string name, sbyte value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
         internal override void WriteValue(sbyte value)
@@ -383,32 +341,15 @@ namespace JsonSerializer
             WriteIntegerValue(value);
         }
 
-        public override void WriteProperty(string name, byte value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
         internal override void WriteValue(byte value)
         {
             WriteIntegerValue(value);
         }
 
-        public override void WriteProperty(string name, short value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
 
         internal override void WriteValue(short value)
         {
             WriteIntegerValue(value);
-        }
-
-        public override void WriteProperty(string name, ushort value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
         internal override void WriteValue(ushort value)
@@ -525,13 +466,6 @@ namespace JsonSerializer
             return buffer;
         }
 
-
-        public override void WriteProperty(string name, double value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
         internal override void WriteValue(double value)
         {
             //enforce decimal
@@ -549,12 +483,6 @@ namespace JsonSerializer
             {
                 this.WriteValue(value.ToString());
             }
-        }
-
-        public override void WriteProperty(string name, long value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
         }
 
         internal override void WriteValue(long value)
@@ -582,11 +510,6 @@ namespace JsonSerializer
             this._textWriter.Write(value.ToString("D"));
         }
 
-        public override void WriteProperty(string name, Uri value)
-        {
-            this.WritePropertyName(name);
-            WriteValue(value);
-        }
 
         internal override void WriteValue(Uri value)
         {
@@ -600,22 +523,11 @@ namespace JsonSerializer
             }
         }
 
-        public override void WriteProperty(string name, DateTime value)
-        {
-            this.WritePropertyName(name);
-            WriteValue(value);
-        }
-
         internal override void WriteValue(DateTime value)
         {
-            WriteValue(GetDateTimeUtcString(value));
+            WriteValue(DateTimeUtils.GetDateTimeUtcString(value));
         }
 
-        public override void WriteProperty(string name, TimeSpan value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
 
         internal override void WriteValue(TimeSpan value)
         {
@@ -623,61 +535,6 @@ namespace JsonSerializer
             _textWriter.Write(value.ToString(null, s_cultureInfo));
             _textWriter.Write(_quoteChar);
         }
-
-
-        public static string GetDateTimeUtcString(DateTime datetime)
-        {
-            DateTime convertDateTime;
-            switch (datetime.Kind)
-            {
-                case DateTimeKind.Local:
-                case DateTimeKind.Unspecified:
-                    convertDateTime = datetime.ToUniversalTime();
-                    break;
-                default:
-                    convertDateTime = datetime;
-                    break;
-            }
-
-            return convertDateTime.ToString("yyyy-MM-dd\\THH:mm:ss.FFFFFFF\\Z", s_cultureInfo);
-        }
-
-        public override void WriteProperty(string name, object value)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(value);
-        }
-
-        public override void WriteProperty(string name, IDictionary<string, string> values)
-        {
-            this.WritePropertyName(name);
-            if ((values?.Count ?? 0) == 0)
-            {
-                this.WriteNull();
-                return;
-            }
-
-            WriteValue(values);
-        }
-
-        internal override void WriteValue(IDictionary<string, string> values)
-        {
-            this.WriteStartObject();
-            foreach (KeyValuePair<string, string> keyValuePair in (IEnumerable<KeyValuePair<string, string>>)values)
-            {
-                this.WriteProperty(keyValuePair.Key, keyValuePair.Value);
-            }
-            this.WriteEndObject();
-        }
-
-        public override void WriteProperty(string name, object[] values)
-        {
-            this.WritePropertyName(name);
-            this.WriteValue(values);
-        }
-
-
-
 
         /// <summary>
         /// requires to be json compliant

@@ -82,96 +82,6 @@ namespace JsonSerializer
             _buffer[_offset++] = (byte)'l';
         }
 
-        public override void WriteProperty(string name, string value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, Guid value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, bool value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, int value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, char value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, uint value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, sbyte value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, byte value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, short value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, ushort value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, double value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, long value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, Uri value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, DateTime value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, TimeSpan value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, object value)
-        {
-            base.WriteProperty(name, value);
-        }
-
-        public override void WriteProperty(string name, IDictionary<string, string> values)
-        {
-            base.WriteProperty(name, values);
-        }
-
-        public override void WriteProperty(string name, object[] values)
-        {
-            base.WriteProperty(name, values);
-        }
-
         public override void WritePropertyName(string name, bool escape = true)
         {
             if (this._propertyInUse)
@@ -199,9 +109,9 @@ namespace JsonSerializer
         }
 
 
-        public override void WriteRawValue(string value, bool doValidate)
+        public override void WriteRawJson(string value, bool doValidate)
         {
-            base.WriteRawValue(value, doValidate);
+            base.WriteRawJson(value, doValidate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -466,7 +376,8 @@ namespace JsonSerializer
 
         internal override void WriteValue(double value)
         {
-            base.WriteValue(value);
+            var str = value.ToString();
+            WriteRawString(str);
         }
 
         internal override void WriteValue(char value)
@@ -477,12 +388,12 @@ namespace JsonSerializer
 
         internal override void WriteValue(long value)
         {
-            base.WriteValue(value);
+            WriteRawString(value.ToString());
         }
 
         internal override void WriteValue(ulong value)
         {
-            base.WriteValue(value);
+            WriteRawString(value.ToString());
         }
 
         internal override void WriteValue(float value)
@@ -514,17 +425,16 @@ namespace JsonSerializer
 
         internal override void WriteValue(DateTime value)
         {
-            base.WriteValue(value);
+            WriteQuotation();
+            WriteRawString(DateTimeUtils.GetDateTimeUtcString(value));
+            WriteQuotation();
         }
 
         internal override void WriteValue(TimeSpan value)
         {
-            base.WriteValue(value);
-        }
-
-        internal override void WriteValue(IDictionary<string, string> values)
-        {
-            base.WriteValue(values);
+            WriteQuotation();
+            WriteRawString(value.ToString(null, s_cultureInfo));
+            WriteQuotation();
         }
     }
 }

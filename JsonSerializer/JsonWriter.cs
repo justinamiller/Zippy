@@ -103,85 +103,107 @@ namespace JsonSerializer
         /// call for json string
         /// </summary>
         /// <param name="value"></param>
-        public virtual void WriteRawValue(string value, bool doValidate)
+        public virtual void WriteRawJson(string value, bool doValidate)
         {
         }
 
-        public virtual void WriteProperty(string name, string value)
+        public void WriteProperty(string name, string value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
 
-        public virtual void WriteProperty(string name, Guid value)
+        public void WriteProperty(string name, Guid value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(Guid value)
         {
         }
 
-        public virtual void WriteProperty(string name, bool value)
+        public void WriteProperty(string name, bool value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(bool value)
         {
         }
 
-        public virtual void WriteProperty(string name, int value)
+        public void WriteProperty(string name, int value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
-        public virtual void WriteProperty(string name, char value)
+        public void WriteProperty(string name, char value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(int value)
         {
         }
 
-        public virtual void WriteProperty(string name, uint value)
+        public void WriteProperty(string name, uint value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(uint value)
         {
         }
 
-        public virtual void WriteProperty(string name, sbyte value)
+        public void WriteProperty(string name, sbyte value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(sbyte value)
         {
         }
 
-        public virtual void WriteProperty(string name, byte value)
+        public void WriteProperty(string name, byte value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(byte value)
         {
         }
 
-        public virtual void WriteProperty(string name, short value)
+        public void WriteProperty(string name, short value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(short value)
         {
         }
 
-        public virtual void WriteProperty(string name, ushort value)
+        public void WriteProperty(string name, ushort value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(ushort value)
         {
         }
 
-        public virtual void WriteProperty(string name, double value)
+        public void WriteProperty(string name, double value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(double value)
@@ -192,8 +214,10 @@ namespace JsonSerializer
         {
         }
 
-        public virtual void WriteProperty(string name, long value)
+        public void WriteProperty(string name, long value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(long value)
@@ -217,9 +241,10 @@ namespace JsonSerializer
         {
         }
 
-        public virtual void WriteProperty(string name, Uri value)
+        public void WriteProperty(string name, Uri value)
         {
-
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(Uri value)
@@ -227,37 +252,52 @@ namespace JsonSerializer
 
         }
 
-        public virtual void WriteProperty(string name, DateTime value)
+        public void WriteProperty(string name, DateTime value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(DateTime value)
         {
         }
 
-        public virtual void WriteProperty(string name, TimeSpan value)
+        public void WriteProperty(string name, TimeSpan value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
         internal virtual void WriteValue(TimeSpan value)
         {
         }
 
-        public virtual void WriteProperty(string name, object value)
+        public void WriteProperty(string name, object value)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(value);
         }
 
-        public virtual void WriteProperty(string name, IDictionary<string, string> values)
+        public void WriteProperty(string name, IDictionary<string, string> values)
         {
+            this.WritePropertyName(name);
+            this.WriteValue(values);
         }
 
-        internal virtual void WriteValue(IDictionary<string, string> values)
+        internal void WriteValue(IDictionary<string, string> values)
         {
+            this.WriteStartObject();
+            foreach (KeyValuePair<string, string> keyValuePair in (IEnumerable<KeyValuePair<string, string>>)values)
+            {
+                this.WriteProperty(keyValuePair.Key, keyValuePair.Value);
+            }
+            this.WriteEndObject();
         }
 
-        public virtual void WriteProperty(string name, object[] values)
+        public void WriteProperty(string name, object[] values)
         {
-
+            this.WritePropertyName(name);
+            this.WriteValue(values);
         }
 
 

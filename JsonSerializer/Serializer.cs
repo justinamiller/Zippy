@@ -535,7 +535,7 @@ namespace JsonSerializer
                     case ConvertUtils.TypeCode.IJsonSerializeImplementation:
                         {
                             // handles it's own serialization.
-                            _builder.WriteRawValue(((IJsonSerializeImplementation)value).SerializeAsJson(), true);
+                            _builder.WriteRawJson(((IJsonSerializeImplementation)value).SerializeAsJson(), true);
                             return true;
                         }
                     default:
