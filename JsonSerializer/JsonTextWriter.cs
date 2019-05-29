@@ -18,13 +18,10 @@ namespace JsonSerializer
     {
         private readonly TextWriter _textWriter;
         //marker for writePropertyname is in use
-        private bool _propertyInUse;
         //used to format property names for elastic.
         private readonly StringBuilder _sb;
 
         private static readonly IFormatProvider s_cultureInfo = CultureInfo.InvariantCulture;
-        private int _arrayIndex = 0;
-        private int _objectIndex = 0;
         private const char _quoteChar = '\"';
 
 
@@ -36,29 +33,7 @@ namespace JsonSerializer
             }
         }
 
-        /// <summary>
-        /// indicate if json is valid format.
-        /// </summary>
-        public override bool Valid
-        {
-            get
-            {
-                return IsValid();
-            }
-        }
-
-        private bool IsValid(string json = null)
-        {
-            if (_arrayIndex == 0 && _objectIndex == 0)
-            {
-                if (json == null)
-                {
-                    json = _sb.ToString();
-                }
-                return StringExtension.ValidJsonFormat(json);
-            }
-            return false;
-        }
+      
 
         /// <summary>
         /// output json to string
@@ -66,14 +41,13 @@ namespace JsonSerializer
         /// <returns></returns>
         public override string ToString()
         {
-            var json = _sb.ToString();
-            if (!IsValid(json))
+            if (!Valid)
             {
                 //bad json log it
-                throw new InvalidCastException("Bad Json format", new InvalidDataException(json));
+                throw new InvalidCastException("Bad Json format", new InvalidDataException(_sb.ToString()));
             }
 
-            return json;
+            return _sb.ToString();
         }
 
         public override void Dispose()
@@ -92,217 +66,6 @@ namespace JsonSerializer
             _sb = StringBuilderPool.Get();
 
             _textWriter = new StringWriter(_sb, s_cultureInfo);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteStartArray()
-        {
-            this._textWriter.Write('[');
-            _arrayIndex++;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteStartObject()
-        {
-            this._textWriter.Write('{');
-            this._propertyInUse = false;
-            _objectIndex++;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteEndArray()
-        {
-            this._textWriter.Write(']');
-            _arrayIndex--;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteEndObject()
-        {
-            this._propertyInUse = true;
-            this._textWriter.Write('}');
-            _objectIndex--;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteComma()
-        {
-            this._textWriter.Write(',');
-        }
-
-        internal override void WriteValue(IEnumerable enumerable)
-        {
-            if (enumerable == null)
-            {
-                this.WriteNull();
-            }
-            else
-            {
-                WriteStartArray();
-                bool isFirstElement = true;
-                foreach (object obj in enumerable)
-                {
-                    if (!isFirstElement)
-                    {
-                        WriteComma();
-                    }
-
-                    this.WriteValue(obj);
-                    isFirstElement = false;
-                }
-                WriteEndArray();
-            }
-        }
-
-        private void WriteValueInternalString(string stringData)
-        {
-            //check if json format
-            if (StringExtension.ValidJsonFormat(stringData))
-            {
-                //string is json
-                WriteRawJson(stringData, false);
-            }//end json valid check
-            else
-            {
-                //string
-                WriteValue(stringData);
-            }
-        }
-
-        public override void WriteValue(object value)
-        {
-            if (value == null)
-            {
-                WriteNull();
-                return;
-            }
-
-            var json = value as IJsonSerializeImplementation;
-            if (json != null)
-            {
-                WriteRawJson(json.SerializeAsJson(), true);
-                return;
-            }
-
-            var valueType = GetTypeCode(value.GetType());
-            WriteObjectValue(value, valueType);
-        }
-
-        internal override void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
-        {
-            while (true)
-            {
-                switch (typeCode)
-                {
-                    case ConvertUtils.TypeCode.Char:
-                        WriteValue((char)value);
-                        return;
-                    case ConvertUtils.TypeCode.Boolean:
-                        WriteValue((bool)value);
-                        return;
-                    case ConvertUtils.TypeCode.SByte:
-                        WriteValue((sbyte)value);
-                        return;
-                    case ConvertUtils.TypeCode.Int16:
-                        WriteValue((short)value);
-                        return;
-                    case ConvertUtils.TypeCode.UInt16:
-                        WriteValue((ushort)value);
-                        return;
-                    case ConvertUtils.TypeCode.Int32:
-                        WriteValue((int)value);
-                        return;
-                    case ConvertUtils.TypeCode.Byte:
-                        WriteValue((byte)value);
-                        return;
-                    case ConvertUtils.TypeCode.UInt32:
-                        WriteValue((uint)value);
-                        return;
-                    case ConvertUtils.TypeCode.Int64:
-                        WriteValue((long)value);
-                        return;
-                    case ConvertUtils.TypeCode.UInt64:
-                        WriteValue((ulong)value);
-                        return;
-                    case ConvertUtils.TypeCode.Single:
-                        WriteValue((float)value);
-                        return;
-                    case ConvertUtils.TypeCode.Double:
-                        WriteValue((double)value);
-                        return;
-                    case ConvertUtils.TypeCode.DateTime:
-                        WriteValue((DateTime)value);
-                        return;
-                    case ConvertUtils.TypeCode.DateTimeOffset:
-                        WriteValue(((DateTimeOffset)value).UtcDateTime);
-                        return;
-                    case ConvertUtils.TypeCode.Decimal:
-                        WriteValue((decimal)value);
-                        return;
-                    case ConvertUtils.TypeCode.Guid:
-                        WriteValue((Guid)value);
-                        return;
-                    case ConvertUtils.TypeCode.TimeSpan:
-                        WriteValue((TimeSpan)value);
-                        return;
-                    //case PrimitiveTypeCode.BigInteger:
-                    //    // this will call to WriteValue(object)
-                    //    WriteValue((BigInteger)value);
-                    //    return;
-                    case ConvertUtils.TypeCode.Uri:
-                        WriteValue((Uri)value);
-                        return;
-                    case ConvertUtils.TypeCode.String:
-                        WriteValueInternalString((string)value);
-                        return;
-                    case ConvertUtils.TypeCode.Bytes:
-                        WriteValue((byte[])value);
-                        return;
-                    case ConvertUtils.TypeCode.DBNull:
-                        WriteNull();
-                        return;
-                    default:
-                        if (value is IConvertible convertible)
-                        {
-                            ResolveConvertibleValue(convertible, out typeCode, out value);
-                            continue;
-                        }
-
-                        // write an unknown null value
-                        if (value == null)
-                        {
-                            WriteNull();
-                            return;
-                        }
-
-                        this.WriteRawJson(Serializer.SerializeObject(value), false);
-                        return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// call for json string
-        /// </summary>
-        /// <param name="value"></param>
-        public override void WriteRawJson(string value, bool doValidate)
-        {
-            if (value.IsNullOrWhiteSpace())
-            {
-                WriteNull();
-                return;
-            }
-
-            string trimValue = value.Trim();
-
-            if (doValidate && !StringExtension.ValidJsonFormat(trimValue))
-            {
-                WriteNull();
-            }
-            else
-            {
-                this._textWriter.Write(trimValue);
-            }
         }
 
         internal override void WriteValue(Guid value)
@@ -485,6 +248,11 @@ namespace JsonSerializer
             }
         }
 
+        internal override void WriteJsonSymbol(char value)
+        {
+            _textWriter.Write(value);
+        }
+
         internal override void WriteValue(long value)
         {
             WriteIntegerValue(value);
@@ -536,50 +304,17 @@ namespace JsonSerializer
             _textWriter.Write(_quoteChar);
         }
 
-        /// <summary>
-        /// requires to be json compliant
-        /// </summary>
-        /// <param name="name">The name of the property.</param>
-        /// <param name="escape">A flag to indicate whether the text should be escaped when it is written as a JSON property name.</param>
-        public override void WritePropertyName(string name, bool escape = true)
-        {
-            if (this._propertyInUse)
-            {
-                this._textWriter.Write(',');
-            }
-            else
-            {
-                this._propertyInUse = true;
-            }
-
-            // string propertyName = name ?? string.Empty;
-            //if (IsElasticSearchReady)
-            //{
-            //    propertyName = FormatElasticName(propertyName);
-            //}
-
-            if (escape)
-            {
-                //slower
-                this.WriteValue(name);
-            }
-            else
-            {
-                //fast
-                this._textWriter.Write(_quoteChar);
-                this._textWriter.Write(name);
-                this._textWriter.Write(_quoteChar);
-            }
-
-            this._textWriter.Write(':');
-        }
-
         private readonly static char[] s_Null = new char[4] { 'n', 'u', 'l', 'l' };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void WriteNull()
         {
             this._textWriter.Write(s_Null, 0, 4);
+        }
+
+        public override void WriteRawString(string value)
+        {
+            this._textWriter.Write(value);
         }
 
         /// <summary>

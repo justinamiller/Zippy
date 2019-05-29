@@ -20,8 +20,6 @@ namespace JsonSerializer
         private int _offset = 0;
         private bool _propertyInUse = false;
 
-        public override bool Valid => base.Valid;
-
         internal override int Length
         {
             get
@@ -42,35 +40,6 @@ namespace JsonSerializer
                 return json;
 
             return null;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteComma()
-        {
-            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)',';
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteQuotation()
-        {
-            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)'\"';
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteEndArray()
-        {
-            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)']';
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteEndObject()
-        {
-            this._propertyInUse = true;
-            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)'}';
         }
 
         public override void WriteNull()
@@ -108,31 +77,12 @@ namespace JsonSerializer
             _buffer[_offset++] = (byte)':';
         }
 
-
-        public override void WriteRawJson(string value, bool doValidate)
-        {
-            base.WriteRawJson(value, doValidate);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteStartArray()
+        internal override void WriteJsonSymbol(char value)
         {
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)'[';
+            _buffer[_offset++] = (byte)value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void WriteStartObject()
-        {
-            this._propertyInUse = false;
-            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)'{';
-        }
-
-        public override void WriteValue(object value)
-        {
-            base.WriteValue(value);
-        }
 
         public override void WriteValue(string str)
         {
@@ -286,16 +236,6 @@ namespace JsonSerializer
             }
 
             _buffer[_offset++] = (byte)'\"';
-        }
-
-        internal override void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
-        {
-            base.WriteObjectValue(value, typeCode);
-        }
-
-        internal override void WriteValue(IEnumerable enumerable)
-        {
-            base.WriteValue(enumerable);
         }
 
         private void WriteRawString(string value)

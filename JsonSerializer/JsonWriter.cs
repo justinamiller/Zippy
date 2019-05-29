@@ -18,7 +18,9 @@ namespace JsonSerializer
     {
         //used to format property names for elastic.
         public bool IsElasticSearchReady { get; set; } = true;
-
+        private bool _propertyInUse = false;
+        private int _objectIndex = 0;
+        private int _arrayIndex = 0;
 
         internal virtual int Length
         {
@@ -31,12 +33,21 @@ namespace JsonSerializer
         /// <summary>
         /// indicate if json is valid format.
         /// </summary>
-        public virtual bool Valid
+        public bool Valid
         {
             get
             {
-                return false;
+                return IsValid();
             }
+        }
+
+        private bool IsValid()
+        {
+            if (_arrayIndex == 0 && _objectIndex == 0)
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -63,48 +74,220 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteStartArray()
+        public void WriteStartArray()
         {
+            this.WriteJsonSymbol('[');
+            _arrayIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteStartObject()
+        public void WriteStartObject()
         {
+            this.WriteJsonSymbol('{');
+            this._propertyInUse = false;
+            _objectIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteEndArray()
+        public void WriteEndArray()
         {
+            this.WriteJsonSymbol(']');
+            _arrayIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteEndObject()
+        public  void WriteEndObject()
         {
+            this.WriteJsonSymbol('}');
+            this._propertyInUse = true;
+            _objectIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteComma()
+        public void WriteComma()
         {
+            this.WriteJsonSymbol(',');
         }
 
-        internal virtual void WriteValue(IEnumerable enumerable)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteNameSeparator()
         {
+            this.WriteJsonSymbol(':');
         }
 
-        public virtual void WriteValue(object value)
+        internal void WriteValue(IEnumerable enumerable)
         {
+            if (enumerable == null)
+            {
+                this.WriteNull();
+            }
+            else
+            {
+                WriteStartArray();
+                bool isFirstElement = true;
+                foreach (object obj in enumerable)
+                {
+                    if (!isFirstElement)
+                    {
+                        WriteComma();
+                    }
+
+                    this.WriteValue(obj);
+                    isFirstElement = false;
+                }
+                WriteEndArray();
+            }
         }
 
-        internal virtual void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
+        public void WriteValue(object value)
         {
+            if (value == null)
+            {
+                WriteNull();
+                return;
+            }
+
+            var json = value as IJsonSerializeImplementation;
+            if (json != null)
+            {
+                WriteRawJson(json.SerializeAsJson(), true);
+                return;
+            }
+
+            var valueType = GetTypeCode(value.GetType());
+            WriteObjectValue(value, valueType);
+        }
+
+        internal void WriteObjectValue(object value, ConvertUtils.TypeCode typeCode)
+        {
+            while (true)
+            {
+                switch (typeCode)
+                {
+                    case ConvertUtils.TypeCode.Char:
+                        WriteValue((char)value);
+                        return;
+                    case ConvertUtils.TypeCode.Boolean:
+                        WriteValue((bool)value);
+                        return;
+                    case ConvertUtils.TypeCode.SByte:
+                        WriteValue((sbyte)value);
+                        return;
+                    case ConvertUtils.TypeCode.Int16:
+                        WriteValue((short)value);
+                        return;
+                    case ConvertUtils.TypeCode.UInt16:
+                        WriteValue((ushort)value);
+                        return;
+                    case ConvertUtils.TypeCode.Int32:
+                        WriteValue((int)value);
+                        return;
+                    case ConvertUtils.TypeCode.Byte:
+                        WriteValue((byte)value);
+                        return;
+                    case ConvertUtils.TypeCode.UInt32:
+                        WriteValue((uint)value);
+                        return;
+                    case ConvertUtils.TypeCode.Int64:
+                        WriteValue((long)value);
+                        return;
+                    case ConvertUtils.TypeCode.UInt64:
+                        WriteValue((ulong)value);
+                        return;
+                    case ConvertUtils.TypeCode.Single:
+                        WriteValue((float)value);
+                        return;
+                    case ConvertUtils.TypeCode.Double:
+                        WriteValue((double)value);
+                        return;
+                    case ConvertUtils.TypeCode.DateTime:
+                        WriteValue((DateTime)value);
+                        return;
+                    case ConvertUtils.TypeCode.DateTimeOffset:
+                        WriteValue(((DateTimeOffset)value).UtcDateTime);
+                        return;
+                    case ConvertUtils.TypeCode.Decimal:
+                        WriteValue((decimal)value);
+                        return;
+                    case ConvertUtils.TypeCode.Guid:
+                        WriteValue((Guid)value);
+                        return;
+                    case ConvertUtils.TypeCode.TimeSpan:
+                        WriteValue((TimeSpan)value);
+                        return;
+                    //case PrimitiveTypeCode.BigInteger:
+                    //    // this will call to WriteValue(object)
+                    //    WriteValue((BigInteger)value);
+                    //    return;
+                    case ConvertUtils.TypeCode.Uri:
+                        WriteValue((Uri)value);
+                        return;
+                    case ConvertUtils.TypeCode.String:
+                        WriteValueInternalString((string)value);
+                        return;
+                    case ConvertUtils.TypeCode.Bytes:
+                        WriteValue((byte[])value);
+                        return;
+                    case ConvertUtils.TypeCode.DBNull:
+                        WriteNull();
+                        return;
+                    default:
+                        if (value is IConvertible convertible)
+                        {
+                            ResolveConvertibleValue(convertible, out typeCode, out value);
+                            continue;
+                        }
+
+                        // write an unknown null value
+                        if (value == null)
+                        {
+                            WriteNull();
+                            return;
+                        }
+
+                        this.WriteRawJson(Serializer.SerializeObject(value), false);
+                        return;
+                }
+            }
+        }
+
+        private void WriteValueInternalString(string stringData)
+        {
+            //check if json format
+            if (StringExtension.ValidJsonFormat(stringData))
+            {
+                //string is json
+                WriteRawJson(stringData, false);
+            }//end json valid check
+            else
+            {
+                //string
+                WriteValue(stringData);
+            }
         }
 
         /// <summary>
         /// call for json string
         /// </summary>
         /// <param name="value"></param>
-        public virtual void WriteRawJson(string value, bool doValidate)
+        public void WriteRawJson(string value, bool doValidate)
         {
+            if (value.IsNullOrWhiteSpace())
+            {
+                WriteNull();
+                return;
+            }
+
+            string trimValue = value.Trim();
+
+            if (doValidate && !StringExtension.ValidJsonFormat(trimValue))
+            {
+                WriteNull();
+            }
+            else
+            {
+                WriteRawString(trimValue);
+            }
         }
 
         public void WriteProperty(string name, string value)
@@ -300,6 +483,20 @@ namespace JsonSerializer
             this.WriteValue(values);
         }
 
+        public void WriteQuotation()
+        {
+            this.WriteJsonSymbol('\"');
+        }
+
+        internal virtual void WriteJsonSymbol(char value)
+        {
+        
+        }
+        public virtual void WriteRawString(string value)
+        {
+   
+        }
+
 
 
         /// <summary>
@@ -309,6 +506,35 @@ namespace JsonSerializer
         /// <param name="escape">A flag to indicate whether the text should be escaped when it is written as a JSON property name.</param>
         public virtual void WritePropertyName(string name, bool escape = true)
         {
+            if (this._propertyInUse)
+            {
+                WriteComma();
+            }
+            else
+            {
+                this._propertyInUse = true;
+            }
+
+            // string propertyName = name ?? string.Empty;
+            //if (IsElasticSearchReady)
+            //{
+            //    propertyName = FormatElasticName(propertyName);
+            //}
+
+            if (escape)
+            {
+                //slower
+                this.WriteValue(name);
+            }
+            else
+            {
+                //fast
+                WriteQuotation();
+                WriteRawString(name);
+                WriteQuotation();
+            }
+
+            WriteNameSeparator();
         }
 
 
