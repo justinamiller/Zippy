@@ -171,7 +171,7 @@ namespace JsonSerializer
                     else if (valueType >= ConvertUtils.TypeCode.NotSetObject)
                     {
                         //will require more reflection
-                        if (this.SerializeValue(value, recursiveCount))
+                        if (this.SerializeValue(value, recursiveCount, valueType))
                         {
                             flag1 = false;
                         }
@@ -229,7 +229,7 @@ namespace JsonSerializer
                         {
                             _builder.WriteComma();
                         }
-                        if (!this.SerializeValue(value, recursiveCount))
+                        if (!this.SerializeValue(value, recursiveCount, ConvertUtils.GetTypeCode(value.GetType())))
                         {
                             return false;
                         }
@@ -264,7 +264,12 @@ namespace JsonSerializer
                 IsElasticSearchReady = this.CurrentJsonSetting.IsElasticSearchReady
             };
 
-            if (!this.SerializeValue(json, 0))
+            if (json == null)
+            {
+                return null;
+            }
+            
+            if (!this.SerializeValue(json, 0, ConvertUtils.GetTypeCode(json.GetType())))
             {
                 return null;
             }
@@ -477,7 +482,7 @@ namespace JsonSerializer
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeValue(object value, int recursiveCount, ConvertUtils.TypeCode typeCode= ConvertUtils.TypeCode.Empty )
+        private bool SerializeValue(object value, int recursiveCount, ConvertUtils.TypeCode typeCode = ConvertUtils.TypeCode.Empty )
         {
             //prevent null
             if (value == null)

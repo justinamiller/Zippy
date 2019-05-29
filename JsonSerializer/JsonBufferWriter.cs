@@ -238,7 +238,7 @@ namespace JsonSerializer
             _buffer[_offset++] = (byte)'\"';
         }
 
-        private void WriteRawString(string value)
+        public override void WriteRawString(string value)
         {
             var length = value.Length;
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, length);
@@ -322,8 +322,15 @@ namespace JsonSerializer
 
         internal override void WriteValue(char value)
         {
-            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)value;
+            // Special case the null char as we don't want it to turn into a null string
+            if (value == '\0')
+            {
+                WriteNull();
+            }
+            else
+            {
+                this.WriteValue(value.ToString());
+            }
         }
 
         internal override void WriteValue(long value)
