@@ -22,6 +22,11 @@ namespace JsonSerializer
         private int _objectIndex = 0;
         private int _arrayIndex = 0;
 
+        /// <summary>
+        /// Gets or sets how <see cref="DateTime"/> and <see cref="DateTimeOffset"/> values are formatted when writing JSON text.
+        /// </summary>
+        public string DateFormatString {get;set;}
+
         internal virtual int Length
         {
             get
@@ -500,6 +505,7 @@ namespace JsonSerializer
             this.WriteJsonSymbol('\"');
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal virtual void WriteJsonSymbol(char value)
         {
             WriteRawString(value.ToString());

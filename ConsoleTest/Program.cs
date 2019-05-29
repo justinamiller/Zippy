@@ -25,10 +25,13 @@ namespace ConsoleTest
         public TType Type { get; set; } = TType.Expert;
         public string Name { get; set; }
         public string Address { get; set; }
+        public bool IsReady { get; }
+        public DateTime CreateDate { get; }
+        public TimeSpan Duration { get; }
         public int[] Items { get; set; }
         public int? Age { get; set; } = 10;
     //    public IDictionary<string, string> Data = new Dictionary<string, string>();
-     public DataTable DT = new DataTable();
+   //  public DataTable DT = new DataTable();
       //  public DataSet DS = new DataSet();
         public Result[] Results { get; set; } = Array.Empty<Result>();
         public IList<Result> ResultList { get; set; } = new List<Result>();
@@ -52,10 +55,6 @@ namespace ConsoleTest
         {
             //do nothing
         }
-        public static bool  IsReady()
-        {
-            return true;
-        }
     }
 
     class Program
@@ -68,7 +67,7 @@ namespace ConsoleTest
             var c = new TestObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-        // var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
+         var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
             var d = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
             var a2 = JsonSerializer.Serializer.SerializeObject(c);
@@ -76,7 +75,7 @@ namespace ConsoleTest
             dd.ToString();
 
             sw.Restart();
-         //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
+        //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
             var d1 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
             var aa2 = JsonSerializer.Serializer.SerializeObject(c);
@@ -85,7 +84,7 @@ namespace ConsoleTest
             sw.Restart();
             for(var i = 0; i < 100000; i++)
             {
-   //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
+       Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
@@ -95,12 +94,12 @@ namespace ConsoleTest
             }
             var dd2 = sw.Elapsed.TotalMilliseconds;
 
-            //var a3 = Utf8Json.JsonSerializer.ToJsonString<object>(c); 
-
+            //   var a3 = Utf8Json.JsonSerializer.ToJsonString<object>(c); 
+            //Jil.JSON.Serialize<object>(c);
             //sw.Restart();
             //for (var i = 0; i < 100000; i++)
             //{
-            //    Utf8Json.JsonSerializer.ToJsonString<object>(c);
+            //    Jil.JSON.Serialize<object>(c);
             //}
             //var dd3 = sw.Elapsed.TotalMilliseconds;
 

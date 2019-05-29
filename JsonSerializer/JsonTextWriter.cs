@@ -22,8 +22,6 @@ namespace JsonSerializer
         private readonly StringBuilder _sb;
 
         private static readonly IFormatProvider s_cultureInfo = CultureInfo.InvariantCulture;
-        private const char _quoteChar = '\"';
-
 
         internal override int Length
         {
@@ -70,23 +68,24 @@ namespace JsonSerializer
 
         internal override void WriteValue(Guid value)
         {
-            _textWriter.Write(_quoteChar);
-            if (value == Guid.Empty)
-            {
-                _textWriter.Write("00000000-0000-0000-0000-000000000000");
-            }
-            else
-            {
-                _textWriter.Write(value.ToString("D", s_cultureInfo));
-            }
-
-            _textWriter.Write(_quoteChar);
+            WriteQuotation();
+            _textWriter.Write(value.ToString("D", s_cultureInfo));
+            WriteQuotation();
         }
 
+        private readonly static char[] s_true = new char[4] { 't', 'r', 'u', 'e' };
+        private readonly static char[] s_false = new char[5] { 'f', 'a', 'l', 's', 'e' };
 
         internal override void WriteValue(bool value)
         {
-            this._textWriter.Write(value ? "true" : "false");
+            if (value)
+            {
+                this._textWriter.Write(s_true, 0, 4);
+            }
+            else
+            {
+                this._textWriter.Write(s_false, 0, 5);
+            }
         }
 
         internal override void WriteValue(int value)
@@ -248,6 +247,7 @@ namespace JsonSerializer
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal override void WriteJsonSymbol(char value)
         {
             _textWriter.Write(value);
@@ -275,15 +275,24 @@ namespace JsonSerializer
 
         internal override void WriteValue(DateTime value)
         {
-            WriteValue(DateTimeUtils.GetDateTimeUtcString(value));
+            WriteQuotation();
+            if (DateFormatString.IsNullOrEmpty())
+            {
+                _textWriter.Write(DateTimeUtils.GetDateTimeUtcString(value));
+            }
+            else
+            {
+                _textWriter.Write(value.ToString(DateFormatString, s_cultureInfo));
+            }
+            WriteQuotation();
         }
 
 
         internal override void WriteValue(TimeSpan value)
         {
-            _textWriter.Write(_quoteChar);
+            WriteQuotation();
             _textWriter.Write(value.ToString(null, s_cultureInfo));
-            _textWriter.Write(_quoteChar);
+            WriteQuotation();
         }
 
         private readonly static char[] s_Null = new char[4] { 'n', 'u', 'l', 'l' };
@@ -311,7 +320,7 @@ namespace JsonSerializer
             }
             else if (str.Length == 0)
             {
-                this._textWriter.Write(new char[2] { _quoteChar, _quoteChar }, 0, 2);
+                this._textWriter.Write(new char[2] { '\"', '\"' }, 0, 2);
             }
             else
             {
