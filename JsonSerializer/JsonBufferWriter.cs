@@ -30,7 +30,8 @@ namespace JsonSerializer
 
         public override void Dispose()
         {
-            base.Dispose();
+            _buffer = null;
+            _offset = 0;
         }
 
         public override string ToString()

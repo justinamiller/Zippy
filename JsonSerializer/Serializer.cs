@@ -259,7 +259,7 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private string SerializeObjectInternal(object json)
         {
-            _builder = new JsonTextWriter()
+            _builder = new JsonBufferWriter()
             {
                 IsElasticSearchReady = this.CurrentJsonSetting.IsElasticSearchReady
             };

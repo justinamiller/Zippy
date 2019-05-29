@@ -12,15 +12,14 @@ namespace JsonSerializer.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnsureCapacity(ref byte[] bytes, int offset, int appendLength)
         {
-            var newLength = offset + appendLength;
-
             // If null(most case fisrt time) fill byte.
             if (bytes == null)
             {
-                bytes = new byte[newLength];
+                bytes = new byte[256];
                 return;
             }
 
+            var newLength = offset + appendLength;
             // like MemoryStream.EnsureCapacity
             var current = bytes.Length;
             if (newLength > current)
