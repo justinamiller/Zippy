@@ -306,14 +306,21 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeDictionary(IDictionary values, int recursiveCount)
         {
+            if (values.Count == 0)
+            {
+                _builder.WriteStartObject();
+                _builder.WriteEndObject();
+                return true;
+            }
             //check if key is string type
             Type type = values.GetType();
-            var keyCodeType = ConvertUtils.GetTypeCode(type.GetGenericArguments()[0]);
+            Type[] args = type.GetGenericArguments();
+            var keyCodeType = ConvertUtils.GetTypeCode(args[0]);
             if (keyCodeType != ConvertUtils.TypeCode.String)
             {
                 return false;
             }
-            var valueCodeType = ConvertUtils.GetTypeCode(type.GetGenericArguments()[1]);
+            var valueCodeType = ConvertUtils.GetTypeCode(args[1]);
             return SerializeDictionaryInternal(values, recursiveCount, valueCodeType);
         }
 

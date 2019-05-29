@@ -493,12 +493,10 @@ namespace JsonSerializer
         {
         
         }
+
         internal virtual void WriteRawString(string value)
         {
-   
         }
-
-
 
         /// <summary>
         /// requires to be json compliant
@@ -541,6 +539,9 @@ namespace JsonSerializer
 
         public virtual void WriteNull()
         {
+            WriteQuotation();
+            WriteRawString("null");
+            WriteQuotation();
         }
 
         internal virtual void WriteValue(string str)
