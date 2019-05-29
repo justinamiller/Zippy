@@ -33,7 +33,7 @@ namespace JsonSerializer
             }
         }
 
-      
+
 
         /// <summary>
         /// output json to string
@@ -312,7 +312,7 @@ namespace JsonSerializer
             this._textWriter.Write(s_Null, 0, 4);
         }
 
-        public override void WriteRawString(string value)
+        internal override void WriteRawString(string value)
         {
             this._textWriter.Write(value);
         }
@@ -321,7 +321,7 @@ namespace JsonSerializer
         /// use pointers to improve performance
         /// </summary>
         /// <param name="str"></param>
-        public override void WriteValue(string str)
+        internal override void WriteValue(string str)
         {
             if (str == null)
             {

@@ -74,14 +74,14 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartArray()
+        internal void WriteStartArray()
         {
             this.WriteJsonSymbol('[');
             _arrayIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartObject()
+        internal void WriteStartObject()
         {
             this.WriteJsonSymbol('{');
             this._propertyInUse = false;
@@ -89,14 +89,14 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteEndArray()
+        internal void WriteEndArray()
         {
             this.WriteJsonSymbol(']');
             _arrayIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public  void WriteEndObject()
+        internal void WriteEndObject()
         {
             this.WriteJsonSymbol('}');
             this._propertyInUse = true;
@@ -104,13 +104,13 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteComma()
+        internal void WriteComma()
         {
             this.WriteJsonSymbol(',');
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNameSeparator()
+        private void WriteNameSeparator()
         {
             this.WriteJsonSymbol(':');
         }
@@ -139,7 +139,7 @@ namespace JsonSerializer
             }
         }
 
-        public void WriteValue(object value)
+        internal void WriteValue(object value)
         {
             if (value == null)
             {
@@ -270,7 +270,7 @@ namespace JsonSerializer
         /// call for json string
         /// </summary>
         /// <param name="value"></param>
-        public void WriteRawJson(string value, bool doValidate)
+        internal void WriteRawJson(string value, bool doValidate)
         {
             if (value.IsNullOrWhiteSpace())
             {
@@ -483,7 +483,8 @@ namespace JsonSerializer
             this.WriteValue(values);
         }
 
-        public void WriteQuotation()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void WriteQuotation()
         {
             this.WriteJsonSymbol('\"');
         }
@@ -492,7 +493,7 @@ namespace JsonSerializer
         {
         
         }
-        public virtual void WriteRawString(string value)
+        internal virtual void WriteRawString(string value)
         {
    
         }
@@ -504,7 +505,7 @@ namespace JsonSerializer
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="escape">A flag to indicate whether the text should be escaped when it is written as a JSON property name.</param>
-        public virtual void WritePropertyName(string name, bool escape = true)
+        public void WritePropertyName(string name, bool escape = true)
         {
             if (this._propertyInUse)
             {
@@ -538,19 +539,12 @@ namespace JsonSerializer
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteNull()
         {
         }
 
-        /// <summary>
-        /// use pointers to improve performance
-        /// </summary>
-        /// <param name="str"></param>
-        public virtual void WriteValue(string str)
+        internal virtual void WriteValue(string str)
         {
-         
         }
-
     }
 }

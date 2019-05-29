@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -15,7 +16,7 @@ namespace JsonSerializer
         private static readonly Encoding s_UTF8 = new UTF8Encoding(false);
         private static readonly IFormatProvider s_cultureInfo = CultureInfo.InvariantCulture;
 
-        static readonly byte[] _emptyBytes = new byte[0];
+        static readonly byte[] _emptyBytes = Array.Empty<byte>();
         private byte[] _buffer;
         private int _offset = 0;
         private bool _propertyInUse = false;
@@ -34,13 +35,25 @@ namespace JsonSerializer
             _offset = 0;
         }
 
+        public byte[] GetBytes()
+        {
+            if (!Valid)
+            {
+                //bad json log it
+                throw new InvalidCastException("Bad Json format", new InvalidDataException(this.ToString()));
+            }
+
+            if (_buffer == null) return _emptyBytes;
+            return BinaryUtil.FastCloneWithResize(_buffer, _offset);
+        }
+
         public override string ToString()
         {
             var json=Encoding.UTF8.GetString(_buffer, 0, _offset);
             if (StringExtension.ValidJsonFormat(json))
                 return json;
 
-            return null;
+            return string.Empty;
         }
 
         public override void WriteNull()
@@ -52,32 +65,6 @@ namespace JsonSerializer
             _buffer[_offset++] = (byte)'l';
         }
 
-        public override void WritePropertyName(string name, bool escape = true)
-        {
-            if (this._propertyInUse)
-            {
-                WriteComma();
-            }
-            else
-            {
-                this._propertyInUse = true;
-            }
-
-            if (escape)
-            {
-                WriteValue(name);
-            }
-            else
-            {
-                WriteQuotation();
-                WriteRawString(name);
-                WriteQuotation();
-            }
-
-            BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
-            _buffer[_offset++] = (byte)':';
-        }
-
         internal override void WriteJsonSymbol(char value)
         {
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, 1);
@@ -85,16 +72,25 @@ namespace JsonSerializer
         }
 
 
-        public override void WriteValue(string str)
+        internal override void WriteValue(string str)
         {
             if (str == null)
             {
                 WriteNull();
                 return;
             }
-
             // single-path escape
             var length = str.Length;
+
+            if (length == 0)
+            {
+                //empty
+                WriteQuotation();
+                WriteQuotation();
+                return;
+            }
+
+
             // nonescaped-ensure
             var startoffset = _offset;
             var max = s_UTF8.GetMaxByteCount(length) + 2;
@@ -239,7 +235,7 @@ namespace JsonSerializer
             _buffer[_offset++] = (byte)'\"';
         }
 
-        public override void WriteRawString(string value)
+        internal override void WriteRawString(string value)
         {
             var length = value.Length;
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, length);
