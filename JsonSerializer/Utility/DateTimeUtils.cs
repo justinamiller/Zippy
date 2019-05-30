@@ -23,7 +23,8 @@ namespace JsonSerializer.Utility
                     break;
             }
 
-            return convertDateTime.ToString("yyyy-MM-dd\\THH:mm:ss.FFFFFFF\\Z", s_cultureInfo);
+            //ISO8601
+            return convertDateTime.ToString("o", s_cultureInfo);
         }
     }
 }

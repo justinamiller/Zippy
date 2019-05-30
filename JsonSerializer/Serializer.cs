@@ -30,8 +30,8 @@ namespace JsonSerializer
         private IJsonSerializerSetting _currentJsonSetting;
         // The following logic performs circular reference detection
        private readonly Hashtable _serializeStack = new Hashtable(new ReferenceComparer());//new HashSet<object>();
-
-
+        private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
+        private int _currentDepth = 0;
 
         internal static IJsonSerializerStrategy CurrentJsonSerializerStrategy
         {
@@ -117,7 +117,7 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value, int recursiveCount)
+        private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value)
         {
             _builder.WriteStartObject();
             try
@@ -139,12 +139,12 @@ namespace JsonSerializer
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeEnumerable(IEnumerable anEnumerable, int recursiveCount)
+        private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
             var anArray = anEnumerable as Array;
             if (anArray != null && anArray.Rank > 1)
             {
-                return SerializeMultidimensionalArray(anArray, recursiveCount);
+                return SerializeMultidimensionalArray(anArray);
             }
 
             ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
@@ -173,7 +173,7 @@ namespace JsonSerializer
                     else if (valueType >= ConvertUtils.TypeCode.NotSetObject)
                     {
                         //will require more reflection
-                       if (!this.SerializeValue(value, recursiveCount, valueType))
+                       if (!this.SerializeValue(value, valueType))
                         {
                             return false;
                         }
@@ -194,13 +194,13 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeMultidimensionalArray(Array values, int recursiveCount)
+        private bool SerializeMultidimensionalArray(Array values)
         {
-              return SerializeMultidimensionalArray(values, recursiveCount, Array.Empty<int>());
+              return SerializeMultidimensionalArray(values, Array.Empty<int>());
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeMultidimensionalArray(Array values, int recursiveCount, int[] indices)
+        private bool SerializeMultidimensionalArray(Array values, int[] indices)
         {
             bool flag = true;
             int dimension = indices.Length;
@@ -226,7 +226,7 @@ namespace JsonSerializer
                         {
                             _builder.WriteComma();
                         }
-                        if (!this.SerializeValue(value, recursiveCount, ConvertUtils.GetTypeCode(value.GetType())))
+                        if (!this.SerializeValue(value, ConvertUtils.GetTypeCode(value.GetType())))
                         {
                             return false;
                         }
@@ -240,7 +240,7 @@ namespace JsonSerializer
                             _builder.WriteComma();
                         }
 
-                        SerializeMultidimensionalArray(values, recursiveCount, newIndices);
+                        SerializeMultidimensionalArray(values, newIndices);
                     }
                 }
             }
@@ -252,11 +252,13 @@ namespace JsonSerializer
         }
 
         //string builder
-        private JsonWriter _builder = null;
+       //private JsonWriter _builder = null;
+       private JsWriter _builder = null;
         [MethodImpl(MethodImplOptions.NoInlining)]
         private string SerializeObjectInternal(object json)
         {
-            _builder = new JsonTextWriter()
+           _builder = new JsWriter() //new JsonTextWriter()
+            //_builder = new JsonTextWriter()
             {
                 IsElasticSearchReady = this.CurrentJsonSetting.IsElasticSearchReady
             };
@@ -270,7 +272,7 @@ namespace JsonSerializer
             if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
                 //handle for object
-                SerializeNonPrimitiveValue(json, 0, typeCode);
+                SerializeNonPrimitiveValue(json, typeCode);
             }
             else
             {
@@ -307,7 +309,7 @@ namespace JsonSerializer
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeDictionary(IDictionary values, int recursiveCount)
+        private bool SerializeDictionary(IDictionary values)
         {
             if (values.Count == 0)
             {
@@ -324,11 +326,11 @@ namespace JsonSerializer
                 return false;
             }
             var valueCodeType = ConvertUtils.GetTypeCode(args[1]);
-            return SerializeDictionaryInternal(values, recursiveCount, valueCodeType);
+            return SerializeDictionaryInternal(values, valueCodeType);
         }
 
 
-        private bool SerializeValueMemberInfo(object instance, IList<ValueMemberInfo> items, int recursiveCount)
+        private bool SerializeValueMemberInfo(object instance, IList<ValueMemberInfo> items)
         {
             _builder.WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
@@ -346,7 +348,7 @@ namespace JsonSerializer
                     }
                     else if (item.Code >= ConvertUtils.TypeCode.NotSetObject)
                     {
-                        if (!this.SerializeValue(value, recursiveCount, item.Code))
+                        if (!this.SerializeValue(value, item.Code))
                         {
                             return false;
                         }
@@ -369,7 +371,7 @@ namespace JsonSerializer
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeDictionaryInternal(IDictionary values, int recursiveCount, ConvertUtils.TypeCode valueCodeType)
+        private bool SerializeDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType)
         {
             _builder.WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
@@ -389,7 +391,7 @@ namespace JsonSerializer
                     }
                     else if (valueCodeType > ConvertUtils.TypeCode.Enumerable)
                     {
-                        if (!this.SerializeValue(value, recursiveCount))
+                        if (!this.SerializeValue(value))
                         {
                             return false;
                         }
@@ -410,14 +412,14 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeDataSet(System.Data.DataSet ds, int recursiveCount)
+        private bool SerializeDataSet(System.Data.DataSet ds)
         {
             _builder.WriteStartObject();
             try
             {
                 foreach (System.Data.DataTable table in ds.Tables)
                 {
-                    SerializeDataTableData(table, recursiveCount);
+                    SerializeDataTableData(table);
                 }
                 // end dataset
             }
@@ -430,7 +432,7 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SerializeDataTableData(System.Data.DataTable table, int recursiveCount)
+        private void SerializeDataTableData(System.Data.DataTable table)
         {
             var rows = table.Rows;
             if (rows.Count == 0)
@@ -458,7 +460,7 @@ namespace JsonSerializer
                         //build column name
                         _builder.WritePropertyName(column.ColumnName);
                         //build column data
-                        SerializeValue(row[column], recursiveCount);
+                        SerializeValue(row[column]);
                     }
                     _builder.WriteEndObject();
                 }
@@ -471,12 +473,12 @@ namespace JsonSerializer
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeDataTable(System.Data.DataTable dt, int recursiveCount)
+        private bool SerializeDataTable(System.Data.DataTable dt)
         {
             _builder.WriteStartObject();
             try
             {
-                SerializeDataTableData(dt, recursiveCount);
+                SerializeDataTableData(dt);
             }
             finally
             {
@@ -489,7 +491,7 @@ namespace JsonSerializer
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeValue(object value, int recursiveCount, ConvertUtils.TypeCode typeCode = ConvertUtils.TypeCode.Empty )
+        private bool SerializeValue(object value, ConvertUtils.TypeCode typeCode = ConvertUtils.TypeCode.Empty )
         {
             //prevent null
             if (value == null)
@@ -498,9 +500,11 @@ namespace JsonSerializer
                 return true;
             }
 
-            recursiveCount += 1;
+            _currentDepth++;
+            try
+            {
             //recursion limit or max char length
-            if (recursiveCount >= _currentJsonSetting.RecursionLimit || _builder.Length > _currentJsonSetting.MaxJsonLength)
+            if (_currentDepth >= _currentJsonSetting.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
             {
                 _builder.WriteNull();
                 return true;
@@ -514,40 +518,61 @@ namespace JsonSerializer
             if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
                 //handle for object
-                return SerializeNonPrimitiveValue(value, recursiveCount, typeCode);
+                return SerializeNonPrimitiveValue(value, typeCode);
             }
             else
             {
                 _builder.WriteObjectValue(value, typeCode);
                 return true;
             }
+            }
+            finally
+            {
+                _currentDepth--;
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeNonPrimitiveValue(object value, int recursiveCount, ConvertUtils.TypeCode objectTypeCode)
+        private bool SerializeNonPrimitiveValue(object value, ConvertUtils.TypeCode objectTypeCode)
         {
             //this prevents recursion
-            if (!AddObjectAsReferenceCheck(value))
-                return true;
-
-            try
+            int i = 0;
+            if (!_cirobj.TryGetValue(value, out i))
+                _cirobj.Add(value, _cirobj.Count + 1);
+            else
             {
+                if (_currentDepth > 0)
+                {
+                    //_circular = true;
+                    _builder.WriteValue("{\"$i\":");
+                    _builder.WriteValue(i.ToString());
+                    _builder.WriteValue("}");
+                    return false;
+                }
+            }
+
+
+            //if (!AddObjectAsReferenceCheck(value))
+            //    return true;
+
+            //try
+            //{
                 switch (objectTypeCode)
                 {
                     case ConvertUtils.TypeCode.Enumerable:
-                        return this.SerializeEnumerable((IEnumerable)value, recursiveCount);
+                        return this.SerializeEnumerable((IEnumerable)value);
                     case ConvertUtils.TypeCode.Dictionary:
-                        return SerializeDictionary((IDictionary)value, recursiveCount);
+                        return SerializeDictionary((IDictionary)value);
                     case ConvertUtils.TypeCode.NameValueCollection:
-                        return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value, recursiveCount);
+                        return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value);
                     case ConvertUtils.TypeCode.DataSet:
-                        return SerializeDataSet((System.Data.DataSet)value, recursiveCount);
+                        return SerializeDataSet((System.Data.DataSet)value);
                     case ConvertUtils.TypeCode.DataTable:
-                        return SerializeDataTable((System.Data.DataTable)value, recursiveCount);
+                        return SerializeDataTable((System.Data.DataTable)value);
                     case ConvertUtils.TypeCode.IJsonSerializeImplementation:
                         {
                             // handles it's own serialization.
-                            _builder.WriteRawJson(((IJsonSerializeImplementation)value).SerializeAsJson(), true);
+                            _builder.WriteValue(((IJsonSerializeImplementation)value).SerializeAsJson());
                             return true;
                         }
                     default:
@@ -556,7 +581,7 @@ namespace JsonSerializer
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
                             if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, out obj))
                             {
-                                return this.SerializeValueMemberInfo(value, obj, recursiveCount);
+                                return this.SerializeValueMemberInfo(value, obj);
                             }
                             else
                             {
@@ -565,17 +590,17 @@ namespace JsonSerializer
                             }
                         }
                 }
-            }
-            catch (Exception)
-            {
-                _builder.WriteNull();
-                return true;//was false but when false prevent continuing.
-            }
+            //}
+            //catch (Exception)
+            //{
+            //    _builder.WriteNull();
+            //    return true;//was false but when false prevent continuing.
+            //}
 
-            finally
-            {
-                RemoveObjectAsReferenceCheck(value);
-            }
+            //finally
+            //{
+            //    RemoveObjectAsReferenceCheck(value);
+            //}
         }
 
         /// <summary>
@@ -586,11 +611,6 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool AddObjectAsReferenceCheck(object value)
         {
-            if (value == null)
-            {
-                return false;
-            }
-
             if (this._serializeStack.ContainsKey(value))
             {
                 //Self referencing loop detected;

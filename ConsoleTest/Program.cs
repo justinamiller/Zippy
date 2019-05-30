@@ -21,7 +21,7 @@ namespace ConsoleTest
         }
 
         public string Version = "1.0";
-
+        public Guid Id = Guid.NewGuid();
         public TType Type { get; set; } = TType.Expert;
         public string Name { get; set; }
         public string Address { get; set; }
@@ -84,7 +84,7 @@ namespace ConsoleTest
             sw.Restart();
             for(var i = 0; i < 100000; i++)
             {
-       Newtonsoft.Json.JsonConvert.SerializeObject(c);
+     //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
@@ -99,7 +99,7 @@ namespace ConsoleTest
             sw.Restart();
             for (var i = 0; i < 100000; i++)
             {
-                ServiceStack.Text.JsonSerializer.SerializeToString(c);
+        //        ServiceStack.Text.JsonSerializer.SerializeToString(c);
             }
             var dd3 = sw.Elapsed.TotalMilliseconds;
 
