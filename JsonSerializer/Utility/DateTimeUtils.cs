@@ -11,16 +11,10 @@ namespace JsonSerializer.Utility
 
         public static string GetDateTimeUtcString(DateTime datetime)
         {
-            DateTime convertDateTime;
-            switch (datetime.Kind)
+            DateTime convertDateTime = datetime;
+            if(convertDateTime.Kind!= DateTimeKind.Utc)
             {
-                case DateTimeKind.Local:
-                case DateTimeKind.Unspecified:
-                    convertDateTime = datetime.ToUniversalTime();
-                    break;
-                default:
-                    convertDateTime = datetime;
-                    break;
+                convertDateTime = convertDateTime.ToUniversalTime();
             }
 
             //ISO8601

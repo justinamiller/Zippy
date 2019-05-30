@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,12 +28,23 @@ namespace ConsoleTest
         public string Address { get; set; }
         public bool IsReady { get; }
         public DateTime CreateDate { get; }
-        public TimeSpan Duration { get; }
+        public TimeSpan Duration {
+            get
+            {
+                return _sw.Elapsed;
+            }
+        }
+        private Stopwatch _sw = Stopwatch.StartNew();
         public int[] Items { get; set; }
         public int? Age { get; set; } = 10;
-    //    public IDictionary<string, string> Data = new Dictionary<string, string>();
-   //  public DataTable DT = new DataTable();
-      //  public DataSet DS = new DataSet();
+        public short S { get; }
+        public double D { get; }
+        public byte B { get; }
+        public sbyte SB { get; }
+
+        //    public IDictionary<string, string> Data = new Dictionary<string, string>();
+        //  public DataTable DT = new DataTable();
+        //  public DataSet DS = new DataSet();
         public Result[] Results { get; set; } = Array.Empty<Result>();
         public IList<Result> ResultList { get; set; } = new List<Result>();
       //  public System.Collections.ArrayList ResultAL { get; set; } = new System.Collections.ArrayList();

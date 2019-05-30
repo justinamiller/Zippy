@@ -348,7 +348,8 @@ namespace JsonSerializer
                     }
                     else if (item.Code >= ConvertUtils.TypeCode.NotSetObject)
                     {
-                        if (!this.SerializeValue(value, item.Code))
+                     //   if (!this.SerializeValue(value, item.Code))
+                     if(!SerializeNonPrimitiveValue(value, item.Code))
                         {
                             return false;
                         }
@@ -389,7 +390,7 @@ namespace JsonSerializer
                     {
                         _builder.WriteNull();
                     }
-                    else if (valueCodeType > ConvertUtils.TypeCode.Enumerable)
+                    else if (valueCodeType >= ConvertUtils.TypeCode.NotSetObject)
                     {
                         if (!this.SerializeValue(value))
                         {
@@ -500,16 +501,6 @@ namespace JsonSerializer
                 return true;
             }
 
-            _currentDepth++;
-            try
-            {
-            //recursion limit or max char length
-            if (_currentDepth >= _currentJsonSetting.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
-            {
-                _builder.WriteNull();
-                return true;
-            }
-
             if(typeCode == ConvertUtils.TypeCode.Empty)
             {
                 typeCode = ConvertUtils.GetTypeCode(value);
@@ -524,11 +515,6 @@ namespace JsonSerializer
             {
                 _builder.WriteObjectValue(value, typeCode);
                 return true;
-            }
-            }
-            finally
-            {
-                _currentDepth--;
             }
         }
 
@@ -550,14 +536,23 @@ namespace JsonSerializer
                     return false;
                 }
             }
+            _currentDepth++;
+            try
+            {
 
+            //recursion limit or max char length
+            if (_currentDepth >= _currentJsonSetting.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
+            {
+                _builder.WriteNull();
+                return true;
+            }
 
             //if (!AddObjectAsReferenceCheck(value))
             //    return true;
 
             //try
             //{
-                switch (objectTypeCode)
+            switch (objectTypeCode)
                 {
                     case ConvertUtils.TypeCode.Enumerable:
                         return this.SerializeEnumerable((IEnumerable)value);
@@ -590,17 +585,22 @@ namespace JsonSerializer
                             }
                         }
                 }
-            //}
-            //catch (Exception)
-            //{
-            //    _builder.WriteNull();
-            //    return true;//was false but when false prevent continuing.
-            //}
+                //}
+                //catch (Exception)
+                //{
+                //    _builder.WriteNull();
+                //    return true;//was false but when false prevent continuing.
+                //}
 
-            //finally
-            //{
-            //    RemoveObjectAsReferenceCheck(value);
-            //}
+                //finally
+                //{
+                //    RemoveObjectAsReferenceCheck(value);
+                //}
+            }
+            finally
+            {
+                _currentDepth--;
+            }
         }
 
         /// <summary>

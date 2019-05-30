@@ -524,7 +524,9 @@ namespace JsonSerializer
         internal void WriteValue(double value)
         {
             //enforce decimal
-            this._textWriter.Write(value.ToString("0.0##############", s_cultureInfo));
+            // this._textWriter.Write(MathUtils.EnsureDecimalPlace(value, value.ToString(CultureInfo.InvariantCulture)));
+            // this._textWriter.Write(value.ToString("0.0##############", s_cultureInfo));
+            this._textWriter.Write(value.ToString( s_cultureInfo));
         }
 
         internal void WriteValue(char value)
@@ -608,7 +610,51 @@ namespace JsonSerializer
 
         internal void WriteValue(TimeSpan value)
         {
-            WriteStringFast(value.ToString(null, s_cultureInfo));
+            //var a = ToXsdDuration(value);
+          //  var b = value.ToString(null, s_cultureInfo);
+            WriteStringFast(value.ToString());
+         //   WriteStringFast(value.ToString(null, s_cultureInfo));
+        }
+
+        public static string ToXsdDuration(TimeSpan timeSpan)
+        {
+            var sb = StringBuilderPool.Get();
+
+            double ticks = Math.Abs(timeSpan.Ticks);
+            double totalSeconds = ticks / TimeSpan.TicksPerSecond;
+            int wholeSeconds = (int)totalSeconds;
+            int seconds = wholeSeconds;
+            int sec = (seconds >= 60 ? seconds % 60 : seconds);
+            int min = (seconds = (seconds / 60)) >= 60 ? seconds % 60 : seconds;
+            int hours = (seconds = (seconds / 60)) >= 24 ? seconds % 24 : seconds;
+            int days = seconds / 24;
+            double remainingSecs = sec + (totalSeconds - wholeSeconds);
+
+            if (days > 0)
+                sb.Append(days);
+
+            if (days == 0 || hours + min + sec + remainingSecs > 0)
+            {
+
+                if (hours > 0)
+                    sb.Append(hours + ":");
+
+                if (min > 0)
+                    sb.Append(min + ":");
+
+                if (remainingSecs > 0)
+                {
+                    var secFmt = string.Format(CultureInfo.InvariantCulture, "{0:0.0000000}", remainingSecs);
+                    secFmt = secFmt.TrimEnd('0').TrimEnd('.');
+                    sb.Append(secFmt + ":");
+                }
+                else if (sb.Length == 2) //PT
+                {
+                    sb.Append("0S");
+                }
+            }
+
+            return StringBuilderPool.GetStringAndRelease(sb);
         }
 
 
@@ -920,5 +966,7 @@ namespace JsonSerializer
                 intValue >>= 4;
             }
         }
+
+
     }
 }

@@ -109,6 +109,14 @@ namespace JsonSerializer.Utility
             }
         }
 
+        public static string EnsureDecimalPlace(double value, string text)
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value) || text.IndexOf('.') != -1 || text.IndexOf('E') != -1 || text.IndexOf('e') != -1)
+            {
+                return text;
+            }
 
+            return text + ".0";
+        }
     }
 }
