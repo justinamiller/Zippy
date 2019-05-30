@@ -62,7 +62,7 @@ namespace ConsoleTest
         static void Main(string[] args)
         {
 
-            System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+          //  System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
 
             var c = new TestObject();
 
@@ -94,24 +94,32 @@ namespace ConsoleTest
             }
             var dd2 = sw.Elapsed.TotalMilliseconds;
 
-            //   var a3 = Utf8Json.JsonSerializer.ToJsonString<object>(c); 
-            //Jil.JSON.Serialize<object>(c);
-            //sw.Restart();
-            //for (var i = 0; i < 100000; i++)
-            //{
-            //    Jil.JSON.Serialize<object>(c);
-            //}
-            //var dd3 = sw.Elapsed.TotalMilliseconds;
+            // serializable.
+            var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            sw.Restart();
+            for (var i = 0; i < 100000; i++)
+            {
+                ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            }
+            var dd3 = sw.Elapsed.TotalMilliseconds;
+
 
 
             dd.ToString();
         }
 
-        private static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        public class ContractlessSample
         {
-            var ex = e.Exception;
-
-            throw new NotImplementedException();
+            public int MyProperty1 { get; set; }
+            public int MyProperty2 { get; set; }
         }
+
+
+        //private static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        //{
+        //    var ex = e.Exception;
+
+        //    throw new NotImplementedException();
+        //}
     }
 }
