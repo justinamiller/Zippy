@@ -35,7 +35,12 @@ namespace JsonSerializer
 
         public static WriteObjectDelegate GetValueTypeToStringMethod(ConvertUtils.TypeCode typeCode)
         {
-            while (true)
+            if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
+            {
+                return null;
+            }
+
+                while (true)
             {
                 switch (typeCode)
                 {

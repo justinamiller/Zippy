@@ -159,6 +159,11 @@ namespace JsonSerializer
             WritePropertyName(StringExtension.GetEncodeString(value));
         }
 
+        private void WriteNull()
+        {
+            _writer.Write(JsonTypeSerializer.Null, 0, 4);
+        }
+
         private void WritePropertyName(char[] value)
         {
             if (this._propertyInUse)
@@ -231,20 +236,16 @@ namespace JsonSerializer
 
                     if (value == null)
                     {
-                        _jsonWriter.WriteNull(_writer, null);
+                        WriteNull();
                     }
-                    else if (valueType >= ConvertUtils.TypeCode.NotSetObject)
+                    else if (writeObject != null)
                     {
-                        //will require more reflection
-                        if (!this.SerializeNonPrimitiveValue(value, valueType))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        //shortcut 
                         writeObject(_writer, value);
+                    }
+                    //will require more reflection
+                    else if (!this.SerializeNonPrimitiveValue(value, valueType))
+                    {
+                        return false;
                     }
                 }
             }
@@ -398,7 +399,7 @@ namespace JsonSerializer
                     var value = item.GetValue(instance);
                     if (value == null)
                     {
-                        _jsonWriter.WriteNull(_writer, null);
+                        WriteNull();
                     }
                     else if (item.WriteObject != null)
                     {
@@ -437,7 +438,7 @@ namespace JsonSerializer
                     var value = entry.Value;
                     if (value == null)
                     {
-                        _jsonWriter.WriteNull(_writer, null);
+                        WriteNull();
                     }
                     else if (valueCodeType >= ConvertUtils.TypeCode.NotSetObject)
                     {
@@ -546,7 +547,7 @@ namespace JsonSerializer
             //prevent null
             if (value == null)
             {
-                _jsonWriter.WriteNull(_writer, null);
+                WriteNull();
                 return true;
             }
 
@@ -589,12 +590,9 @@ namespace JsonSerializer
                 //recursion limit or max char length
                 if (_currentDepth >= _currentJsonSetting.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
                 {
-                    _jsonWriter.WriteNull(_writer, null);
-                    return true;
+                    WriteNull();
+                    return false;
                 }
-
-                //if (!AddObjectAsReferenceCheck(value))
-                //    return true;
 
                 //try
                 //{
@@ -626,7 +624,7 @@ namespace JsonSerializer
                             }
                             else
                             {
-                                _jsonWriter.WriteNull(_writer, null);
+                                WriteNull();
                                 return true;//was false but when false prevent continuing.
                             }
                         }
@@ -660,7 +658,7 @@ namespace JsonSerializer
             if (this._serializeStack.ContainsKey(value))
             {
                 //Self referencing loop detected;
-                _jsonWriter.WriteNull(_writer, null);
+                WriteNull();
                 return false;
             }
 

@@ -1,6 +1,7 @@
 ﻿using JsonSerializer.Utility;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -59,23 +60,6 @@ namespace JsonSerializer.Internal
             }
         }
 
-        public const char SpaceChar = ' ';
-        public const char TabChar = '\t';
-        public const char CarriageReturnChar = '\r';
-        public const char LineFeedChar = '\n';
-        public const char FormFeedChar = '\f';
-        public const char BackspaceChar = '\b';
-        public const char EscapeChar = '\\';
-        public const char QuoteChar = '"';
-
-        private static readonly char[] EscapedBackslash = { EscapeChar, EscapeChar };
-        private static readonly char[] EscapedTab = { EscapeChar, 't' };
-        private static readonly char[] EscapedCarriageReturn = { EscapeChar, 'r' };
-        private static readonly char[] EscapedLineFeed = { EscapeChar, 'n' };
-        private static readonly char[] EscapedFormFeed = { EscapeChar, 'f' };
-        private static readonly char[] EscapedBackspace = { EscapeChar, 'b' };
-        private static readonly char[] EscapedQuote = { EscapeChar, QuoteChar };
-
         public void WriteString(TextWriter writer, string value)
         {
             if (value == null)
@@ -95,104 +79,8 @@ namespace JsonSerializer.Internal
                 return;
             }
 
-
-            var hexSeqBuffer = new char[4];
-            writer.Write(FastJsonWriter.QuoteChar);
-            var len = value.Length;
-            for (var i = 0; i < len; i++)
-            {
-                char c = value[i];
-
-                switch (c)
-                {
-                    case LineFeedChar:
-                        writer.Write(EscapedLineFeed);
-                        continue;
-
-                    case CarriageReturnChar:
-                        writer.Write(EscapedCarriageReturn);
-                        continue;
-
-                    case TabChar:
-                        writer.Write(EscapedTab);
-                        continue;
-
-                    case QuoteChar:
-                        writer.Write(EscapedQuote);
-                        continue;
-
-                    case EscapeChar:
-                        writer.Write(EscapedBackslash);
-                        continue;
-
-                    case FormFeedChar:
-                        writer.Write(EscapedFormFeed);
-                        continue;
-
-                    case BackspaceChar:
-                        writer.Write(EscapedBackspace);
-                        continue;
-                }
-
-                if (escapeHtmlChars)
-                {
-                    switch (c)
-                    {
-                        case '<':
-                            writer.Write("\\u003c");
-                            continue;
-                        case '>':
-                            writer.Write("\\u003e");
-                            continue;
-                        case '&':
-                            writer.Write("\\u0026");
-                            continue;
-                        case '=':
-                            writer.Write("\\u003d");
-                            continue;
-                        case '\'':
-                            writer.Write("\\u0027");
-                            continue;
-                    }
-                }
-
-                if (c.IsPrintable())
-                {
-                    writer.Write(c);
-                    continue;
-                }
-
-                // http://json.org/ spec requires any control char to be escaped
-                if (escapeUnicode || char.IsControl(c))
-                {
-                    // Default, turn into a \uXXXX sequence
-                    IntToHex(c, hexSeqBuffer);
-                    writer.Write("\\u");
-                    writer.Write(hexSeqBuffer);
-                }
-                else
-                {
-                    writer.Write(c);
-                }
-            }
-
-            writer.Write(FastJsonWriter.QuoteChar);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void IntToHex(int intValue, char[] hex)
-        {
-            // TODO: test if unrolling loop is faster
-            for (var i = 3; i >= 0; i--)
-            {
-                var num = intValue & 0xF; // intValue % 16
-
-                // 0x30 + num == '0' + num
-                // 0x37 + num == 'A' + (num - 10)
-                hex[i] = (char)((num < 10 ? 0x30 : 0x37) + num);
-
-                intValue >>= 4;
-            }
+            //force encode.
+            writer.Write(StringExtension.GetEncodeString(value));
         }
 
         public void WriteBuiltIn(TextWriter writer, object value)
@@ -217,10 +105,7 @@ namespace JsonSerializer.Internal
         public void WriteDateTime(TextWriter writer, object oDateTime)
         {
             writer.Write(FastJsonWriter.QuoteChar);
-         //  writer.Write(DateTimeUtils.GetDateTimeUtcString((DateTime)oDateTime));
-
             WriteJsonDate(writer, (DateTime)oDateTime);
-
             writer.Write(FastJsonWriter.QuoteChar);
         }
 
@@ -241,10 +126,17 @@ namespace JsonSerializer.Internal
 
         public void WriteDateTimeOffset(TextWriter writer, object oDateTimeOffset)
         {
+            writer.Write(FastJsonWriter.QuoteChar);
+            writer.Write(((DateTimeOffset)oDateTimeOffset).ToString("o", CultureInfo.InvariantCulture));
+            writer.Write(FastJsonWriter.QuoteChar);
         }
 
         public void WriteNullableDateTimeOffset(TextWriter writer, object dateTimeOffset)
         {
+            if (dateTimeOffset == null)
+                WriteNull(writer, null);
+            else
+                WriteDateTimeOffset(writer, dateTimeOffset);
         }
 
         public void WriteTimeSpan(TextWriter writer, object oTimeSpan)
@@ -264,13 +156,17 @@ namespace JsonSerializer.Internal
 
         public void WriteGuid(TextWriter writer, object oValue)
         {
-            WriteRawString(writer, ((Guid)oValue).ToString("N"));
+            writer.Write(FastJsonWriter.QuoteChar);
+            writer.Write(((Guid)oValue).ToString("D"));
+            writer.Write(FastJsonWriter.QuoteChar);
         }
 
         public void WriteNullableGuid(TextWriter writer, object oValue)
         {
             if (oValue == null) return;
-            WriteRawString(writer, ((Guid)oValue).ToString("N"));
+            writer.Write(FastJsonWriter.QuoteChar);
+            writer.Write(((Guid)oValue).ToString("N"));
+            writer.Write(FastJsonWriter.QuoteChar);
         }
 
         public void WriteBytes(TextWriter writer, object oByteValue)
@@ -291,10 +187,10 @@ namespace JsonSerializer.Internal
             }
         }
 
-        private readonly static char[] s_Null = new char[4] { 'n', 'u', 'l', 'l' };
+        internal readonly static char[] Null = new char[4] { 'n', 'u', 'l', 'l' };
         public void WriteNull(TextWriter writer, object oNull)
         {
-            writer.Write(s_Null, 0, 4);
+            writer.Write(Null, 0, 4);
         }
 
         public void WriteChar(TextWriter writer, object charValue)

@@ -88,16 +88,16 @@ namespace ConsoleTest
             dd.ToString();
 
             sw.Restart();
-        //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
+        Newtonsoft.Json.JsonConvert.SerializeObject(c);
             var d1 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
             var aa2 = JsonSerializer.Serializer.SerializeObject(c);
             var dd1 = sw.Elapsed.TotalMilliseconds;
 
             sw.Restart();
-            for(var i = 0; i < 100000; i++)
+            for (var i = 0; i < 100000; i++)
             {
-     Newtonsoft.Json.JsonConvert.SerializeObject(c);
+                Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
@@ -107,7 +107,7 @@ namespace ConsoleTest
             }
             var dd2 = sw.Elapsed.TotalMilliseconds;
 
-        var xyz=   JsonSerializer.Serializer2.SerializeObject(c);
+            var xyz = JsonSerializer.Serializer2.SerializeObject(c);
             sw.Restart();
             for (var i = 0; i < 100000; i++)
             {
@@ -115,12 +115,12 @@ namespace ConsoleTest
             }
             var dd3 = sw.Elapsed.TotalMilliseconds;
 
-            // serializable.
-    var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            //        // serializable.
+            var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
             sw.Restart();
             for (var i = 0; i < 100000; i++)
             {
-             ServiceStack.Text.JsonSerializer.SerializeToString(c);
+                ServiceStack.Text.JsonSerializer.SerializeToString(c);
             }
             var dd4 = sw.Elapsed.TotalMilliseconds;
 

@@ -74,7 +74,7 @@ namespace JsonSerializer.Utility
         /// <param name="quote">apply quotes</param>
         [SuppressMessage("brain-overload", "S1541")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static unsafe char[] GetEncodeString(string str,  bool quote = true)
+        public static unsafe char[] GetEncodeString(string str, bool quote = true)
         {
             char[] bufferWriter = new char[(str.Length * 2) + 2];
             int bufferIndex = 0;
@@ -244,19 +244,23 @@ namespace JsonSerializer.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAnyEscapeChars(this string value, bool escapeHtmlChars)
         {
-            var len = value.Length;
-            for (var i = 0; i < len; i++)
+            char c;
+            unsafe
             {
-                var c = value[i];
+                fixed (char* chr = value)
+                {
+                    char* ptr = chr;
+                    while ((c = *(ptr++)) != '\0')
+                    {
+                        if (!c.IsPrintable() || c == '"' || c == '\\')
+                            return true;
 
-                // c is not printable
-                // OR c is a printable that requires escaping (quote and backslash).
-                if (!c.IsPrintable() || c == '"' || c == '\\')
-                    return true;
-
-                if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
-                    return true;
+                        if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
+                            return true;
+                    }
+                }
             }
+
             return false;
         }
     }
