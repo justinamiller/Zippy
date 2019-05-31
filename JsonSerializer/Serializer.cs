@@ -553,7 +553,9 @@ namespace JsonSerializer
             //{
             switch (objectTypeCode)
                 {
+                    case ConvertUtils.TypeCode.Array:
                     case ConvertUtils.TypeCode.Enumerable:
+                    case ConvertUtils.TypeCode.IList:
                         return this.SerializeEnumerable((IEnumerable)value);
                     case ConvertUtils.TypeCode.Dictionary:
                         return SerializeDictionary((IDictionary)value);

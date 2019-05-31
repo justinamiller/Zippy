@@ -22,6 +22,7 @@ namespace ConsoleTest
         }
 
         public string Version = "1.0";
+        public System.Collections.IList Collect = new System.Collections.ArrayList();
         public Guid Id = Guid.NewGuid();
         public TType Type { get; set; } = TType.Expert;
         public string Name { get; set; }
@@ -57,11 +58,16 @@ namespace ConsoleTest
             this.Address = "8755 Lakeview Terrace";
 
             this.Items = (new List<int>() { 1, 3, 5, 6, 7, 88 }).ToArray();
-           // Data.Add("Item1", "is ready");
-        //    DT.Columns.Add("Column1", typeof(string));
-         //   var r=DT.NewRow();
-         //   r[0] = "Test";
-           // DT.Rows.Add(r);
+
+            ResultList.Add(new Result());
+            ResultList.Add(new Result());
+            Collect.Add(1);
+            Collect.Add("Test");
+            // Data.Add("Item1", "is ready");
+            //    DT.Columns.Add("Column1", typeof(string));
+            //   var r=DT.NewRow();
+            //   r[0] = "Test";
+            // DT.Rows.Add(r);
         }
 
         public static void Testing()

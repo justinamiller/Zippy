@@ -207,15 +207,10 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
-            var anArray = anEnumerable as Array;
-            if (anArray != null && anArray.Rank > 1)
-            {
-                return SerializeMultidimensionalArray(anArray);
-            }
-
             ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
-            WriteObjectDelegate writeObject =null;
+            WriteObjectDelegate writeObject = null;
             bool flag1 = true;
+            bool isTyped = false;
             WriteStartArray();
             try
             {
@@ -230,6 +225,73 @@ namespace JsonSerializer
                     {
                         //first record.
                         valueType = GetEnumerableValueTypeCode(anEnumerable);
+                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
+                        isTyped = valueType != ConvertUtils.TypeCode.Custom;
+
+                        flag1 = false;
+                    }
+
+                    if (value == null)
+                    {
+                        WriteNull();
+                    }
+                    else
+                    {
+                        if (!isTyped)
+                        {
+                            //is not generic
+                            valueType = GetTypeCode(value);
+                            writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
+                        }
+
+                        if (writeObject != null)
+                        {
+                            writeObject(_writer, value);
+                        }
+                        //will require more reflection
+                        else if (!this.SerializeNonPrimitiveValue(value, valueType))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                WriteEndArray();
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool SerializeArray(Array array)
+        {
+
+            if (array.Rank > 1)
+            {
+                return SerializeMultidimensionalArray(array);
+            }
+
+            ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
+            WriteObjectDelegate writeObject = null;
+            bool flag1 = true;
+            WriteStartArray();
+            try
+            {
+
+                // note that an error in the IEnumerable won't be caught
+                for (var i = 0; i < array.Length; i++)
+                {
+                    var value = array.GetValue(i);
+                    if (!flag1)
+                    {
+                        _writer.Write(',');
+                    }
+                    else
+                    {
+                        //first record.
+                        valueType = GetEnumerableValueTypeCode((IEnumerable)array);
                         writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
                         flag1 = false;
                     }
@@ -256,6 +318,62 @@ namespace JsonSerializer
 
             return true;
         }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool SerializeList(System.Collections.IList list)
+        {
+            ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
+            WriteObjectDelegate writeObject = null;
+            bool flag1 = true;
+            WriteStartArray();
+            try
+            {
+
+                // note that an error in the IEnumerable won't be caught
+                for (var i = 0; i < list.Count; i++)
+                {
+                    var value = list[i];
+                    if (!flag1)
+                    {
+                        _writer.Write(',');
+                    }
+                    else
+                    {
+                        //first record.
+                        flag1 = false;
+                    }
+
+                    if (value == null)
+                    {
+                        WriteNull();
+                    }
+                    else
+                    {
+                        valueType = GetTypeCode(value.GetType());
+                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
+
+                        if (writeObject != null)
+                        {
+                            writeObject(_writer, value);
+                        }
+                        //will require more reflection
+                        else if (!this.SerializeNonPrimitiveValue(value, valueType))
+                        {
+                            return false;
+                        }
+                    }
+
+                }
+            }
+            finally
+            {
+                WriteEndArray();
+            }
+
+            return true;
+        }
+
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeMultidimensionalArray(Array values)
@@ -598,8 +716,18 @@ namespace JsonSerializer
                 //{
                 switch (objectTypeCode)
                 {
+                    case ConvertUtils.TypeCode.Array:
+                        {
+                            return SerializeArray((Array)value);
+                        }
+                    case ConvertUtils.TypeCode.IList:
+                        {
+                            return SerializeList((IList)value);
+                        }
                     case ConvertUtils.TypeCode.Enumerable:
-                        return this.SerializeEnumerable((IEnumerable)value);
+                        {
+                            return this.SerializeEnumerable((IEnumerable)value);
+                        }
                     case ConvertUtils.TypeCode.Dictionary:
                         return SerializeDictionary((IDictionary)value);
                     case ConvertUtils.TypeCode.NameValueCollection:
@@ -611,7 +739,7 @@ namespace JsonSerializer
                     case ConvertUtils.TypeCode.IJsonSerializeImplementation:
                         {
                             // handles it's own serialization.
-                            _jsonWriter.WriteRawString(_writer,((IJsonSerializeImplementation)value).SerializeAsJson());
+                            _jsonWriter.WriteRawString(_writer, ((IJsonSerializeImplementation)value).SerializeAsJson());
                             return true;
                         }
                     default:

@@ -58,7 +58,9 @@ namespace JsonSerializer.Utility
             Dictionary = 103,
             NameValueCollection = 104,
             Enumerable = 105,
-            IJsonSerializeImplementation = 106,
+            Array=106,
+            IList=107,
+            IJsonSerializeImplementation = 120,
            Custom = 200
         }
 
@@ -122,6 +124,7 @@ namespace JsonSerializer.Utility
             {typeof(Stack<>), TypeCode.Enumerable},
             {typeof(HashSet<>), TypeCode.Enumerable},
             {typeof(System.Collections.ObjectModel.ReadOnlyCollection<>), TypeCode.Enumerable},
+        {typeof(System.Collections.IList), TypeCode.IList },
             {typeof(IList<>), TypeCode.Enumerable},
             {typeof(ICollection<>), TypeCode.Enumerable},
             {typeof(IEnumerable<>), TypeCode.Enumerable},
@@ -241,7 +244,7 @@ new Dictionary<Type, ObjectTypeCode>
             }
             else if (type.IsArray)
             {
-                return TypeCode.Enumerable;
+                return TypeCode.Array;
             }
             else if (type.IsGenericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
             {
@@ -296,14 +299,21 @@ new Dictionary<Type, ObjectTypeCode>
             }
             else if(anEnumerable is System.Collections.IList)
             {
-                Type type =anEnumerable.GetType();
-                if (type.IsGenericType)
-                {
-                    return (GetTypeCode(type.GetGenericArguments()[0]));
-                }
+                return GetIListValueTypeCode((System.Collections.IList)anEnumerable);
             }
 
              return TypeCode.Custom;
+        }
+
+        public static TypeCode GetIListValueTypeCode(System.Collections.IList list)
+        {
+            Type type = list.GetType();
+            if (type.IsGenericType)
+            {
+                return (GetTypeCode(type.GetGenericArguments()[0]));
+            }
+
+            return TypeCode.Custom;
         }
     }
 }

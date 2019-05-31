@@ -109,7 +109,6 @@ namespace JsonSerializer.Internal
             writer.Write(FastJsonWriter.QuoteChar);
         }
 
-        need to address datetime
         private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
         {
             writer.Write(@"\/Date(");
