@@ -6,22 +6,35 @@ using JsonSerializer.Utility;
 
 namespace JsonSerializer.Internal
 {
-  sealed  class ValueMemberInfo: IValue
+    sealed class ValueMemberInfo : IValue
     {
-      //  private readonly MemberInfo _memberInfo;
+        //  private readonly MemberInfo _memberInfo;
         private readonly Func<object, object> _getter;
-        public Utility.ConvertUtils.TypeCode Code { get; private set; }
+        private Utility.ConvertUtils.TypeCode _typeCode;
+        public Utility.ConvertUtils.TypeCode Code
+        {
+            get
+            {
+                return _typeCode;
+            }
+        }
         public string Name { get; }
+
+        public WriteObjectDelegate WriteObject { get; }
+
+        public char[] NameChar { get; }
+
         private bool _errored = false;
 
         public ValueMemberInfo(MemberInfo memberInfo)
         {
             //   this._memberInfo = memberInfo;
-            this.Name = new string(StringExtension.GetEncodeString(memberInfo.Name,false));
+            this.NameChar = StringExtension.GetEncodeString(memberInfo.Name, true);
+            this.Name = new string(StringExtension.GetEncodeString(memberInfo.Name, false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
 
             Type valueType = null;
-            if(memberInfo is PropertyInfo)
+            if (memberInfo is PropertyInfo)
             {
                 valueType = ((PropertyInfo)memberInfo).PropertyType;
             }
@@ -31,7 +44,8 @@ namespace JsonSerializer.Internal
             }
             if (valueType != null)
             {
-                Code = Utility.ConvertUtils.GetTypeCode(valueType);
+                _typeCode = Utility.ConvertUtils.GetTypeCode(valueType);
+                WriteObject = FastJsonWriter.GetValueTypeToStringMethod(Code);
             }
         }
 
@@ -41,12 +55,12 @@ namespace JsonSerializer.Internal
             {
                 try
                 {
-                    object value= _getter(instance);
+                    object value = _getter(instance);
 
-                    if(Code== Utility.ConvertUtils.TypeCode.NotSetObject)
+                    if (_typeCode == Utility.ConvertUtils.TypeCode.NotSetObject)
                     {
                         //now try to get value type.
-                        Code = Utility.ConvertUtils.GetInstanceObjectTypeCode(value);
+                        _typeCode = Utility.ConvertUtils.GetInstanceObjectTypeCode(value);
                     }
                     return value;
                 }

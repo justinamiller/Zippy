@@ -27,7 +27,7 @@ namespace ConsoleTest
         public string Name { get; set; }
         public string Address { get; set; }
         public bool IsReady { get; }
-        public DateTime CreateDate { get; }
+        public DateTime CreateDate { get; } = DateTime.Now;
         public TimeSpan Duration {
             get
             {
@@ -54,7 +54,8 @@ namespace ConsoleTest
         public TestObject()
         {
             this.Name = "Test";
-            this.Address = "Here";
+            this.Address = "8755 Lakeview Terrace";
+
             this.Items = (new List<int>() { 1, 3, 5, 6, 7, 88 }).ToArray();
            // Data.Add("Item1", "is ready");
         //    DT.Columns.Add("Column1", typeof(string));
@@ -96,7 +97,7 @@ namespace ConsoleTest
             sw.Restart();
             for(var i = 0; i < 100000; i++)
             {
-     //  Newtonsoft.Json.JsonConvert.SerializeObject(c);
+     Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
@@ -106,14 +107,22 @@ namespace ConsoleTest
             }
             var dd2 = sw.Elapsed.TotalMilliseconds;
 
-            // serializable.
-            var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+        var xyz=   JsonSerializer.Serializer2.SerializeObject(c);
             sw.Restart();
             for (var i = 0; i < 100000; i++)
             {
-        //        ServiceStack.Text.JsonSerializer.SerializeToString(c);
+                JsonSerializer.Serializer2.SerializeObject(c);
             }
             var dd3 = sw.Elapsed.TotalMilliseconds;
+
+            // serializable.
+    var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            sw.Restart();
+            for (var i = 0; i < 100000; i++)
+            {
+             ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            }
+            var dd4 = sw.Elapsed.TotalMilliseconds;
 
 
 

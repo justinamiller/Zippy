@@ -16,6 +16,12 @@ namespace JsonSerializer
 {
     public sealed class JsWriter : IDisposable
     {
+        public TextWriter Writer { get
+            {
+                return _textWriter;
+            }
+        }
+
         private readonly TextWriter _textWriter;
         //marker for writePropertyname is in use
         private bool _propertyInUse;

@@ -234,5 +234,30 @@ namespace JsonSerializer.Utility
             }
             return false;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPrintable(this char c)
+        {
+            return c >= 32 && c <= 126;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasAnyEscapeChars(this string value, bool escapeHtmlChars)
+        {
+            var len = value.Length;
+            for (var i = 0; i < len; i++)
+            {
+                var c = value[i];
+
+                // c is not printable
+                // OR c is a printable that requires escaping (quote and backslash).
+                if (!c.IsPrintable() || c == '"' || c == '\\')
+                    return true;
+
+                if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
+                    return true;
+            }
+            return false;
+        }
     }
 }
