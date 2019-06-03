@@ -29,6 +29,8 @@ namespace ConsoleTest
         public string Address { get; set; }
         public bool IsReady { get; }
         public DateTime CreateDate { get; } = DateTime.Now;
+
+        public DateTime CreateDateUTC { get; } = DateTime.UtcNow;
         public TimeSpan Duration {
             get
             {

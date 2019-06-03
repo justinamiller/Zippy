@@ -26,9 +26,6 @@ namespace JsonSerializer
 
         private static IJsonSerializerStrategy s_defaultJsonSerializerStrategy;
 
-        private static IJsonSerializerSetting s_defaultJsonSetting;
-
-        private IJsonSerializerSetting _currentJsonSetting;
         // The following logic performs circular reference detection
         private readonly Hashtable _serializeStack = new Hashtable(new ReferenceComparer());//new HashSet<object>();
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
@@ -56,48 +53,6 @@ namespace JsonSerializer
             }
         }
 
-
-        public IJsonSerializerSetting CurrentJsonSetting
-        {
-            get
-            {
-                IJsonSerializerSetting setting = _currentJsonSetting;
-                if (setting == null)
-                {
-                    setting = DefaultJsonSetting;
-                    _currentJsonSetting = setting;
-                }
-                return setting;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    _currentJsonSetting = DefaultJsonSetting;
-                }
-                else
-                {
-                    _currentJsonSetting = value;
-                }
-            }
-        }
-
-
-        public static IJsonSerializerSetting DefaultJsonSetting
-        {
-            get
-            {
-                IJsonSerializerSetting defaultJsonSetting = s_defaultJsonSetting;
-                if (defaultJsonSetting == null)
-                {
-                    IJsonSerializerSetting defaultJsonSetting1 = new JsonSerializerSetting();
-                    s_defaultJsonSetting = defaultJsonSetting1;
-                    defaultJsonSetting = defaultJsonSetting1;
-                }
-                return defaultJsonSetting;
-            }
-        }
-
         internal static IJsonSerializerStrategy DefaultJsonSerializerStrategy
         {
             get
@@ -113,16 +68,8 @@ namespace JsonSerializer
 
         public Serializer2()
         {
-            this.CurrentJsonSetting = DefaultJsonSetting;
             this._writer = new StringWriter();
         }
-
-        public Serializer2(IJsonSerializerSetting setting)
-        {
-            this.CurrentJsonSetting = setting ?? DefaultJsonSetting;
-            this._writer = new StringWriter();
-        }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteEndObject()
@@ -469,20 +416,6 @@ namespace JsonSerializer
             return new Serializer2().SerializeObjectInternal(Object);
         }
 
-        /// <summary>
-        /// use your settings
-        /// </summary>
-        /// <param name="json"></param>
-        /// <param name="settings"></param>
-        /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static string SerializeObject(object Object, IJsonSerializerSetting settings)
-        {
-            return new Serializer2(settings).SerializeObjectInternal(Object);
-        }
-
-
         private bool SerializeNonGenericDictionary(IDictionary values)
         {
             WriteObjectDelegate writeKeyFn = null;
@@ -784,7 +717,7 @@ namespace JsonSerializer
             {
 
                 //recursion limit or max char length
-                if (_currentDepth >= _currentJsonSetting.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
+                if (_currentDepth >= JsonSerializerSetting.Current.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
                 {
                     WriteNull();
                     return false;

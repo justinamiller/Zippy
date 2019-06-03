@@ -12,13 +12,15 @@ namespace JsonSerializer
         int _MaxJsonLength = MAXJSONLENGTH;
         int _RecursionLimit = RECURSIONLIMIT;
 
-        public JsonSerializerSetting()
+        public static JsonSerializerSetting Current { get; } = new JsonSerializerSetting();
+
+        private JsonSerializerSetting()
         {
 
         }
 
 
-        public JsonSerializerSetting(int maxJsonLength, int recursionLimit, bool isElasticSearchReady)
+        private JsonSerializerSetting(int maxJsonLength, int recursionLimit, bool isElasticSearchReady)
         {
             this.MaxJsonLength = maxJsonLength;
             this.RecursionLimit = recursionLimit;
@@ -60,5 +62,7 @@ namespace JsonSerializer
                 _RecursionLimit = value;
             }
         }
+
+        public DateHandler DateHandler { get; set; }
     }
 }

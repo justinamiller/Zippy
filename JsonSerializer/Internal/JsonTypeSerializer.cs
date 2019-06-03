@@ -109,10 +109,42 @@ namespace JsonSerializer.Internal
             writer.Write(FastJsonWriter.QuoteChar);
         }
 
+
         private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
         {
+            switch (JsonSerializerSetting.Current.DateHandler)
+            {
+                case DateHandler.ISO8601:
+                    writer.Write(dateTime.ToString("o", CultureInfo.InvariantCulture));
+                    return;
+                case DateHandler.ISO8601DateOnly:
+                    writer.Write(dateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    return;
+                case DateHandler.ISO8601DateTime:
+                    writer.Write(dateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+                    return;
+                case DateHandler.RFC1123:
+                    writer.Write(dateTime.ToUniversalTime().ToString("R", CultureInfo.InvariantCulture));
+                    return;
+            }
+
+
+
+            string offset = null;
+            if (dateTime.Kind != DateTimeKind.Utc)
+            {
+                if (dateTime.Kind == DateTimeKind.Unspecified)
+                    offset = "-0000";
+                else
+                    offset = TimeZoneInfo.Local.GetUtcOffset(dateTime).ToTimeOffsetString();
+            }
+
             writer.Write(@"\/Date(");
             writer.Write((dateTime.ToUniversalTime().Ticks - DatetimeMinTimeTicks) / 10000);
+            if (offset != null)
+            {
+                writer.Write(offset);
+            }
             writer.Write(@")\/");
         }
 
