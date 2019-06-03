@@ -69,7 +69,6 @@ namespace JsonSerializer.Internal
             }
 
             var escapeHtmlChars = false;
-            var escapeUnicode = false;
 
             if (!value.HasAnyEscapeChars(escapeHtmlChars))
             {

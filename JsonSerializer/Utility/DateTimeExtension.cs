@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace JsonSerializer.Utility
 {
-   internal static class DateTimeExtension
+    internal static class DateTimeExtension
     {
         private const long UnixEpoch = 621355968000000000L;
         private static readonly DateTime UnixEpochDateTimeUtc = new DateTime(UnixEpoch, DateTimeKind.Utc);
@@ -46,14 +46,47 @@ namespace JsonSerializer.Utility
             return (ticks - UnixEpoch) / TimeSpan.TicksPerMillisecond;
         }
 
-        public static string ToTimeOffsetString(this TimeSpan offset, string seperator = "")
+        readonly static string[] _time = new string[24]
         {
-            var hours = Math.Abs(offset.Hours).ToString(CultureInfo.InvariantCulture);
-            var minutes = Math.Abs(offset.Minutes).ToString(CultureInfo.InvariantCulture);
-            return (offset < TimeSpan.Zero ? "-" : "+")
-                + (hours.Length == 1 ? "0" + hours : hours)
-                + seperator
-                + (minutes.Length == 1 ? "0" + minutes : minutes);
+            "0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23"
+        };
+
+        readonly static char[] _number = new char[10]
+        {
+            '0','1','2','3','4','5','6','7','8','9'
+        };
+
+        public static string ToTimeOffsetString(this TimeSpan offset)
+        {
+            string hours;
+            string minutes;
+            var h = Math.Abs(offset.Hours);
+            var m = Math.Abs(offset.Minutes);
+
+            if (9 >= h)
+            {
+                hours = new string(new char[2] { '0', _number[h] });
+            }
+            else
+            {
+                hours = _time[h];
+            }
+
+            if (m == 0)
+            {
+                minutes = "00";
+            }
+            else if (9 >= m)
+            {
+                minutes = new string(new char[2] { '0', _number[m] });
+            }
+            else
+            {
+                minutes = _time[m];
+            }
+
+
+            return string.Concat((offset < TimeSpan.Zero ? "-" : "+"), hours, minutes);
         }
     }
 }

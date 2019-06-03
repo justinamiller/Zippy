@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using JsonSerializer.Utility;
+using System.Diagnostics;
 
 namespace JsonSerializer.Internal
 {
@@ -10,6 +11,9 @@ namespace JsonSerializer.Internal
     {
         //  private readonly MemberInfo _memberInfo;
         private readonly Func<object, object> _getter;
+
+        private GetMemberDelegate _getterDelegate;
+
         private Utility.ConvertUtils.TypeCode _typeCode;
         public Utility.ConvertUtils.TypeCode Code
         {
@@ -37,10 +41,12 @@ namespace JsonSerializer.Internal
             if (memberInfo is PropertyInfo)
             {
                 valueType = ((PropertyInfo)memberInfo).PropertyType;
+                _getterDelegate = Utility.ReflectionExtension.CreateGetter((PropertyInfo)memberInfo);
             }
             else if (memberInfo is FieldInfo)
             {
                 valueType = ((FieldInfo)memberInfo).FieldType;
+                _getterDelegate = Utility.ReflectionExtension.CreateGetter((FieldInfo)memberInfo);
             }
             if (valueType != null)
             {

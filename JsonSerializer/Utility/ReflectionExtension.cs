@@ -7,9 +7,88 @@ using System.Text;
 
 namespace JsonSerializer.Utility
 {
+    internal delegate object GetMemberDelegate(object instance);
     static class ReflectionExtension
     {
         private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+
+
+        public static Expression<GetMemberDelegate> GetExpressionLambda(PropertyInfo propertyInfo)
+        {
+            var getMethodInfo = propertyInfo.GetGetMethod(nonPublic: true);
+            if (getMethodInfo == null) return null;
+
+            var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
+            var instanceParam = Expression.Convert(oInstanceParam, propertyInfo.ReflectedType); //propertyInfo.DeclaringType doesn't work on Proxy types
+
+            var exprCallPropertyGetFn = Expression.Call(instanceParam, getMethodInfo);
+            var oExprCallPropertyGetFn = Expression.Convert(exprCallPropertyGetFn, typeof(object));
+
+            return Expression.Lambda<GetMemberDelegate>
+            (
+                oExprCallPropertyGetFn,
+                oInstanceParam
+            );
+        }
+
+        public static GetMemberDelegate CreateGetter(PropertyInfo propertyInfo)
+        {
+            var lambda = GetExpressionLambda(propertyInfo);
+            var propertyGetFn = lambda.Compile();
+            return propertyGetFn;
+        }
+
+        public static GetMemberDelegate CreateGetter(FieldInfo fieldInfo)
+        {
+            return null;
+            var fieldDeclaringType = fieldInfo.DeclaringType;
+
+            var oInstanceParam = Expression.Parameter(typeof(object), "source");
+            var instanceParam = GetCastOrConvertExpression(oInstanceParam, fieldDeclaringType);
+
+            var exprCallFieldGetFn = Expression.Field(instanceParam, fieldInfo);
+            var oExprCallFieldGetFn = Expression.Convert(exprCallFieldGetFn, typeof(object));
+
+            var fieldGetterFn = Expression.Lambda<GetMemberDelegate>
+                (
+                    oExprCallFieldGetFn,
+                    oInstanceParam
+                )
+                .Compile();
+
+            return fieldGetterFn;
+        }
+
+        private static Expression GetCastOrConvertExpression(Expression expression, Type targetType)
+        {
+            Expression result;
+            var expressionType = expression.Type;
+
+            if (targetType.IsAssignableFrom(expressionType))
+            {
+                result = expression;
+            }
+            else
+            {
+                // Check if we can use the as operator for casting or if we must use the convert method
+                if (targetType.IsValueType && !targetType.IsNullableType())
+                {
+                    result = Expression.Convert(expression, targetType);
+                }
+                else
+                {
+                    result = Expression.TypeAs(expression, targetType);
+                }
+            }
+
+            return result;
+        }
+
+        public static bool IsNullableType(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+
 
         public static IEnumerable<FieldInfo> GetFields(Type type, BindingFlags bindingFlags)
         {

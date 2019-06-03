@@ -93,32 +93,41 @@ namespace ConsoleTest
             var c = new TestObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-         var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            var d = sw.Elapsed.TotalMilliseconds;
-            sw.Restart();
-            var a2 = JsonSerializer.Serializer.SerializeObject(c);
-            var dd = sw.Elapsed.TotalMilliseconds;
-            dd.ToString();
+            // var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            //    var d = sw.Elapsed.TotalMilliseconds;
+            //    sw.Restart();
+            //    var a2 = JsonSerializer.Serializer.SerializeObject(c);
+            //    var dd = sw.Elapsed.TotalMilliseconds;
+            //    dd.ToString();
 
-            sw.Restart();
-        Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            var d1 = sw.Elapsed.TotalMilliseconds;
-            sw.Restart();
-            var aa2 = JsonSerializer.Serializer.SerializeObject(c);
-            var dd1 = sw.Elapsed.TotalMilliseconds;
+            //    sw.Restart();
+            //Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            //    var d1 = sw.Elapsed.TotalMilliseconds;
+            //    sw.Restart();
+            //    var aa2 = JsonSerializer.Serializer.SerializeObject(c);
+            //    var dd1 = sw.Elapsed.TotalMilliseconds;
 
-            sw.Restart();
-            for (var i = 0; i < 100000; i++)
-            {
-                Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            }
-            var d2 = sw.Elapsed.TotalMilliseconds;
-            sw.Restart();
-            for (var i = 0; i < 100000; i++)
-            {
-                JsonSerializer.Serializer.SerializeObject(c);
-            }
-            var dd2 = sw.Elapsed.TotalMilliseconds;
+            //    sw.Restart();
+            //    for (var i = 0; i < 100000; i++)
+            //    {
+            //        Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            //    }
+            //    var d2 = sw.Elapsed.TotalMilliseconds;
+            //    sw.Restart();
+            //    for (var i = 0; i < 100000; i++)
+            //    {
+            //        JsonSerializer.Serializer.SerializeObject(c);
+            //    }
+            //    var dd2 = sw.Elapsed.TotalMilliseconds;
+
+            //        // serializable.
+            //var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            //sw.Restart();
+            //for (var i = 0; i < 100000; i++)
+            //{
+            //    ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            //}
+            //var dd4 = sw.Elapsed.TotalMilliseconds;
 
             var xyz = JsonSerializer.Serializer2.SerializeObject(c);
             sw.Restart();
@@ -128,18 +137,11 @@ namespace ConsoleTest
             }
             var dd3 = sw.Elapsed.TotalMilliseconds;
 
-            //        // serializable.
-            var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
-            sw.Restart();
-            for (var i = 0; i < 100000; i++)
-            {
-                ServiceStack.Text.JsonSerializer.SerializeToString(c);
-            }
-            var dd4 = sw.Elapsed.TotalMilliseconds;
 
 
 
-            dd.ToString();
+
+            c.ToString();
         }
 
         public class ContractlessSample
