@@ -113,12 +113,12 @@ namespace ConsoleTest
             //        Newtonsoft.Json.JsonConvert.SerializeObject(c);
             //    }
             //    var d2 = sw.Elapsed.TotalMilliseconds;
-            //    sw.Restart();
-            //    for (var i = 0; i < 100000; i++)
-            //    {
-            //        JsonSerializer.Serializer.SerializeObject(c);
-            //    }
-            //    var dd2 = sw.Elapsed.TotalMilliseconds;
+            //sw.Restart();
+            //for (var i = 0; i < 100000; i++)
+            //{
+            //    JsonSerializer.Serializer.SerializeObject(c);
+            //}
+            //var dd2 = sw.Elapsed.TotalMilliseconds;
 
             //        // serializable.
             //var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);

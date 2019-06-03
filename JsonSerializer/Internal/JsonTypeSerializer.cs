@@ -130,16 +130,20 @@ namespace JsonSerializer.Internal
 
 
             string offset = null;
+            DateTime utcDate = dateTime;
             if (dateTime.Kind != DateTimeKind.Utc)
             {
                 if (dateTime.Kind == DateTimeKind.Unspecified)
                     offset = "-0000";
                 else
                     offset = TimeZoneInfo.Local.GetUtcOffset(dateTime).ToTimeOffsetString();
+
+                //need to convert to utc time
+                utcDate = dateTime.ToUniversalTime();
             }
 
             writer.Write(@"\/Date(");
-            writer.Write((dateTime.ToUniversalTime().Ticks - DatetimeMinTimeTicks) / 10000);
+            writer.Write((utcDate.Ticks - DatetimeMinTimeTicks) / 10000);
             if (offset != null)
             {
                 writer.Write(offset);

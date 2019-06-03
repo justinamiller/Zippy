@@ -531,11 +531,11 @@ namespace JsonSerializer
                         }
                     default:
                         {
-                            IList<ValueMemberInfo> obj = null;
+                            ValueMemberInfo[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
                             if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, out obj))
                             {
-                                return this.SerializeValueMemberInfo(value, obj);
+                                return this.SerializeValueMemberInfo(value, obj.ToList());
                             }
                             else
                             {

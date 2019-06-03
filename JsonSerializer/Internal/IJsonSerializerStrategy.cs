@@ -8,6 +8,6 @@ namespace JsonSerializer.Internal
     {
         bool TrySerializeNonPrimitiveObject(object input, out IDictionary<string, object> output);
 
-        bool TrySerializeNonPrimitiveObjectImproved(object input, out IList<ValueMemberInfo> output);
+        bool TrySerializeNonPrimitiveObjectImproved(object input, out ValueMemberInfo[] output);
     }
 }

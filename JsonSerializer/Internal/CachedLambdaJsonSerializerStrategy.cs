@@ -9,15 +9,15 @@ namespace JsonSerializer.Internal
 {
     class CachedLambdaJsonSerializerStrategy : IJsonSerializerStrategy
     {
-        public IDictionary<Type, IList<ValueMemberInfo>> GetCache;
+        public IDictionary<Type, ValueMemberInfo[]> GetCache;
 
         public CachedLambdaJsonSerializerStrategy()
         {
-            this.GetCache = new Dictionary<Type, IList<ValueMemberInfo>>();
+            this.GetCache = new Dictionary<Type, ValueMemberInfo[]>();
         }
 
 
-        protected virtual IList<ValueMemberInfo> GetterValueFactory(Type type)
+        protected virtual ValueMemberInfo[] GetterValueFactory(Type type)
         {
             MemberInfo[] allMembers = ReflectionExtension.GetFieldsAndProperties(type).Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
             IList<ValueMemberInfo> strs = new List<ValueMemberInfo>();
@@ -32,7 +32,7 @@ namespace JsonSerializer.Internal
                 }
             }
 
-            return strs;
+            return strs.ToArray();
         }
 
 
@@ -46,7 +46,7 @@ namespace JsonSerializer.Internal
             return this.TrySerializeUnknownTypes(input, out output);
         }
 
-        private bool GetValue(Type type, out IList<ValueMemberInfo> data, out bool fromCache)
+        private bool GetValue(Type type, out ValueMemberInfo[] data, out bool fromCache)
         {
             fromCache = false;
             data = null;
@@ -83,19 +83,20 @@ namespace JsonSerializer.Internal
             Type type = input.GetType();
 
             IDictionary<string, object> jsonObjects = new Dictionary<string, object>();// new PocoJsonObject();
-            IList<ValueMemberInfo> data;
+           ValueMemberInfo[] data;
             bool fromCache;
             if (!GetValue(type, out data, out fromCache))
                 return false;
 
-
-            if (data != null && data.Count > 0)
+            var len = data?.Length ?? 0;
+            if (len > 0)
             {
                 bool hasErrorsInFields = false;
                 List<ValueMemberInfo> ErrorFields = new List<ValueMemberInfo>();
 
-                foreach (var item in data)
+                for(var i=0; i< len; i++)
                 {
+                    var item = data[i];
                     try
                     {
                         //perform reflection here.
@@ -112,21 +113,12 @@ namespace JsonSerializer.Internal
                 }
                 //switch out object
                 output = jsonObjects;
-
-                if (hasErrorsInFields)
-                {
-                    //remove bad items.
-                    foreach (var item in ErrorFields)
-                    {
-                        data.Remove(item);
-                    }
-                }
             }//end if
 
             return (output != null);
         }
 
-        public bool TrySerializeNonPrimitiveObjectImproved(object input, out IList<ValueMemberInfo> output)
+        public bool TrySerializeNonPrimitiveObjectImproved(object input, out ValueMemberInfo[] output)
         {
             output = null;
 
@@ -135,12 +127,17 @@ namespace JsonSerializer.Internal
 
             Type type = input.GetType();
 
-            IList<ValueMemberInfo> data;
+            ValueMemberInfo[] data;
             bool fromCache;
             if (!GetValue(type, out data, out fromCache))
                 return false;
 
-            output= new List<ValueMemberInfo>(data);
+            var len = data.Length;
+            output = new ValueMemberInfo[len];
+            for (var i = 0; i < len; i++)
+            {
+                output[i] = data[i];
+            }
 
             return output != null;
         }
