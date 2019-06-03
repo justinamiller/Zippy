@@ -128,7 +128,6 @@ namespace JsonSerializer
 
         private readonly static JsonTypeSerializer _jsonWriter = new JsonTypeSerializer();
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value)
         {
             WriteStartObject();
@@ -151,7 +150,7 @@ namespace JsonSerializer
         }
 
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+       
         private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
             ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
@@ -206,7 +205,6 @@ namespace JsonSerializer
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeArray(Array array)
         {
 
@@ -253,7 +251,7 @@ namespace JsonSerializer
         }
 
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+      
         private bool SerializeList(System.Collections.IList list)
         {
             ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
@@ -308,14 +306,11 @@ namespace JsonSerializer
             return true;
         }
 
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeMultidimensionalArray(Array values)
         {
             return SerializeMultidimensionalArray(values, Array.Empty<int>());
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeMultidimensionalArray(Array values, int[] indices)
         {
             bool flag = true;
@@ -379,7 +374,6 @@ namespace JsonSerializer
 
         //string builder
         //private JsonWriter _builder = null;
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private string SerializeObjectInternal(object json)
         {
             var typeCode = ConvertUtils.GetTypeCode(json.GetType());
@@ -404,7 +398,6 @@ namespace JsonSerializer
         /// <param name="json"></param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static string SerializeObject(object Object)
         {
             if (Object == null)
@@ -483,7 +476,6 @@ namespace JsonSerializer
         }
 
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeGenericDictionary(IDictionary values)
         {
             if (values.Count == 0)
@@ -558,7 +550,6 @@ namespace JsonSerializer
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeGenericDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType)
         {
 
@@ -591,7 +582,6 @@ namespace JsonSerializer
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeDataSet(System.Data.DataSet ds)
         {
             WriteStartObject();
@@ -611,7 +601,7 @@ namespace JsonSerializer
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+
         private void SerializeDataTableData(System.Data.DataTable table)
         {
             var rows = table.Rows;
@@ -669,8 +659,6 @@ namespace JsonSerializer
             }
         }
 
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeDataTable(System.Data.DataTable dt)
         {
             WriteStartObject();
@@ -687,7 +675,7 @@ namespace JsonSerializer
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+
         private bool SerializeNonPrimitiveValue(object value, ConvertUtils.TypeCode objectTypeCode)
         {
             //this prevents recursion

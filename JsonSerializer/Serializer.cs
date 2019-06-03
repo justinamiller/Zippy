@@ -64,7 +64,6 @@ namespace JsonSerializer
         {
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value)
         {
             _builder.WriteStartObject();
@@ -86,7 +85,6 @@ namespace JsonSerializer
         }
 
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
             var anArray = anEnumerable as Array;
