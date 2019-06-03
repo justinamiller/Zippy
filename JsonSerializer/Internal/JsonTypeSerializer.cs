@@ -108,6 +108,7 @@ namespace JsonSerializer.Internal
             writer.Write(FastJsonWriter.QuoteChar);
         }
 
+        private readonly static TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
 
         private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
         {
@@ -136,7 +137,7 @@ namespace JsonSerializer.Internal
                 if (dateTime.Kind == DateTimeKind.Unspecified)
                     offset = "-0000";
                 else
-                    offset = TimeZoneInfo.Local.GetUtcOffset(dateTime).ToTimeOffsetString();
+                    offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString();
 
                 //need to convert to utc time
                 utcDate = dateTime.ToUniversalTime();
