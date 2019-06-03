@@ -68,7 +68,7 @@ namespace JsonSerializer
 
         public Serializer2()
         {
-            this._writer = new StringWriter();
+   //         this._writer = new StringWriter();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -386,14 +386,16 @@ namespace JsonSerializer
             if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
                 //handle for object
+                _writer = StringWriterThreadStatic.Allocate();
                 SerializeNonPrimitiveValue(json, typeCode);
+                return StringWriterThreadStatic.ReturnAndFree((StringWriter)_writer);
             }
             else
-            {
-                FastJsonWriter.GetValueTypeToStringMethod(typeCode)?.Invoke(_writer, json);
+            {   
+                var writer = StringWriterThreadStatic.Allocate();
+                FastJsonWriter.GetValueTypeToStringMethod(typeCode)?.Invoke(writer, json);
+                return StringWriterThreadStatic.ReturnAndFree(writer);
             }
-
-            return _writer.ToString();
         }
 
         /// <summary>

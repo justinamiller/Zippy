@@ -105,7 +105,7 @@ namespace JsonSerializer
                     case ConvertUtils.TypeCode.Uri:
                         return null;
                     case ConvertUtils.TypeCode.String:
-                        return Serializer.WriteString;
+                       return Serializer.WriteString;
                     case ConvertUtils.TypeCode.Bytes:
                         return Serializer.WriteBytes;
                     case ConvertUtils.TypeCode.DBNull:

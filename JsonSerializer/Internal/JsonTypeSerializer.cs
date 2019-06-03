@@ -37,6 +37,7 @@ namespace JsonSerializer.Internal
             writer.Write(FastJsonWriter.QuoteChar);
         }
 
+
         public void WriteString(TextWriter writer, object value)
         {
           //  WriteString1(writer, value);
@@ -245,6 +246,8 @@ namespace JsonSerializer.Internal
                 WriteIntegerValue(writer, (byte)byteValue);
         }
 
+
+
         public void WriteSByte(TextWriter writer, object sbyteValue)
         {
             if (sbyteValue == null)
@@ -343,14 +346,19 @@ namespace JsonSerializer.Internal
 
         public void WriteEnum(TextWriter writer, object enumValue)
         {
-
+            throw new NotImplementedException();
         }
+
+        readonly static char[] s_Number = new char[10]
+           {
+            '0','1','2','3','4','5','6','7','8','9'
+           };
 
         private static void WriteIntegerValue(TextWriter writer, int value)
         {
             if (value >= 0 && value <= 9)
             {
-                writer.Write((char)('0' + value));
+                writer.Write(s_Number[value]);
             }
             else
             {
@@ -363,7 +371,7 @@ namespace JsonSerializer.Internal
         {
             if (!negative && value <= 9)
             {
-                writer.Write((char)('0' + value));
+                writer.Write(s_Number[value]);
             }
             else
             {
@@ -377,7 +385,7 @@ namespace JsonSerializer.Internal
         {
             if (value >= 0 && value <= 9)
             {
-              writer.Write((char)('0' + value));
+                writer.Write(s_Number[value]);
             }
             else
             {
@@ -390,7 +398,7 @@ namespace JsonSerializer.Internal
         {
             if (!negative && value <= 9)
             {
-                writer.Write((char)('0' + value));
+                writer.Write(s_Number[value]);
             }
             else
             {
@@ -417,7 +425,7 @@ namespace JsonSerializer.Internal
             {
                 uint quotient = value / 10;
                 uint digit = value - (quotient * 10);
-                buffer[--index] = (char)('0' + digit);
+                buffer[--index] = s_Number[digit];
                 value = quotient;
             } while (value != 0);
 
@@ -448,7 +456,7 @@ namespace JsonSerializer.Internal
             {
                 ulong quotient = value / 10;
                 ulong digit = value - (quotient * 10);
-                buffer[--index] = (char)('0' + digit);
+                buffer[--index] = s_Number[digit];
                 value = quotient;
             } while (value != 0);
 

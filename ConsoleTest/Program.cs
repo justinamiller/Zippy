@@ -121,13 +121,15 @@ namespace ConsoleTest
             //var dd2 = sw.Elapsed.TotalMilliseconds;
 
             //        // serializable.
-            //var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
-            //sw.Restart();
-            //for (var i = 0; i < 100000; i++)
-            //{
-            //    ServiceStack.Text.JsonSerializer.SerializeToString(c);
-            //}
-            //var dd4 = sw.Elapsed.TotalMilliseconds;
+            ServiceStack.Text.Config.Defaults.IncludePublicFields = true;
+            ServiceStack.Text.JsConfig.IncludePublicFields = true;
+            var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            sw.Restart();
+            for (var i = 0; i < 100000; i++)
+            {
+                ServiceStack.Text.JsonSerializer.SerializeToString(c);
+            }
+            var dd4 = sw.Elapsed.TotalMilliseconds;
 
             var xyz = JsonSerializer.Serializer2.SerializeObject(c);
             sw.Restart();
