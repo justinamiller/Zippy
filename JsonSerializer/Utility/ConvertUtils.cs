@@ -60,6 +60,7 @@ namespace JsonSerializer.Utility
             Enumerable = 105,
             Array=106,
             IList=107,
+            GenericDictionary=108,
             IJsonSerializeImplementation = 120,
            Custom = 200
         }
@@ -128,8 +129,8 @@ namespace JsonSerializer.Utility
             {typeof(IList<>), TypeCode.Enumerable},
             {typeof(ICollection<>), TypeCode.Enumerable},
             {typeof(IEnumerable<>), TypeCode.Enumerable},
-            {typeof(Dictionary<,>), TypeCode.Dictionary},
-            {typeof(IDictionary<,>), TypeCode.Dictionary},
+            {typeof(Dictionary<,>), TypeCode.GenericDictionary},
+            {typeof(IDictionary<,>), TypeCode.GenericDictionary},
             {typeof(SortedDictionary<,>), TypeCode.Dictionary},
             {typeof(SortedList<,>), TypeCode.Dictionary},
             {typeof(System.Linq.ILookup<,>), TypeCode.Enumerable},
@@ -148,7 +149,8 @@ namespace JsonSerializer.Utility
             {typeof(System.Collections.Concurrent.ConcurrentDictionary<,>), TypeCode.Dictionary},
             {typeof(System.Data.DataTable), TypeCode.DataTable},
             {typeof(System.Data.DataSet), TypeCode.DataSet},
-             {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection}
+             {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
+            {typeof(System.Collections.IDictionary), TypeCode.Dictionary}
           //  {typeof(Lazy<>), typeof(LazyFormatter<>)},
             //{typeof(Task<>), typeof(TaskValueFormatter<>)},
             #endif

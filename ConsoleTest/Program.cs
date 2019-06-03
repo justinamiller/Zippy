@@ -52,6 +52,9 @@ namespace ConsoleTest
        // public System.Collections.IList ResultSL { get; set; } = new System.Collections.ArrayList();
        public Dictionary<string, int> ChildrenAges { get; set; }=new Dictionary<string,int>();
         public System.Collections.Specialized.NameValueCollection Names = new System.Collections.Specialized.NameValueCollection();
+
+        public System.Collections.IDictionary OldAges { get; set; } = new System.Collections.Hashtable();
+
         public TestObject()
         {
             this.Name = "Test";
@@ -63,6 +66,8 @@ namespace ConsoleTest
             ResultList.Add(new Result());
             Collect.Add(1);
             Collect.Add("Test");
+            OldAges.Add("test", "data");
+            ChildrenAges.Add("bill", 13);
             // Data.Add("Item1", "is ready");
             //    DT.Columns.Add("Column1", typeof(string));
             //   var r=DT.NewRow();

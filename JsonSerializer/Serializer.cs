@@ -257,17 +257,17 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private string SerializeObjectInternal(object json)
         {
-           _builder = new JsWriter() //new JsonTextWriter()
-            //_builder = new JsonTextWriter()
-            {
-                IsElasticSearchReady = this.CurrentJsonSetting.IsElasticSearchReady
-            };
-
             if (json == null)
             {
                 return null;
             }
 
+
+            _builder = new JsWriter() //new JsonTextWriter()
+            //_builder = new JsonTextWriter()
+            {
+                IsElasticSearchReady = this.CurrentJsonSetting.IsElasticSearchReady
+            };
             var typeCode = ConvertUtils.GetTypeCode(json.GetType());
             if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
@@ -308,6 +308,7 @@ namespace JsonSerializer
         }
 
 
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeDictionary(IDictionary values)
         {
@@ -320,12 +321,20 @@ namespace JsonSerializer
             //check if key is string type
             Type type = values.GetType();
             Type[] args = type.GetGenericArguments();
-            var keyCodeType = ConvertUtils.GetTypeCode(args[0]);
-            if (keyCodeType != ConvertUtils.TypeCode.String)
+
+            ConvertUtils.TypeCode keyCodeType = ConvertUtils.TypeCode.String;
+            ConvertUtils.TypeCode valueCodeType = ConvertUtils.TypeCode.String;
+            if (args.Length > 0)
             {
-                return false;
+    keyCodeType = ConvertUtils.GetTypeCode(args[0]);
+                if (keyCodeType != ConvertUtils.TypeCode.String)
+                {
+                    return false;
+                }
+        valueCodeType = ConvertUtils.GetTypeCode(args[1]);
             }
-            var valueCodeType = ConvertUtils.GetTypeCode(args[1]);
+
+
             return SerializeDictionaryInternal(values, valueCodeType);
         }
 
@@ -558,6 +567,7 @@ namespace JsonSerializer
                     case ConvertUtils.TypeCode.IList:
                         return this.SerializeEnumerable((IEnumerable)value);
                     case ConvertUtils.TypeCode.Dictionary:
+                    case ConvertUtils.TypeCode.GenericDictionary:
                         return SerializeDictionary((IDictionary)value);
                     case ConvertUtils.TypeCode.NameValueCollection:
                         return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value);
