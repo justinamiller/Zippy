@@ -254,17 +254,8 @@ new Dictionary<Type, ObjectTypeCode>
         public static TypeCode GetTypeCode(object obj)
         {
             Type type = obj.GetType();
-            if (TypeCodeMap.TryGetValue(type, out TypeCode typeCode))
-            {
-                return typeCode;
-            }
 
-            if (type.IsEnum)
-            {
-                return GetTypeCode(Enum.GetUnderlyingType(type));
-            }
-
-            return GetInstanceObjectTypeCode(obj);
+            return GetTypeCode(type);
         }
 
         public static bool IsNullableType(Type t)

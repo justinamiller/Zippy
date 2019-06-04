@@ -9,9 +9,11 @@ namespace JsonSerializer.Internal
 {
     sealed class ValueMemberInfo : IValue
     {
-        //  private readonly MemberInfo _memberInfo;
         private readonly Func<object, object> _getter;
         private ConvertUtils.TypeCode _typeCode;
+
+        //public MemberInfo MemberInfo { get; }
+        public Type ValueType{get;}
 
         public ConvertUtils.TypeCode Code
         {
@@ -30,23 +32,22 @@ namespace JsonSerializer.Internal
 
         public ValueMemberInfo(MemberInfo memberInfo)
         {
-            //   this._memberInfo = memberInfo;
+           //    this.MemberInfo = memberInfo;
             this.NameChar = StringExtension.GetEncodeString(memberInfo.Name, true);
             this.Name = new string(StringExtension.GetEncodeString(memberInfo.Name, false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
 
-            Type valueType = null;
             if (memberInfo is PropertyInfo)
             {
-                valueType = ((PropertyInfo)memberInfo).PropertyType;
+                ValueType = ((PropertyInfo)memberInfo).PropertyType;
             }
             else if (memberInfo is FieldInfo)
             {
-                valueType = ((FieldInfo)memberInfo).FieldType;
+                ValueType = ((FieldInfo)memberInfo).FieldType;
             }
-            if (valueType != null)
+            if (ValueType != null)
             {
-                _typeCode = Utility.ConvertUtils.GetTypeCode(valueType);
+                _typeCode = Utility.ConvertUtils.GetTypeCode(ValueType);
 
                 WriteObject = FastJsonWriter.GetValueTypeToStringMethod(Code);
             }

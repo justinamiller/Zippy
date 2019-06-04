@@ -19,16 +19,20 @@ namespace JsonSerializer.Internal
 
         protected virtual ValueMemberInfo[] GetterValueFactory(Type type)
         {
-            MemberInfo[] allMembers = ReflectionExtension.GetFieldsAndProperties(type).Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
+            var allMembers = ReflectionExtension.GetFieldsAndProperties(type);//.Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
             IList<ValueMemberInfo> strs = new List<ValueMemberInfo>();
-            int len = allMembers.Length;
+            int len = allMembers.Count;
             for (int i = 0; i < len; i++)
             {
+                //get item
                 MemberInfo item = allMembers[i];
 
                 if (item != null && !item.Name.IsNullOrEmpty())
                 {
-                    strs.Add(new ValueMemberInfo(item));
+                    if (!ReflectionExtension.IsIndexedProperty(item))
+                    {
+                        strs.Add(new ValueMemberInfo(item));
+                    }
                 }
             }
 
@@ -118,21 +122,23 @@ namespace JsonSerializer.Internal
             return (output != null);
         }
 
-        public bool TrySerializeNonPrimitiveObjectImproved(object input, out ValueMemberInfo[] output)
+        public bool TrySerializeNonPrimitiveObjectImproved(object input, Type type, out ValueMemberInfo[] output)
         {
             output = null;
-
-            if (input == null)
-                return false;
-
-            Type type = input.GetType();
-
             ValueMemberInfo[] data;
-            bool fromCache;
-            if (!GetValue(type, out data, out fromCache))
-                return false;
+            bool fromCache = false;
 
-            var len = data.Length;
+            if (type == null)
+            {
+                type = input.GetType();
+            }
+
+            if (!GetValue(type, out data, out fromCache))
+            {
+                return false;
+            }
+
+            int len = data.Length;
             output = new ValueMemberInfo[len];
             for (var i = 0; i < len; i++)
             {

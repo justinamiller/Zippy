@@ -475,8 +475,8 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeNonPrimitiveValue(object value, ConvertUtils.TypeCode objectTypeCode)
         {
-            //this prevents recursion
             int i = 0;
+            //this prevents recursion
             if (!_cirobj.TryGetValue(value, out i))
                 _cirobj.Add(value, _cirobj.Count + 1);
             else
@@ -525,7 +525,7 @@ namespace JsonSerializer
                         {
                             ValueMemberInfo[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
-                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, out obj))
+                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, value.GetType(),  out obj))
                             {
                                 return this.SerializeValueMemberInfo(value, obj.ToList());
                             }

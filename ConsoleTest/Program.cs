@@ -84,14 +84,28 @@ namespace ConsoleTest
         }
     }
 
+    public class SimpleClass
+    {
+        public string Name { get; }
+        public int Age { get; }
+        public bool Hired { get; }
+        public SimpleClass()
+        {
+            this.Name = "Joe Pickett";
+            this.Age = 30;
+            this.Hired = true;
+        }
+    }
+
+
     class Program
     {
         static void Main(string[] args)
         {
 
-          //  System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            //  System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
 
-            var c = new TestObject();
+            var c = new SimpleClass(); //new TestObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
             // var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
@@ -102,18 +116,20 @@ namespace ConsoleTest
             //    dd.ToString();
 
             //    sw.Restart();
-            //Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            Newtonsoft.Json.JsonConvert.SerializeObject(c);
             //    var d1 = sw.Elapsed.TotalMilliseconds;
             //    sw.Restart();
             //    var aa2 = JsonSerializer.Serializer.SerializeObject(c);
             //    var dd1 = sw.Elapsed.TotalMilliseconds;
 
-            //    sw.Restart();
-            //    for (var i = 0; i < 100000; i++)
-            //    {
-            //        Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            //    }
-            //    var d2 = sw.Elapsed.TotalMilliseconds;
+            sw.Restart();
+            for (var i = 0; i < 100000; i++)
+            {
+                Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            }
+            var d2 = sw.Elapsed.TotalMilliseconds;
+
+            //JsonSerializer.Serializer.SerializeObject(c);
             //sw.Restart();
             //for (var i = 0; i < 100000; i++)
             //{
