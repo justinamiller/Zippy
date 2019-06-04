@@ -132,11 +132,11 @@ namespace ConsoleTest
             }
             var dd4 = sw.Elapsed.TotalMilliseconds;
 
-            var xyz = JsonSerializer.Serializer2.SerializeObject(c);
+            var xyz = JsonSerializer.Serializer2.SerializeObjectToString(c);
             sw.Restart();
             for (var i = 0; i < 100000; i++)
             {
-                JsonSerializer.Serializer2.SerializeObject(c);
+                JsonSerializer.Serializer2.SerializeObjectToString(c);
             }
             var dd3 = sw.Elapsed.TotalMilliseconds;
 

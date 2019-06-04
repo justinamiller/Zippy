@@ -21,10 +21,6 @@ namespace JsonSerializer
             {
                 return null;
             }
-            else if (instance is IJsonSerializeImplementation)
-            {
-                return ((IJsonSerializeImplementation)instance).SerializeAsJson();
-            }
            
             return Serializer.SerializeObject(instance);
         }

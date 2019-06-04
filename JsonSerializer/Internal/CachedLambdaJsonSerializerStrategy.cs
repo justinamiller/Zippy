@@ -21,8 +21,8 @@ namespace JsonSerializer.Internal
         {
             MemberInfo[] allMembers = ReflectionExtension.GetFieldsAndProperties(type).Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
             IList<ValueMemberInfo> strs = new List<ValueMemberInfo>();
-
-            for (int i = 0; i < allMembers.Length; i++)
+            int len = allMembers.Length;
+            for (int i = 0; i < len; i++)
             {
                 MemberInfo item = allMembers[i];
 

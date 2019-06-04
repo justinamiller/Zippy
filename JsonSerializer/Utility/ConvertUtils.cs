@@ -61,7 +61,6 @@ namespace JsonSerializer.Utility
             Array=106,
             IList=107,
             GenericDictionary=108,
-            IJsonSerializeImplementation = 120,
            Custom = 200
         }
 
@@ -226,10 +225,6 @@ new Dictionary<Type, ObjectTypeCode>
 
             }//IEnumerable
 
-            if(value is IJsonSerializeImplementation)
-            {
-                return TypeCode.IJsonSerializeImplementation;
-            }
 
             return TypeCode.Custom;
         }
