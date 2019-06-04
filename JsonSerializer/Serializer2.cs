@@ -216,6 +216,16 @@ namespace JsonSerializer
             Type lastType = null;
             bool flag1 = true;
             WriteStartArray();
+
+            var currentType = ConvertUtils.GetEnumerableValueTypeCode(array);
+            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+            if (isTyped)
+            {
+                valueTypeCode = currentType;
+                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+            }
+
+
             try
             {
 
@@ -259,6 +269,15 @@ namespace JsonSerializer
             bool flag1 = true;
             Type lastType = null;
 
+          var  currentType = ConvertUtils.GetEnumerableValueTypeCode(list);
+            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+
+            if (isTyped)
+            {
+                valueTypeCode = currentType;
+                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+            }
+
             WriteStartArray();
             try
             {
@@ -283,12 +302,15 @@ namespace JsonSerializer
                     }
                     else
                     {
-                        Type valueType = value.GetType();
-                        if (lastType != valueType)
+                        if (!isTyped)
                         {
-                            lastType = valueType;
-                            valueTypeCode = GetTypeCode(valueType);
-                            writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                            Type valueType = value.GetType();
+                            if (lastType != valueType)
+                            {
+                                lastType = valueType;
+                                valueTypeCode = GetTypeCode(valueType);
+                                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                            }
                         }
 
                         if (!WriteObjectValue(value, writeObject, valueTypeCode))
