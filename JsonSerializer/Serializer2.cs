@@ -87,14 +87,14 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartArray()
+        private void WriteStartArray()
         {
             this._writer.Write('[');
             _arrayIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartObject()
+        private void WriteStartObject()
         {
             this._writer.Write('{');
             this._propertyInUse = false;
@@ -106,6 +106,7 @@ namespace JsonSerializer
             WritePropertyName(StringExtension.GetEncodeString(value));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteNull()
         {
             _writer.Write(JsonTypeSerializer.Null, 0, 4);
@@ -311,6 +312,8 @@ namespace JsonSerializer
             return SerializeMultidimensionalArray(values, Array.Empty<int>());
         }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeMultidimensionalArray(Array values, int[] indices)
         {
             bool flag = true;
@@ -372,8 +375,7 @@ namespace JsonSerializer
             return true;
         }
 
-        //string builder
-        //private JsonWriter _builder = null;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string SerializeObjectInternal(object json)
         {
             var typeCode = ConvertUtils.GetTypeCode(json.GetType());
@@ -517,7 +519,7 @@ namespace JsonSerializer
                     WritePropertyName(item.NameChar);
                     var value = item.GetValue(instance);
 
-                   if(!WriteObjectValue(value, item.WriteObject, item.Code))
+                    if (!WriteObjectValue(value, item.WriteObject, item.Code))
                     {
                         return false;
                     }

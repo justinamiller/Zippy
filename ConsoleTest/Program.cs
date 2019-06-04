@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -138,10 +139,6 @@ namespace ConsoleTest
                 JsonSerializer.Serializer2.SerializeObject(c);
             }
             var dd3 = sw.Elapsed.TotalMilliseconds;
-
-
-
-
 
             c.ToString();
         }

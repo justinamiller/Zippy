@@ -11,16 +11,16 @@ namespace JsonSerializer.Internal
     {
         //  private readonly MemberInfo _memberInfo;
         private readonly Func<object, object> _getter;
+        private ConvertUtils.TypeCode _typeCode;
 
-        private Utility.ConvertUtils.TypeCode _typeCode;
-        public Utility.ConvertUtils.TypeCode Code
+        public ConvertUtils.TypeCode Code
         {
             get
             {
                 return _typeCode;
             }
         }
-        public string Name { get; }
+        public string Name { get;}
 
         public WriteObjectDelegate WriteObject { get; }
 
@@ -35,6 +35,10 @@ namespace JsonSerializer.Internal
             this.Name = new string(StringExtension.GetEncodeString(memberInfo.Name, false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
 
+
+            
+
+
             Type valueType = null;
             if (memberInfo is PropertyInfo)
             {
@@ -47,6 +51,7 @@ namespace JsonSerializer.Internal
             if (valueType != null)
             {
                 _typeCode = Utility.ConvertUtils.GetTypeCode(valueType);
+
                 WriteObject = FastJsonWriter.GetValueTypeToStringMethod(Code);
             }
         }

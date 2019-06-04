@@ -235,10 +235,16 @@ namespace JsonSerializer
             _buffer[_offset++] = (byte)'\"';
         }
 
+        public void WriteStringRaw(string value)
+        {
+            WriteRawString(value);
+        }
+
         internal override void WriteRawString(string value)
         {
             var length = value.Length;
             BinaryUtil.EnsureCapacity(ref _buffer, _offset, length);
+
             for (var i = 0; i < length; i++)
             {
                 _buffer[_offset++] = (byte)value[i];

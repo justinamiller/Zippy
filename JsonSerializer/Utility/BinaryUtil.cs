@@ -15,7 +15,7 @@ namespace JsonSerializer.Utility
             // If null(most case fisrt time) fill byte.
             if (bytes == null)
             {
-                bytes = new byte[256];
+                bytes = new byte[1256];
                 return;
             }
 
