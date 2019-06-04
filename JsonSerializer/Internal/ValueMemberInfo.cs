@@ -35,10 +35,6 @@ namespace JsonSerializer.Internal
             this.Name = new string(StringExtension.GetEncodeString(memberInfo.Name, false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
 
-
-            
-
-
             Type valueType = null;
             if (memberInfo is PropertyInfo)
             {

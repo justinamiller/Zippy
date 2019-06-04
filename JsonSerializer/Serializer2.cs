@@ -27,7 +27,6 @@ namespace JsonSerializer
         private static IJsonSerializerStrategy s_defaultJsonSerializerStrategy;
 
         // The following logic performs circular reference detection
-        private readonly Hashtable _serializeStack = new Hashtable(new ReferenceComparer());//new HashSet<object>();
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private int _currentDepth = 0;
         private TextWriter _writer;
@@ -68,7 +67,6 @@ namespace JsonSerializer
 
         public Serializer2()
         {
-   //         this._writer = new StringWriter();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -151,7 +149,7 @@ namespace JsonSerializer
         }
 
 
-       
+
         private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
             ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
@@ -208,14 +206,14 @@ namespace JsonSerializer
 
         private bool SerializeArray(Array array)
         {
-
             if (array.Rank > 1)
             {
                 return SerializeMultidimensionalArray(array);
             }
 
-            ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
+            ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
             WriteObjectDelegate writeObject = null;
+            Type lastType = null;
             bool flag1 = true;
             WriteStartArray();
             try
@@ -229,15 +227,16 @@ namespace JsonSerializer
                     {
                         _writer.Write(',');
                     }
-                    else
+
+                    Type valueType = value.GetType();
+                    if (lastType != valueType)
                     {
-                        //first record.
-                        valueType = GetEnumerableValueTypeCode((IEnumerable)array);
-                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
-                        flag1 = false;
+                        lastType = valueType;
+                        valueTypeCode = GetTypeCode(valueType);
+                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
                     }
 
-                    if(!WriteObjectValue(value, writeObject, valueType))
+                    if (!WriteObjectValue(value, writeObject, valueTypeCode))
                     {
                         return false;
                     }
@@ -252,13 +251,13 @@ namespace JsonSerializer
         }
 
 
-      
+
         private bool SerializeList(System.Collections.IList list)
         {
             ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
             WriteObjectDelegate writeObject = null;
             bool flag1 = true;
-            Type lastType=null;
+            Type lastType = null;
 
             WriteStartArray();
             try
@@ -285,14 +284,14 @@ namespace JsonSerializer
                     else
                     {
                         Type valueType = value.GetType();
-                        if(lastType!= valueType)
+                        if (lastType != valueType)
                         {
                             lastType = valueType;
                             valueTypeCode = GetTypeCode(valueType);
                             writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
                         }
 
-                        if(!WriteObjectValue(value, writeObject, valueTypeCode))
+                        if (!WriteObjectValue(value, writeObject, valueTypeCode))
                         {
                             return false;
                         }
@@ -387,7 +386,7 @@ namespace JsonSerializer
                 return StringWriterThreadStatic.ReturnAndFree((StringWriter)_writer);
             }
             else
-            {   
+            {
                 var writer = StringWriterThreadStatic.Allocate();
                 FastJsonWriter.GetValueTypeToStringMethod(typeCode)?.Invoke(writer, json);
                 return StringWriterThreadStatic.ReturnAndFree(writer);
@@ -409,6 +408,8 @@ namespace JsonSerializer
 
             return new Serializer2().SerializeObjectInternal(Object);
         }
+
+
 
         private bool SerializeNonGenericDictionary(IDictionary values)
         {
@@ -471,8 +472,8 @@ namespace JsonSerializer
             {
                 WriteEndObject();
             }
-            
-            
+
+
 
             return true;
         }
@@ -513,7 +514,7 @@ namespace JsonSerializer
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
             try
             {
-             for(var i=0; i<items.Length; i++)
+                for (var i = 0; i < items.Length; i++)
                 {
                     var item = items[i];
                     WritePropertyName(item.NameChar);
@@ -541,12 +542,12 @@ namespace JsonSerializer
                 WriteNull();
                 return true;
             }
-            else if (writeValueFn  != null)
+            else if (writeValueFn != null)
             {
                 writeValueFn(_writer, value);
-                            return true;
+                return true;
             }
-            else 
+            else
             {
                 return SerializeNonPrimitiveValue(value, valueTypeCode);
             }
@@ -603,7 +604,6 @@ namespace JsonSerializer
             return true;
         }
 
-
         private void SerializeDataTableData(System.Data.DataTable table)
         {
             var rows = table.Rows;
@@ -628,26 +628,26 @@ namespace JsonSerializer
                     WriteStartObject();
                     try
                     {
-                    var columnType = new Dictionary<System.Data.DataColumn, Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate>>();
-                    foreach(System.Data.DataColumn column in cols)
-                    {
-                        var typeCode = ConvertUtils.GetTypeCode(column.DataType);
-                        columnType.Add(column, new Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate>(StringExtension.GetEncodeString(column.ColumnName), typeCode, FastJsonWriter.GetValueTypeToStringMethod(typeCode)));
-                    }
-
-                    foreach (var column in columnType)
-                    {
-                        //build column name
-                        WritePropertyName(column.Value.Item1);
-                        //build column data
-                        var value = row[column.Key];
-
-                        if(!WriteObjectValue(value, column.Value.Item3, column.Value.Item2))
+                        var columnType = new Dictionary<System.Data.DataColumn, Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate>>();
+                        foreach (System.Data.DataColumn column in cols)
                         {
-                            return;
+                            var typeCode = ConvertUtils.GetTypeCode(column.DataType);
+                            columnType.Add(column, new Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate>(StringExtension.GetEncodeString(column.ColumnName), typeCode, FastJsonWriter.GetValueTypeToStringMethod(typeCode)));
                         }
 
-                    }
+                        foreach (var column in columnType)
+                        {
+                            //build column name
+                            WritePropertyName(column.Value.Item1);
+                            //build column data
+                            var value = row[column.Key];
+
+                            if (!WriteObjectValue(value, column.Value.Item3, column.Value.Item2))
+                            {
+                                return;
+                            }
+
+                        }
                     }
                     finally
                     {
@@ -677,7 +677,6 @@ namespace JsonSerializer
             return true;
         }
 
-
         private bool SerializeNonPrimitiveValue(object value, ConvertUtils.TypeCode objectTypeCode)
         {
             //this prevents recursion
@@ -693,18 +692,16 @@ namespace JsonSerializer
                 }
             }
             _currentDepth++;
+            //recursion limit or max char length
+            if (_currentDepth >= JsonSerializerSetting.Current.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
+            {
+                _currentDepth--;
+                WriteNull();
+                return false;
+            }
+
             try
             {
-
-                //recursion limit or max char length
-                if (_currentDepth >= JsonSerializerSetting.Current.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
-                {
-                    WriteNull();
-                    return false;
-                }
-
-                //try
-                //{
                 switch (objectTypeCode)
                 {
                     case ConvertUtils.TypeCode.Array:
@@ -750,17 +747,6 @@ namespace JsonSerializer
                             }
                         }
                 }
-                //}
-                //catch (Exception)
-                //{
-                //    _builder.WriteNull();
-                //    return true;//was false but when false prevent continuing.
-                //}
-
-                //finally
-                //{
-                //    RemoveObjectAsReferenceCheck(value);
-                //}
             }
             finally
             {
@@ -769,36 +755,9 @@ namespace JsonSerializer
         }
 
         /// <summary>
-        /// check if this object was already serialized within it's object path.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool AddObjectAsReferenceCheck(object value)
-        {
-            if (this._serializeStack.ContainsKey(value))
-            {
-                //Self referencing loop detected;
-                WriteNull();
-                return false;
-            }
-
-            // Add the object to the _serializeStack
-            _serializeStack.Add(value, null);
-
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RemoveObjectAsReferenceCheck(object value)
-        {
-            this._serializeStack.Remove(value);
-        }
-
-        /// <summary>
         ///We use this for our cycle detection for the case where objects override equals/gethashcode
         /// </summary>
-        private class ReferenceComparer : IEqualityComparer
+        private sealed class ReferenceComparer : IEqualityComparer
         {
             bool IEqualityComparer.Equals(object x, object y)
             {
