@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -83,14 +84,28 @@ namespace ConsoleTest
         }
     }
 
+    public class SimpleClass
+    {
+        public string Name { get; }
+        public int Age { get; }
+        public bool Hired { get; }
+        public SimpleClass()
+        {
+            this.Name = "Joe Pickett";
+            this.Age = 30;
+            this.Hired = true;
+        }
+    }
+
+
     class Program
     {
         static void Main(string[] args)
         {
 
-          //  System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            //  System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
 
-            var c = new TestObject();
+            var c = new SimpleClass(); //new TestObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
             // var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
@@ -100,12 +115,12 @@ namespace ConsoleTest
             //    var dd = sw.Elapsed.TotalMilliseconds;
             //    dd.ToString();
 
-            sw.Restart();
+            //    sw.Restart();
             Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            var d1 = sw.Elapsed.TotalMilliseconds;
-            sw.Restart();
-            var aa2 = JsonSerializer.Serializer.SerializeObject(c);
-            var dd1 = sw.Elapsed.TotalMilliseconds;
+            //    var d1 = sw.Elapsed.TotalMilliseconds;
+            //    sw.Restart();
+            //    var aa2 = JsonSerializer.Serializer.SerializeObject(c);
+            //    var dd1 = sw.Elapsed.TotalMilliseconds;
 
             sw.Restart();
             for (var i = 0; i < 100000; i++)
@@ -113,12 +128,14 @@ namespace ConsoleTest
                 Newtonsoft.Json.JsonConvert.SerializeObject(c);
             }
             var d2 = sw.Elapsed.TotalMilliseconds;
-            sw.Restart();
-            for (var i = 0; i < 100000; i++)
-            {
-                JsonSerializer.Serializer.SerializeObject(c);
-            }
-            var dd2 = sw.Elapsed.TotalMilliseconds;
+
+            //JsonSerializer.Serializer.SerializeObject(c);
+            //sw.Restart();
+            //for (var i = 0; i < 100000; i++)
+            //{
+            //    JsonSerializer.Serializer.SerializeObject(c);
+            //}
+            //var dd2 = sw.Elapsed.TotalMilliseconds;
 
             //        // serializable.
             ServiceStack.Text.Config.Defaults.IncludePublicFields = true;
@@ -131,17 +148,13 @@ namespace ConsoleTest
             }
             var dd4 = sw.Elapsed.TotalMilliseconds;
 
-            var xyz = JsonSerializer.Serializer2.SerializeObject(c);
+            var xyz = JsonSerializer.Serializer2.SerializeObjectToString(c);
             sw.Restart();
             for (var i = 0; i < 100000; i++)
             {
-                JsonSerializer.Serializer2.SerializeObject(c);
+                JsonSerializer.Serializer2.SerializeObjectToString(c);
             }
             var dd3 = sw.Elapsed.TotalMilliseconds;
-
-
-
-
 
             c.ToString();
         }

@@ -155,13 +155,6 @@ namespace JsonSerializer
                 return;
             }
 
-            var json = value as IJsonSerializeImplementation;
-            if (json != null)
-            {
-                WriteRawJson(json.SerializeAsJson(), true);
-                return;
-            }
-
             var valueType = GetTypeCode(value.GetType());
             WriteObjectValue(value, valueType);
         }

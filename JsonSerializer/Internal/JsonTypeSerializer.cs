@@ -44,23 +44,6 @@ namespace JsonSerializer.Internal
             WriteString(writer, (string)value);
         }
 
-        public void WriteString1(TextWriter writer, object value)
-        {
-            string str = (string)value;
-            if (str == null)
-            {
-                WriteNull(writer, null);
-            }
-            else if (str.Length == 0)
-            {
-                writer.Write(new char[2] { FastJsonWriter.QuoteChar, FastJsonWriter.QuoteChar }, 0, 2);
-            }
-            else
-            {
-                writer.Write(StringExtension.GetEncodeString(str));
-            }
-        }
-
         public void WriteString(TextWriter writer, string value)
         {
             if (value == null)
@@ -176,6 +159,15 @@ namespace JsonSerializer.Internal
                 WriteDateTimeOffset(writer, dateTimeOffset);
         }
 
+        public void WriteUri(TextWriter writer, object uri)
+        {
+            if (uri == null)
+                WriteNull(writer, null);
+            else
+                WriteString(writer, ((Uri)uri).OriginalString);
+        }
+
+
         public void WriteTimeSpan(TextWriter writer, object oTimeSpan)
         {
             writer.Write(FastJsonWriter.QuoteChar);
@@ -210,18 +202,6 @@ namespace JsonSerializer.Internal
         {
             if (oByteValue == null) return;
             WriteRawString(writer, Convert.ToBase64String((byte[])oByteValue));
-        }
-
-        public void WriteUri(TextWriter writer, object uri)
-        {
-            if (uri == null)
-            {
-                WriteNull(writer, null);
-            }
-            else
-            {
-                WriteString(writer,((Uri)uri).OriginalString);
-            }
         }
 
         internal readonly static char[] Null = new char[4] { 'n', 'u', 'l', 'l' };

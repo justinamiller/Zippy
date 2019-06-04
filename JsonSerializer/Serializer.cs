@@ -475,8 +475,8 @@ namespace JsonSerializer
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SerializeNonPrimitiveValue(object value, ConvertUtils.TypeCode objectTypeCode)
         {
-            //this prevents recursion
             int i = 0;
+            //this prevents recursion
             if (!_cirobj.TryGetValue(value, out i))
                 _cirobj.Add(value, _cirobj.Count + 1);
             else
@@ -521,17 +521,11 @@ namespace JsonSerializer
                         return SerializeDataSet((System.Data.DataSet)value);
                     case ConvertUtils.TypeCode.DataTable:
                         return SerializeDataTable((System.Data.DataTable)value);
-                    case ConvertUtils.TypeCode.IJsonSerializeImplementation:
-                        {
-                            // handles it's own serialization.
-                            _builder.WriteValue(((IJsonSerializeImplementation)value).SerializeAsJson());
-                            return true;
-                        }
                     default:
                         {
                             ValueMemberInfo[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
-                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, out obj))
+                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, value.GetType(),  out obj))
                             {
                                 return this.SerializeValueMemberInfo(value, obj.ToList());
                             }
@@ -558,33 +552,6 @@ namespace JsonSerializer
             {
                 _currentDepth--;
             }
-        }
-
-        /// <summary>
-        /// check if this object was already serialized within it's object path.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool AddObjectAsReferenceCheck(object value)
-        {
-            if (this._serializeStack.ContainsKey(value))
-            {
-                //Self referencing loop detected;
-                _builder.WriteNull();
-                return false;
-            }
-
-            // Add the object to the _serializeStack
-            _serializeStack.Add(value, null);
-
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RemoveObjectAsReferenceCheck(object value)
-        {
-            this._serializeStack.Remove(value);
         }
 
         /// <summary>

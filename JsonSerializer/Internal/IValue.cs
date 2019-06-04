@@ -5,7 +5,7 @@ using static JsonSerializer.Utility.ConvertUtils;
 
 namespace JsonSerializer.Internal
 {
-    internal interface IValue
+    interface IValue
     {
         string Name { get; }
         char[] NameChar { get; }
@@ -13,5 +13,6 @@ namespace JsonSerializer.Internal
         object GetValue(object instance);
 
         WriteObjectDelegate WriteObject { get; }
+        Type ValueType { get; }
     }
 }

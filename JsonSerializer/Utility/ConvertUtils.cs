@@ -61,7 +61,6 @@ namespace JsonSerializer.Utility
             Array=106,
             IList=107,
             GenericDictionary=108,
-            IJsonSerializeImplementation = 120,
            Custom = 200
         }
 
@@ -226,10 +225,6 @@ new Dictionary<Type, ObjectTypeCode>
 
             }//IEnumerable
 
-            if(value is IJsonSerializeImplementation)
-            {
-                return TypeCode.IJsonSerializeImplementation;
-            }
 
             return TypeCode.Custom;
         }
@@ -259,17 +254,8 @@ new Dictionary<Type, ObjectTypeCode>
         public static TypeCode GetTypeCode(object obj)
         {
             Type type = obj.GetType();
-            if (TypeCodeMap.TryGetValue(type, out TypeCode typeCode))
-            {
-                return typeCode;
-            }
 
-            if (type.IsEnum)
-            {
-                return GetTypeCode(Enum.GetUnderlyingType(type));
-            }
-
-            return GetInstanceObjectTypeCode(obj);
+            return GetTypeCode(type);
         }
 
         public static bool IsNullableType(Type t)

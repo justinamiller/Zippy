@@ -27,7 +27,6 @@ namespace JsonSerializer
         private static IJsonSerializerStrategy s_defaultJsonSerializerStrategy;
 
         // The following logic performs circular reference detection
-        private readonly Hashtable _serializeStack = new Hashtable(new ReferenceComparer());//new HashSet<object>();
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private int _currentDepth = 0;
         private TextWriter _writer;
@@ -66,9 +65,8 @@ namespace JsonSerializer
             }
         }
 
-        public Serializer2()
+        private Serializer2()
         {
-   //         this._writer = new StringWriter();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,14 +85,14 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartArray()
+        private void WriteStartArray()
         {
             this._writer.Write('[');
             _arrayIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartObject()
+        private void WriteStartObject()
         {
             this._writer.Write('{');
             this._propertyInUse = false;
@@ -106,6 +104,7 @@ namespace JsonSerializer
             WritePropertyName(StringExtension.GetEncodeString(value));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteNull()
         {
             _writer.Write(JsonTypeSerializer.Null, 0, 4);
@@ -126,19 +125,19 @@ namespace JsonSerializer
             _writer.Write(':');
         }
 
-        private readonly static JsonTypeSerializer _jsonWriter = new JsonTypeSerializer();
-
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value)
         {
             WriteStartObject();
             try
             {
                 string[] keys = value.AllKeys;
-
-                for (int i = 0; i < keys.Length; i++)
+                int len= keys.Length;
+                for (int i = 0; i < len; i++)
                 {
                     WritePropertyName(keys[i]);
-                    _jsonWriter.WriteRawString(_writer, StringExtension.GetEncodeString(value.Get(i)));
+                    FastJsonWriter.Serializer.WriteString(_writer, value.Get(i));
+
+                    // _jsonWriter.WriteString(_writer, value.Get(i));
                 }
             }
             finally
@@ -150,11 +149,12 @@ namespace JsonSerializer
         }
 
 
-       
+
         private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
             ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
             WriteObjectDelegate writeObject = null;
+            Type type = null;
             bool flag1 = true;
             bool isTyped = false;
             WriteStartArray();
@@ -172,8 +172,8 @@ namespace JsonSerializer
                         //first record.
                         valueType = GetEnumerableValueTypeCode(anEnumerable);
                         writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
-                        isTyped = valueType != ConvertUtils.TypeCode.Custom;
 
+                        isTyped = valueType != ConvertUtils.TypeCode.Custom;
                         flag1 = false;
                     }
 
@@ -186,11 +186,12 @@ namespace JsonSerializer
                         if (!isTyped)
                         {
                             //is not generic
-                            valueType = GetTypeCode(value);
+                            type = value.GetType();
+                            valueType = GetTypeCode(type);
                             writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
                         }
 
-                        if (!WriteObjectValue(value, writeObject, valueType))
+                        if (!WriteObjectValue(value, writeObject, type, valueType))
                         {
                             return false;
                         }
@@ -207,36 +208,48 @@ namespace JsonSerializer
 
         private bool SerializeArray(Array array)
         {
-
             if (array.Rank > 1)
             {
                 return SerializeMultidimensionalArray(array);
             }
 
-            ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
+            ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
             WriteObjectDelegate writeObject = null;
+            Type lastType = null;
             bool flag1 = true;
             WriteStartArray();
+
+            var currentType = ConvertUtils.GetEnumerableValueTypeCode(array);
+            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+            if (isTyped)
+            {
+                valueTypeCode = currentType;
+                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+            }
+
+
+            int len = array.Length;
             try
             {
 
                 // note that an error in the IEnumerable won't be caught
-                for (var i = 0; i < array.Length; i++)
+                for (var i = 0; i <len; i++)
                 {
                     var value = array.GetValue(i);
                     if (!flag1)
                     {
                         _writer.Write(',');
                     }
-                    else
+
+                    Type valueType = value.GetType();
+                    if (lastType != valueType)
                     {
-                        //first record.
-                        valueType = GetEnumerableValueTypeCode((IEnumerable)array);
-                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
-                        flag1 = false;
+                        lastType = valueType;
+                        valueTypeCode = GetTypeCode(valueType);
+                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
                     }
 
-                    if(!WriteObjectValue(value, writeObject, valueType))
+                    if (!WriteObjectValue(value, writeObject, valueType, valueTypeCode))
                     {
                         return false;
                     }
@@ -251,20 +264,29 @@ namespace JsonSerializer
         }
 
 
-      
+
         private bool SerializeList(System.Collections.IList list)
         {
             ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
             WriteObjectDelegate writeObject = null;
             bool flag1 = true;
-            Type lastType=null;
+            Type lastType = null;
+
+          var  currentType = ConvertUtils.GetEnumerableValueTypeCode(list);
+            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+
+            if (isTyped)
+            {
+                valueTypeCode = currentType;
+                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+            }
 
             WriteStartArray();
             try
             {
-
+                int len = list.Count;
                 // note that an error in the IEnumerable won't be caught
-                for (var i = 0; i < list.Count; i++)
+                for (var i = 0; i < len; i++)
                 {
                     var value = list[i];
                     if (!flag1)
@@ -283,15 +305,18 @@ namespace JsonSerializer
                     }
                     else
                     {
-                        Type valueType = value.GetType();
-                        if(lastType!= valueType)
+                        if (!isTyped)
                         {
-                            lastType = valueType;
-                            valueTypeCode = GetTypeCode(valueType);
-                            writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                            Type valueType = value.GetType();
+                            if (lastType != valueType)
+                            {
+                                lastType = valueType;
+                                valueTypeCode = GetTypeCode(valueType);
+                                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                            }
                         }
 
-                        if(!WriteObjectValue(value, writeObject, valueTypeCode))
+                        if (!WriteObjectValue(value, writeObject, lastType, valueTypeCode))
                         {
                             return false;
                         }
@@ -311,6 +336,8 @@ namespace JsonSerializer
             return SerializeMultidimensionalArray(values, Array.Empty<int>());
         }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeMultidimensionalArray(Array values, int[] indices)
         {
             bool flag = true;
@@ -348,7 +375,7 @@ namespace JsonSerializer
                             valueTypeCode = Utility.ConvertUtils.GetTypeCode(typeCode);
                             writeValueFn = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
                         }
-                        if (!WriteObjectValue(value, writeValueFn, valueTypeCode))
+                        if (!WriteObjectValue(value, writeValueFn, typeCode, valueTypeCode))
                         {
                             return false;
                         }
@@ -372,23 +399,20 @@ namespace JsonSerializer
             return true;
         }
 
-        //string builder
-        //private JsonWriter _builder = null;
-        private string SerializeObjectInternal(object json)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SerializeObjectInternal(object json, TextWriter writer)
         {
-            var typeCode = ConvertUtils.GetTypeCode(json.GetType());
+            Type type = json.GetType();
+            var typeCode = ConvertUtils.GetTypeCode(type);
             if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
+                _writer = writer;
                 //handle for object
-                _writer = StringWriterThreadStatic.Allocate();
-                SerializeNonPrimitiveValue(json, typeCode);
-                return StringWriterThreadStatic.ReturnAndFree((StringWriter)_writer);
+                SerializeNonPrimitiveValue(json,type, typeCode);
             }
             else
-            {   
-                var writer = StringWriterThreadStatic.Allocate();
+            {
                 FastJsonWriter.GetValueTypeToStringMethod(typeCode)?.Invoke(writer, json);
-                return StringWriterThreadStatic.ReturnAndFree(writer);
             }
         }
 
@@ -398,14 +422,18 @@ namespace JsonSerializer
         /// <param name="json"></param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static string SerializeObject(object Object)
+        public static string SerializeObjectToString(object Object)
         {
             if (Object == null)
             {
                 return null;
             }
 
-            return new Serializer2().SerializeObjectInternal(Object);
+            var writer = StringWriterThreadStatic.Allocate();
+
+            new Serializer2().SerializeObjectInternal(Object, writer);
+
+            return StringWriterThreadStatic.ReturnAndFree(writer);
         }
 
         private bool SerializeNonGenericDictionary(IDictionary values)
@@ -431,7 +459,7 @@ namespace JsonSerializer
                     if (lastKeyType != keyType)
                     {
                         lastKeyType = keyType;
-                        keyTypeCode = Utility.ConvertUtils.GetTypeCode(keyType);
+                        keyTypeCode = ConvertUtils.GetTypeCode(keyType);
                         writeKeyFn = FastJsonWriter.GetValueTypeToStringMethod(keyTypeCode);
                     }
 
@@ -440,7 +468,7 @@ namespace JsonSerializer
                         _writer.Write(',');
                     }
 
-                    WriteObjectValue(key, writeKeyFn, keyTypeCode);
+                    WriteObjectValue(key, writeKeyFn, keyType, keyTypeCode);
                     _writer.Write(':');
 
                     if (dictionaryValue == null)
@@ -450,14 +478,14 @@ namespace JsonSerializer
                     else
                     {
                         var valueType = dictionaryValue.GetType();
-                        if (writeValueFn == null || lastValueType != valueType)
+                        if (lastValueType != valueType)
                         {
                             lastValueType = valueType;
                             valueTypeCode = Utility.ConvertUtils.GetTypeCode(keyType);
                             writeValueFn = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
                         }
 
-                        if (!WriteObjectValue(dictionaryValue, writeValueFn, valueTypeCode))
+                        if (!WriteObjectValue(dictionaryValue, writeValueFn, valueType,valueTypeCode))
                         {
                             return false;
                         }
@@ -469,8 +497,8 @@ namespace JsonSerializer
             {
                 WriteEndObject();
             }
-            
-            
+
+
 
             return true;
         }
@@ -500,8 +528,10 @@ namespace JsonSerializer
             {
                 return false;
             }
-            var valueCodeType = ConvertUtils.GetTypeCode(args[1]);
-            return SerializeGenericDictionaryInternal(values, valueCodeType);
+
+            type = args[1];
+            var valueCodeType = ConvertUtils.GetTypeCode(type);
+            return SerializeGenericDictionaryInternal(values, valueCodeType, type);
         }
 
 
@@ -509,15 +539,16 @@ namespace JsonSerializer
         {
             WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
+
+            int len = items.Length;
             try
             {
-             for(var i=0; i<items.Length; i++)
+                for (var i = 0; i < len; i++)
                 {
                     var item = items[i];
                     WritePropertyName(item.NameChar);
                     var value = item.GetValue(instance);
-
-                   if(!WriteObjectValue(value, item.WriteObject, item.Code))
+                    if (!WriteObjectValue(value, item.WriteObject, item.ValueType, item.Code))
                     {
                         return false;
                     }
@@ -532,25 +563,25 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool WriteObjectValue(object value, WriteObjectDelegate writeValueFn, ConvertUtils.TypeCode valueTypeCode)
+        private bool WriteObjectValue(object value, WriteObjectDelegate writeValueFn, Type type, ConvertUtils.TypeCode valueTypeCode)
         {
             if (value == null)
             {
                 WriteNull();
                 return true;
             }
-            else if (writeValueFn  != null)
+            else if (writeValueFn != null)
             {
                 writeValueFn(_writer, value);
-                            return true;
+                return true;
             }
-            else 
+            else
             {
-                return SerializeNonPrimitiveValue(value, valueTypeCode);
+                return SerializeNonPrimitiveValue(value, type, valueTypeCode);
             }
         }
 
-        private bool SerializeGenericDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType)
+        private bool SerializeGenericDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType, Type valueType)
         {
 
             WriteObjectDelegate writeValue = FastJsonWriter.GetValueTypeToStringMethod(valueCodeType);
@@ -568,7 +599,7 @@ namespace JsonSerializer
                     WritePropertyName(name);
                     var value = entry.Value;
 
-                    if (!WriteObjectValue(value, writeValue, valueCodeType))
+                    if (!WriteObjectValue(value, writeValue, valueType, valueCodeType))
                     {
                         return false;
                     }
@@ -601,7 +632,6 @@ namespace JsonSerializer
             return true;
         }
 
-
         private void SerializeDataTableData(System.Data.DataTable table)
         {
             var rows = table.Rows;
@@ -626,26 +656,26 @@ namespace JsonSerializer
                     WriteStartObject();
                     try
                     {
-                    var columnType = new Dictionary<System.Data.DataColumn, Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate>>();
-                    foreach(System.Data.DataColumn column in cols)
-                    {
-                        var typeCode = ConvertUtils.GetTypeCode(column.DataType);
-                        columnType.Add(column, new Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate>(StringExtension.GetEncodeString(column.ColumnName), typeCode, FastJsonWriter.GetValueTypeToStringMethod(typeCode)));
-                    }
-
-                    foreach (var column in columnType)
-                    {
-                        //build column name
-                        WritePropertyName(column.Value.Item1);
-                        //build column data
-                        var value = row[column.Key];
-
-                        if(!WriteObjectValue(value, column.Value.Item3, column.Value.Item2))
+                        var columnType = new Dictionary<System.Data.DataColumn, Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate, Type>>();
+                        foreach (System.Data.DataColumn column in cols)
                         {
-                            return;
+                            var typeCode = ConvertUtils.GetTypeCode(column.DataType);
+                            columnType.Add(column, new Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate, Type>(StringExtension.GetEncodeString(column.ColumnName), typeCode, FastJsonWriter.GetValueTypeToStringMethod(typeCode), column.DataType));
                         }
 
-                    }
+                        foreach (var column in columnType)
+                        {
+                            //build column name
+                            WritePropertyName(column.Value.Item1);
+                            //build column data
+                            var value = row[column.Key];
+
+                            if (!WriteObjectValue(value, column.Value.Item3, column.Value.Item4, column.Value.Item2))
+                            {
+                                return;
+                            }
+
+                        }
                     }
                     finally
                     {
@@ -675,34 +705,30 @@ namespace JsonSerializer
             return true;
         }
 
-
-        private bool SerializeNonPrimitiveValue(object value, ConvertUtils.TypeCode objectTypeCode)
+        private bool SerializeNonPrimitiveValue(object value, Type type, ConvertUtils.TypeCode objectTypeCode)
         {
             //this prevents recursion
             int i = 0;
             if (!_cirobj.TryGetValue(value, out i))
-                _cirobj.Add(value, _cirobj.Count + 1);
-            else
             {
-                if (_currentDepth > 0)
-                {
-                    //_circular = true;
-                    return false;
-                }
+                _cirobj.Add(value, _cirobj.Count + 1);
+            }
+            else if (_currentDepth > 0)
+            {
+                //_circular = true;
+                return false;
             }
             _currentDepth++;
+            //recursion limit or max char length
+            if (_currentDepth >= JsonSerializerSetting.Current.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
+            {
+                _currentDepth--;
+                WriteNull();
+                return false;
+            }
+
             try
             {
-
-                //recursion limit or max char length
-                if (_currentDepth >= JsonSerializerSetting.Current.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
-                {
-                    WriteNull();
-                    return false;
-                }
-
-                //try
-                //{
                 switch (objectTypeCode)
                 {
                     case ConvertUtils.TypeCode.Array:
@@ -727,17 +753,11 @@ namespace JsonSerializer
                         return SerializeDataSet((System.Data.DataSet)value);
                     case ConvertUtils.TypeCode.DataTable:
                         return SerializeDataTable((System.Data.DataTable)value);
-                    case ConvertUtils.TypeCode.IJsonSerializeImplementation:
-                        {
-                            // handles it's own serialization.
-                            _jsonWriter.WriteRawString(_writer, ((IJsonSerializeImplementation)value).SerializeAsJson());
-                            return true;
-                        }
                     default:
                         {
                             ValueMemberInfo[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
-                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, out obj))
+                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, type, out obj))
                             {
                                 return this.SerializeValueMemberInfo(value, obj);
                             }
@@ -748,17 +768,6 @@ namespace JsonSerializer
                             }
                         }
                 }
-                //}
-                //catch (Exception)
-                //{
-                //    _builder.WriteNull();
-                //    return true;//was false but when false prevent continuing.
-                //}
-
-                //finally
-                //{
-                //    RemoveObjectAsReferenceCheck(value);
-                //}
             }
             finally
             {
@@ -767,36 +776,9 @@ namespace JsonSerializer
         }
 
         /// <summary>
-        /// check if this object was already serialized within it's object path.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool AddObjectAsReferenceCheck(object value)
-        {
-            if (this._serializeStack.ContainsKey(value))
-            {
-                //Self referencing loop detected;
-                WriteNull();
-                return false;
-            }
-
-            // Add the object to the _serializeStack
-            _serializeStack.Add(value, null);
-
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RemoveObjectAsReferenceCheck(object value)
-        {
-            this._serializeStack.Remove(value);
-        }
-
-        /// <summary>
         ///We use this for our cycle detection for the case where objects override equals/gethashcode
         /// </summary>
-        private class ReferenceComparer : IEqualityComparer
+        private sealed class ReferenceComparer : IEqualityComparer
         {
             bool IEqualityComparer.Equals(object x, object y)
             {

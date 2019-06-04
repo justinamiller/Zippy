@@ -219,7 +219,8 @@ namespace JsonSerializer.Utility
             GetChildPrivateProperties(propertyInfos, type, bindingFlags);
 
             // a base class private getter/setter will be inaccessable unless the property was gotten from the base class
-            for (int i = 0; i < propertyInfos.Count; i++)
+            int len = propertyInfos.Count;
+            for (int i = 0; i < len; i++)
             {
                 PropertyInfo member = propertyInfos[i];
                 if (member.DeclaringType != type)
