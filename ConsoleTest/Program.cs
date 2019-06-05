@@ -116,20 +116,18 @@ namespace ConsoleTest
             //    dd.ToString();
 
             //    sw.Restart();
-            Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            //Newtonsoft.Json.JsonConvert.SerializeObject(c);
             //    var d1 = sw.Elapsed.TotalMilliseconds;
             //    sw.Restart();
             //    var aa2 = JsonSerializer.Serializer.SerializeObject(c);
             //    var dd1 = sw.Elapsed.TotalMilliseconds;
 
-            sw.Restart();
-            for (var i = 0; i < 100000; i++)
-            {
-                Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            }
-            var d2 = sw.Elapsed.TotalMilliseconds;
-
-            //JsonSerializer.Serializer.SerializeObject(c);
+            //    sw.Restart();
+            //    for (var i = 0; i < 100000; i++)
+            //    {
+            //        Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            //    }
+            //    var d2 = sw.Elapsed.TotalMilliseconds;
             //sw.Restart();
             //for (var i = 0; i < 100000; i++)
             //{
