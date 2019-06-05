@@ -5,17 +5,17 @@ using System.Text;
 
 namespace JsonSerializer.Utility
 {
-    static class BinaryUtil
+  internal  sealed class BinaryUtil
     {
         const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnsureCapacity(ref byte[] bytes, int offset, int appendLength)
+        public static void EnsureCapacity<T>(ref T[] bytes, int offset, int appendLength)
         {
             // If null(most case fisrt time) fill byte.
             if (bytes == null)
             {
-                bytes = new byte[1256];
+                bytes = new T[1256];
                 return;
             }
 
@@ -56,20 +56,20 @@ namespace JsonSerializer.Utility
 
         // Buffer.BlockCopy version of Array.Resize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void FastResize(ref byte[] array, int newSize)
+        public static void FastResize<T>(ref T[] array, int newSize)
         {
             if (newSize < 0) throw new ArgumentOutOfRangeException("newSize");
 
-            byte[] array2 = array;
+            T[] array2 = array;
             if (array2 == null)
             {
-                array = new byte[newSize];
+                array = new T[newSize];
                 return;
             }
 
             if (array2.Length != newSize)
             {
-                byte[] array3 = new byte[newSize];
+                T[] array3 = new T[newSize];
                 Buffer.BlockCopy(array2, 0, array3, 0, (array2.Length > newSize) ? newSize : array2.Length);
                 array = array3;
             }

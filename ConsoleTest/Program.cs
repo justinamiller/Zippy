@@ -172,7 +172,14 @@ namespace ConsoleTest
             {
                 JsonSerializer.Serializer2.SerializeObjectToString(c);
             }
-            data.Add("Serializer2", sw.Elapsed.TotalMilliseconds);
+            data.Add("Serializer2-stringwriter", sw.Elapsed.TotalMilliseconds);
+
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                JsonSerializer.Serializer2.SerializeObjectToString2(c);
+            }
+            data.Add("Serializer2-bufferwriter", sw.Elapsed.TotalMilliseconds);
 
 
             foreach (var item in data.OrderBy(v => v.Value))
