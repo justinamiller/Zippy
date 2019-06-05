@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ZeroFormatter;
 
 namespace ConsoleTest
 {
@@ -140,7 +141,6 @@ namespace ConsoleTest
             }
             data.Add("Jil", sw.Elapsed.TotalMilliseconds);
 
-
             sw.Restart();
             for (var i = 0; i < testCount; i++)
             {
@@ -154,6 +154,16 @@ namespace ConsoleTest
                 JsonSerializer.Serializer.SerializeObject(c);
             }
             data.Add("Serializer", sw.Elapsed.TotalMilliseconds);
+
+
+            var js = new System.Web.Script.Serialization.JavaScriptSerializer();
+            js.Serialize(c);
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                js.Serialize(c);
+            }
+            data.Add("JavaScriptSerializer", sw.Elapsed.TotalMilliseconds);
 
             //        // serializable.
             ServiceStack.Text.Config.Defaults.IncludePublicFields = true;
@@ -180,6 +190,14 @@ namespace ConsoleTest
                 JsonSerializer.Serializer2.SerializeObjectToString2(c);
             }
             data.Add("Serializer2-bufferwriter", sw.Elapsed.TotalMilliseconds);
+
+            var z = SimpleJson.SerializeObject(c);
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                SimpleJson.SerializeObject(c);
+            }
+            data.Add("SimpleJson", sw.Elapsed.TotalMilliseconds);
 
 
             foreach (var item in data.OrderBy(v => v.Value))

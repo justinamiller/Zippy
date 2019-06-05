@@ -276,5 +276,77 @@ namespace JsonSerializer.Utility
 
             return false;
         }
+
+        public static string PrettyPrint(string input)
+        {
+            string spaces = new string(' ', 3);
+
+            var stringBuilder = StringBuilderPool.Get();
+            int num = 0;
+            int length = input.Length;
+            char[] array = input.ToCharArray();
+            for (int i = 0; i < length; i++)
+            {
+                char c = array[i];
+                if (c == '"')
+                {
+                    bool flag = true;
+                    while (flag)
+                    {
+                        stringBuilder.Append(c);
+                        c = array[++i];
+                        switch (c)
+                        {
+                            case '\\':
+                                stringBuilder.Append(c);
+                                c = array[++i];
+                                break;
+                            case '"':
+                                flag = false;
+                                break;
+                        }
+                    }
+                }
+                switch (c)
+                {
+                    case '[':
+                    case '{':
+                        stringBuilder.Append(c);
+                        stringBuilder.AppendLine();
+                        AppendIndent(stringBuilder, ++num, spaces);
+                        break;
+                    case ']':
+                    case '}':
+                        stringBuilder.AppendLine();
+                        AppendIndent(stringBuilder, --num, spaces);
+                        stringBuilder.Append(c);
+                        break;
+                    case ',':
+                        stringBuilder.Append(c);
+                        stringBuilder.AppendLine();
+                        AppendIndent(stringBuilder, num, spaces);
+                        break;
+                    case ':':
+                        stringBuilder.Append(" : ");
+                        break;
+                    default:
+                        if (!char.IsWhiteSpace(c))
+                        {
+                            stringBuilder.Append(c);
+                        }
+                        break;
+                }
+            }
+            return StringBuilderPool.GetStringAndRelease(stringBuilder);
+        }
+
+        private static void AppendIndent(StringBuilder sb, int count, string indent)
+        {
+            while (count > 0)
+            {
+                sb.Append(indent);
+                count--;
+            }
+        }
     }
 }

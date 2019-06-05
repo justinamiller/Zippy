@@ -450,6 +450,28 @@ namespace JsonSerializer
         }
 
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
+        public static TextWriter SerializeObject(object Object, TextWriter writer)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException("writer");
+            }
+            if (Object == null)
+            {
+                return null;
+            }
+
+            new Serializer2().SerializeObjectInternal(Object, writer);
+            return writer;
+        }
+
+        public static string BeautifyJson(string input)
+        {
+            return StringExtension.PrettyPrint(input);
+        }
+
+
         private bool SerializeNonGenericDictionary(IDictionary values)
         {
             WriteObjectDelegate writeKeyFn = null;
