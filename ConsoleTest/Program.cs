@@ -102,6 +102,8 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
+            int testCount = 100000;
+            var data = new Dictionary<string, double>();
 
             //  System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
 
@@ -116,45 +118,76 @@ namespace ConsoleTest
             //    dd.ToString();
 
             //    sw.Restart();
-            //Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            Newtonsoft.Json.JsonConvert.SerializeObject(c);
             //    var d1 = sw.Elapsed.TotalMilliseconds;
             //    sw.Restart();
             //    var aa2 = JsonSerializer.Serializer.SerializeObject(c);
             //    var dd1 = sw.Elapsed.TotalMilliseconds;
 
-            //    sw.Restart();
-            //    for (var i = 0; i < 100000; i++)
-            //    {
-            //        Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            //    }
-            //    var d2 = sw.Elapsed.TotalMilliseconds;
-            //sw.Restart();
-            //for (var i = 0; i < 100000; i++)
-            //{
-            //    JsonSerializer.Serializer.SerializeObject(c);
-            //}
-            //var dd2 = sw.Elapsed.TotalMilliseconds;
+            Utf8Json.JsonSerializer.ToJsonString<object>(c);
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                Utf8Json.JsonSerializer.ToJsonString<object>(c);
+            }
+            data.Add("Utf8Json", sw.Elapsed.TotalMilliseconds);
+
+            Jil.JSON.Serialize<object>(c);
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                Jil.JSON.Serialize<object>(c);
+            }
+            data.Add("Jil", sw.Elapsed.TotalMilliseconds);
+
+
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                Newtonsoft.Json.JsonConvert.SerializeObject(c);
+            }
+            data.Add("Newtonsoft", sw.Elapsed.TotalMilliseconds);
+
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                JsonSerializer.Serializer.SerializeObject(c);
+            }
+            data.Add("Serializer", sw.Elapsed.TotalMilliseconds);
 
             //        // serializable.
             ServiceStack.Text.Config.Defaults.IncludePublicFields = true;
             ServiceStack.Text.JsConfig.IncludePublicFields = true;
             var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
             sw.Restart();
-            for (var i = 0; i < 100000; i++)
+            for (var i = 0; i < testCount; i++)
             {
                 ServiceStack.Text.JsonSerializer.SerializeToString(c);
             }
-            var dd4 = sw.Elapsed.TotalMilliseconds;
+            data.Add("ServiceStack", sw.Elapsed.TotalMilliseconds);
 
             var xyz = JsonSerializer.Serializer2.SerializeObjectToString(c);
             sw.Restart();
-            for (var i = 0; i < 100000; i++)
+            for (var i = 0; i < testCount; i++)
             {
                 JsonSerializer.Serializer2.SerializeObjectToString(c);
             }
-            var dd3 = sw.Elapsed.TotalMilliseconds;
+            data.Add("Serializer2", sw.Elapsed.TotalMilliseconds);
+
+
+            foreach (var item in data.OrderBy(v => v.Value))
+            {
+                Console.WriteLine(item.Key + " : "  + item.Value.ToString("#,##0.00"));
+            }
+
 
             c.ToString();
+
+
+            
+
+            Console.WriteLine("DONE");
+            Console.ReadLine();
         }
 
         public class ContractlessSample

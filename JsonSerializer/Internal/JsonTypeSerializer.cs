@@ -54,6 +54,7 @@ namespace JsonSerializer.Internal
 
             var escapeHtmlChars = false;
 
+
             if (!value.HasAnyEscapeChars(escapeHtmlChars))
             {
                 writer.Write(FastJsonWriter.QuoteChar);
@@ -255,9 +256,14 @@ namespace JsonSerializer.Internal
         public void WriteInt32(TextWriter writer, object intValue)
         {
             if (intValue == null)
+            {
                 WriteNull(writer, null);
+            }
             else
+            {
                 WriteIntegerValue(writer, (int)intValue);
+            }
+                
         }
 
         public void WriteUInt32(TextWriter writer, object uintValue)

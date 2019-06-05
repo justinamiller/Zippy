@@ -20,8 +20,12 @@ namespace JsonSerializer.Internal
         protected virtual ValueMemberInfo[] GetterValueFactory(Type type)
         {
             var allMembers = ReflectionExtension.GetFieldsAndProperties(type);//.Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
-            IList<ValueMemberInfo> strs = new List<ValueMemberInfo>();
+
             int len = allMembers.Count;
+            var data = new ValueMemberInfo[len];
+            int dataIndex = 0;
+       
+
             for (int i = 0; i < len; i++)
             {
                 //get item
@@ -31,12 +35,17 @@ namespace JsonSerializer.Internal
                 {
                     if (!ReflectionExtension.IsIndexedProperty(item))
                     {
-                        strs.Add(new ValueMemberInfo(item));
+                        data[dataIndex++] = new ValueMemberInfo(item);
                     }
                 }
             }
 
-            return strs.ToArray();
+            if (len != dataIndex)
+            {
+                Array.Resize(ref data, dataIndex);
+            }
+
+            return data;
         }
 
 

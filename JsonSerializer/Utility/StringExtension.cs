@@ -241,6 +241,19 @@ namespace JsonSerializer.Utility
             return c >= 32 && c <= 126;
         }
 
+
+        /// <summary>
+        /// Searches the string for one or more non-printable characters.
+        /// </summary>
+        /// <param name="value">The string to search.</param>
+        /// <param name="escapeHtmlChars"></param>
+        /// <returns>True if there are any characters that require escaping. False if the value can be written verbatim.</returns>
+        /// <remarks>
+        /// Micro optimizations: since quote and backslash are the only printable characters requiring escaping, removed previous optimization
+        /// (using flags instead of value.IndexOfAny(EscapeChars)) in favor of two equality operations saving both memory and CPU time.
+        /// Also slightly reduced code size by re-arranging conditions.
+        /// TODO: Possible Linq-only solution requires profiling: return value.Any(c => !c.IsPrintable() || c == QuoteChar || c == EscapeChar);
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAnyEscapeChars(this string value, bool escapeHtmlChars)
         {
@@ -252,7 +265,7 @@ namespace JsonSerializer.Utility
                     char* ptr = chr;
                     while ((c = *(ptr++)) != '\0')
                     {
-                        if (!c.IsPrintable() || c == '"' || c == '\\')
+                        if (!(c >= 32 && c <= 126) || c == '"' || c == '\\')
                             return true;
 
                         if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
