@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ZeroFormatter;
 
 namespace ConsoleTest
 {
@@ -200,10 +199,22 @@ namespace ConsoleTest
             data.Add("SimpleJson", sw.Elapsed.TotalMilliseconds);
 
 
+            sw.Restart();
+            for (var i = 0; i < testCount; i++)
+            {
+                JsonSerializer.Serializer2.SerializeObject(c, new JsonSerializer.NullTextWriter());
+            }
+            data.Add("NullTextWriter", sw.Elapsed.TotalMilliseconds);
+            
+
+
             foreach (var item in data.OrderBy(v => v.Value))
             {
                 Console.WriteLine(item.Key + " : "  + item.Value.ToString("#,##0.00"));
             }
+
+
+       
 
 
             c.ToString();

@@ -534,8 +534,6 @@ namespace JsonSerializer
                 WriteEndObject();
             }
 
-
-
             return true;
         }
 

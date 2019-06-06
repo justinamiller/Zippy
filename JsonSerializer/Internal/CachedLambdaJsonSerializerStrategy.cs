@@ -69,11 +69,6 @@ namespace JsonSerializer.Internal
                 //cache type
                 fromCache = true;
             }
-            else if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) >= 0)
-            {
-                //dont cache
-                data = this.GetterValueFactory(type);
-            }
             else
             {
                 //cache type

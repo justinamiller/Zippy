@@ -27,17 +27,17 @@ namespace JsonSerializer
 
         public override string ToString()
         {
-            if (_buffer.Length > _offset)
-            {
-                Array.Resize(ref _buffer, _offset);
-            }
-            return new string(_buffer);
+            //if (_buffer.Length > _offset)
+            //{
+            //    Array.Resize(ref _buffer, _offset);
+            //}
+            return new string(_buffer, 0, _offset);
         }
 
 
         public override void Write(char buffer)
         {
-            EnsureCapacity(1);
+            //EnsureCapacity(1);
             _buffer[_offset++] = buffer;
         }
 
@@ -52,23 +52,24 @@ namespace JsonSerializer
 
         public override void Write(char[] buffer, int index, int count)
         {
-            EnsureCapacity(count);
+            //  EnsureCapacity(count);
 
-            Array.Copy(buffer, 0, _buffer, _offset, count);
-            _offset += count;
+            //Array.Copy(buffer, 0, _buffer, _offset, count);
+            //  _offset += count;
 
-            //unsafe
-            //{
-            //    char c;
-            //    fixed (char* chr = buffer)
-            //    {
-            //        char* ptr = chr;
-            //        while ((c = *(ptr++)) != '\0')
-            //        {
-            //            _buffer[_offset++] = c;
-            //        }
-            //    }
-            //}
+            unsafe
+            {
+                fixed (char* chr = buffer)
+                {
+
+                    /* let us have array address in pointer */
+                    for (int i = 0; i < count; i++)
+                    {
+                        _buffer[_offset++] = *(chr + i);
+                    }
+
+                }
+            }
         }
 
         public override void Write(string value)
@@ -78,12 +79,26 @@ namespace JsonSerializer
                 return;
             }
             //int len = value.Length;
-            var chr= value.ToCharArray();
-            Write(chr, 0, chr.Length);
+            //var chr= value.ToCharArray();
+            //Write(chr, 0, chr.Length);
 
             //EnsureCapacity(len);
 
-            // unsafe
+
+            unsafe
+            {
+                fixed (char* chr = value)
+                {
+                    int len = value.Length;
+                    for (int i = 0; i < len; i++)
+                    {
+                        _buffer[_offset++] = *(chr + i);
+                    }
+                }
+            }
+
+
+            //unsafe
             //{
             //    char c;
             //    fixed (char* chr = value)
