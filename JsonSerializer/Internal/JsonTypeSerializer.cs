@@ -194,9 +194,7 @@ namespace JsonSerializer.Internal
         public void WriteNullableGuid(TextWriter writer, object oValue)
         {
             if (oValue == null) return;
-            writer.Write(FastJsonWriter.QuoteChar);
-            writer.Write(((Guid)oValue).ToString("N"));
-            writer.Write(FastJsonWriter.QuoteChar);
+            WriteGuid(writer, oValue);
         }
 
         public void WriteBytes(TextWriter writer, object oByteValue)
@@ -226,8 +224,6 @@ namespace JsonSerializer.Internal
             else
                 WriteIntegerValue(writer, (byte)byteValue);
         }
-
-
 
         public void WriteSByte(TextWriter writer, object sbyteValue)
         {
@@ -263,7 +259,6 @@ namespace JsonSerializer.Internal
             {
                 WriteIntegerValue(writer, (int)intValue);
             }
-                
         }
 
         public void WriteUInt32(TextWriter writer, object uintValue)
@@ -306,8 +301,7 @@ namespace JsonSerializer.Internal
                 WriteNull(writer, null);
             else
             {
-                var floatVal = (float)floatValue;
-               writer.Write(floatVal.ToString("r", CultureInfo.InvariantCulture));
+               writer.Write(((float)floatValue).ToString("r", CultureInfo.InvariantCulture));
             }
         }
 
@@ -317,8 +311,7 @@ namespace JsonSerializer.Internal
                 WriteNull(writer, null);
             else
             {
-                var doubleVal = (double)doubleValue;
-                    writer.Write(doubleVal.ToString(CultureInfo.InvariantCulture));
+                    writer.Write(((double)doubleValue).ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -328,11 +321,6 @@ namespace JsonSerializer.Internal
                 WriteNull(writer, null);
             else
                 writer.Write(((decimal)decimalValue).ToString(CultureInfo.InvariantCulture));
-        }
-
-        public void WriteEnum(TextWriter writer, object enumValue)
-        {
-            throw new NotImplementedException();
         }
 
         readonly static char[] s_Number = new char[10]

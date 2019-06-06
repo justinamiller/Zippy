@@ -22,9 +22,7 @@ namespace JsonSerializer
     /// <remarks>guide from http://www.json.org/ </remarks>
     public sealed class Serializer2
     {
-        private static IJsonSerializerStrategy s_currentJsonSerializerStrategy;
-
-        private static IJsonSerializerStrategy s_defaultJsonSerializerStrategy;
+        private static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new CachedLambdaJsonSerializerStrategy();
 
         // The following logic performs circular reference detection
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
@@ -34,34 +32,20 @@ namespace JsonSerializer
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
 
+
         internal static IJsonSerializerStrategy CurrentJsonSerializerStrategy
         {
             get
             {
-                IJsonSerializerStrategy jsonSerializerStrategy = s_currentJsonSerializerStrategy;
-                if (jsonSerializerStrategy == null)
-                {
-                    jsonSerializerStrategy = DefaultJsonSerializerStrategy;
-                    s_currentJsonSerializerStrategy = jsonSerializerStrategy;
-                }
-                return jsonSerializerStrategy;
+                return s_currentJsonSerializerStrategy;
             }
             set
             {
-                s_currentJsonSerializerStrategy = value;
-            }
-        }
-
-        internal static IJsonSerializerStrategy DefaultJsonSerializerStrategy
-        {
-            get
-            {
-                if (s_defaultJsonSerializerStrategy == null)
+                if (s_currentJsonSerializerStrategy == null)
                 {
-                    s_defaultJsonSerializerStrategy = new CachedLambdaJsonSerializerStrategy();
-                    //   s_defaultJsonSerializerStrategy = new DelegateJsonSerializerStrategy();
+                    throw new ArgumentNullException("value");
                 }
-                return s_defaultJsonSerializerStrategy;
+                s_currentJsonSerializerStrategy = value;
             }
         }
 
@@ -136,8 +120,6 @@ namespace JsonSerializer
                 {
                     WritePropertyName(keys[i]);
                     FastJsonWriter.Serializer.WriteString(_writer, value.Get(i));
-
-                    // _jsonWriter.WriteString(_writer, value.Get(i));
                 }
             }
             finally
@@ -262,8 +244,6 @@ namespace JsonSerializer
 
             return true;
         }
-
-
 
         private bool SerializeList(System.Collections.IList list)
         {
@@ -787,11 +767,12 @@ namespace JsonSerializer
                         return SerializeDataSet((System.Data.DataSet)value);
                     case ConvertUtils.TypeCode.DataTable:
                         return SerializeDataTable((System.Data.DataTable)value);
-                    default:
+                    case ConvertUtils.TypeCode.Custom:
+                    case ConvertUtils.TypeCode.NotSetObject:
                         {
                             ValueMemberInfo[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
-                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, type, out obj))
+                            if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, type, out obj))
                             {
                                 return this.SerializeValueMemberInfo(value, obj);
                             }
@@ -800,6 +781,10 @@ namespace JsonSerializer
                                 WriteNull();
                                 return true;//was false but when false prevent continuing.
                             }
+                        }
+                    default:
+                        {
+                            throw new NotImplementedException(objectTypeCode.ToString());
                         }
                 }
             }

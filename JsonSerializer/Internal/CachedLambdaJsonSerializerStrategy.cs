@@ -31,7 +31,7 @@ namespace JsonSerializer.Internal
                 //get item
                 MemberInfo item = allMembers[i];
 
-                if (item != null && !item.Name.IsNullOrEmpty())
+                if (item != null)
                 {
                     if (!ReflectionExtension.IsIndexedProperty(item))
                     {
