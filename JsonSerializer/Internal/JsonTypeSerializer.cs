@@ -53,8 +53,6 @@ namespace JsonSerializer.Internal
             }
 
             var escapeHtmlChars = false;
-
-
             if (!value.HasAnyEscapeChars(escapeHtmlChars))
             {
                 writer.Write(FastJsonWriter.QuoteChar);
