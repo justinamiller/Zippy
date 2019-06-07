@@ -52,6 +52,27 @@ namespace JsonSerializer.Utility
         }
 
 
+        public static GetDelegate GetGetMethod(MemberInfo item)
+        {
+            try
+            {
+                if (item is PropertyInfo)
+                {
+                    return GetGetMethod((PropertyInfo)item);
+                }
+                else if (item is FieldInfo)
+                {
+                    return GetGetMethod((FieldInfo)item);
+                }
+            }
+            catch (Exception)
+            {
+                //do nothing
+            }
+            return null;
+        }
+
+
         public static GetDelegate GetGetMethod(PropertyInfo propertyInfo)
         {
             return GetGetMethodByReflection(propertyInfo);

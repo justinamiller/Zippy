@@ -37,7 +37,6 @@ namespace JsonSerializer.Internal
             this.NameChar = StringExtension.GetEncodeString(name, true);
             this.Name = new string(StringExtension.GetEncodeString(name, false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
-
             if (memberInfo is PropertyInfo)
             {
                 ValueType = ((PropertyInfo)memberInfo).PropertyType;
@@ -46,6 +45,7 @@ namespace JsonSerializer.Internal
             {
                 ValueType = ((FieldInfo)memberInfo).FieldType;
             }
+
             if (ValueType != null)
             {
                 _typeCode = Utility.ConvertUtils.GetTypeCode(ValueType);
@@ -60,7 +60,8 @@ namespace JsonSerializer.Internal
             {
                 try
                 {
-                    object value = _getter(instance);
+                   object value = _getter(instance);
+
 
                     if (_typeCode == Utility.ConvertUtils.TypeCode.NotSetObject)
                     {

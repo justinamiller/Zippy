@@ -29,8 +29,6 @@ namespace JsonSerializer
         private int _currentDepth = 0;
         private TextWriter _writer;
         private bool _propertyInUse;
-        private int _arrayIndex = 0;
-        private int _objectIndex = 0;
 
 
         internal static IJsonSerializerStrategy CurrentJsonSerializerStrategy
@@ -58,21 +56,18 @@ namespace JsonSerializer
         {
             this._propertyInUse = true;
             this._writer.Write('}');
-            _objectIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteEndArray()
         {
             this._writer.Write(']');
-            _arrayIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteStartArray()
         {
             this._writer.Write('[');
-            _arrayIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,7 +75,6 @@ namespace JsonSerializer
         {
             this._writer.Write('{');
             this._propertyInUse = false;
-            _objectIndex++;
         }
 
         private void WritePropertyName(string value)
@@ -109,6 +103,7 @@ namespace JsonSerializer
             _writer.Write(':');
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value)
         {
             WriteStartObject();
@@ -131,7 +126,7 @@ namespace JsonSerializer
         }
 
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
             ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
@@ -188,6 +183,7 @@ namespace JsonSerializer
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeArray(Array array)
         {
             if (array.Rank > 1)
@@ -245,6 +241,7 @@ namespace JsonSerializer
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeList(System.Collections.IList list)
         {
             ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
@@ -311,6 +308,7 @@ namespace JsonSerializer
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeMultidimensionalArray(Array values)
         {
             return SerializeMultidimensionalArray(values, Array.Empty<int>());
@@ -517,7 +515,7 @@ namespace JsonSerializer
             return true;
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeGenericDictionary(IDictionary values)
         {
             if (values.Count == 0)
@@ -548,7 +546,7 @@ namespace JsonSerializer
             return SerializeGenericDictionaryInternal(values, valueCodeType, type);
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeValueMemberInfo(object instance, ValueMemberInfo[] items)
         {
             WriteStartObject();
@@ -595,6 +593,7 @@ namespace JsonSerializer
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeGenericDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType, Type valueType)
         {
 
@@ -627,6 +626,7 @@ namespace JsonSerializer
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeDataSet(System.Data.DataSet ds)
         {
             WriteStartObject();
@@ -703,6 +703,7 @@ namespace JsonSerializer
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeDataTable(System.Data.DataTable dt)
         {
             WriteStartObject();
@@ -791,22 +792,6 @@ namespace JsonSerializer
             finally
             {
                 _currentDepth--;
-            }
-        }
-
-        /// <summary>
-        ///We use this for our cycle detection for the case where objects override equals/gethashcode
-        /// </summary>
-        private sealed class ReferenceComparer : IEqualityComparer
-        {
-            bool IEqualityComparer.Equals(object x, object y)
-            {
-                return x == y;
-            }
-
-            int IEqualityComparer.GetHashCode(object obj)
-            {
-                return RuntimeHelpers.GetHashCode(obj);
             }
         }
     }

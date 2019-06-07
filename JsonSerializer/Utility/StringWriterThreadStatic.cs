@@ -16,10 +16,15 @@ namespace JsonSerializer.Utility
         {
             var ret = s_Cache;
             if (ret == null)
-                return new StringWriter(CultureInfo.InvariantCulture);
-
-            var sb = ret.GetStringBuilder();
-            sb.Length = 0;
+            {
+                return new StringWriter(new StringBuilder(512),CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                var sb = ret.GetStringBuilder();
+                sb.Length = 0;
+            }
+                        
             s_Cache = null;  //don't re-issue cached instance until it's freed
             return ret;
         }
