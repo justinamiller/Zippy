@@ -272,7 +272,7 @@ namespace JsonSerializer.Utility
             // update: I think this is fixed in .NET 3.5 SP1 - leave this in for now...
             List<MemberInfo> distinctMembers = new List<MemberInfo>(targetMembers.Count);
 
-            var groupbyTargetMemebers = targetMembers.Where(l => !l.Name.Contains("k__BackingField")).GroupBy(m => m.Name).ToArray();
+            var groupbyTargetMemebers = targetMembers.Where(l => !l.Name.Contains("k__BackingField")).GroupBy(m => m.Name);
             foreach (var groupedMember in groupbyTargetMemebers)
             {
                 IList<MemberInfo> members = groupedMember.ToList();

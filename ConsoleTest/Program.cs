@@ -114,11 +114,11 @@ namespace ConsoleTest
             }
             return;
 
-            for (var i=0; i<10; i++)
+            for (var i = 0; i < 10; i++)
             {
-   
-                  TestJson();
-                //   TestWriters();
+
+                TestJson();
+                TestWriters();
                 Console.WriteLine("========================");
             }
             Console.WriteLine("DONE");
