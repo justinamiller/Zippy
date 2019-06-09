@@ -54,7 +54,7 @@ namespace JsonSerializer.Internal
             {
                 _typeCode = Utility.ConvertUtils.GetTypeCode(ValueType);
 
-                WriteObject = FastJsonWriter.GetValueTypeToStringMethod(Code);
+                WriteObject = JsonTypeSerializer.GetValueTypeToStringMethod(Code);
             }
         }
 

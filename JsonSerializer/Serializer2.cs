@@ -114,7 +114,7 @@ namespace JsonSerializer
                 for (int i = 0; i < len; i++)
                 {
                     WritePropertyName(keys[i]);
-                    FastJsonWriter.Serializer.WriteString(_writer, value.Get(i));
+                    JsonTypeSerializer.Serializer.WriteString(_writer, value.Get(i));
                 }
             }
             finally
@@ -148,7 +148,7 @@ namespace JsonSerializer
                     {
                         //first record.
                         valueType = GetEnumerableValueTypeCode(anEnumerable);
-                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
+                        writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
 
                         isTyped = valueType != ConvertUtils.TypeCode.Custom;
                         flag1 = false;
@@ -165,7 +165,7 @@ namespace JsonSerializer
                             //is not generic
                             type = value.GetType();
                             valueType = GetTypeCode(type);
-                            writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueType);
+                            writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
                         }
 
                         if (!WriteObjectValue(value, writeObject, type, valueType))
@@ -202,7 +202,7 @@ namespace JsonSerializer
             if (isTyped)
             {
                 valueTypeCode = currentType;
-                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
             }
 
 
@@ -224,7 +224,7 @@ namespace JsonSerializer
                     {
                         lastType = valueType;
                         valueTypeCode = GetTypeCode(valueType);
-                        writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                        writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
                     }
 
                     if (!WriteObjectValue(value, writeObject, valueType, valueTypeCode))
@@ -255,7 +255,7 @@ namespace JsonSerializer
             if (isTyped)
             {
                 valueTypeCode = currentType;
-                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
             }
 
             WriteStartArray();
@@ -289,7 +289,7 @@ namespace JsonSerializer
                             {
                                 lastType = valueType;
                                 valueTypeCode = GetTypeCode(valueType);
-                                writeObject = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                                writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
                             }
                         }
 
@@ -351,7 +351,7 @@ namespace JsonSerializer
                         {
                             lastTypeCode = typeCode;
                             valueTypeCode = Utility.ConvertUtils.GetTypeCode(typeCode);
-                            writeValueFn = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                            writeValueFn = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
                         }
                         if (!WriteObjectValue(value, writeValueFn, typeCode, valueTypeCode))
                         {
@@ -390,7 +390,7 @@ namespace JsonSerializer
             }
             else
             {
-                FastJsonWriter.GetValueTypeToStringMethod(typeCode)?.Invoke(writer, json);
+                JsonTypeSerializer.GetValueTypeToStringMethod(typeCode)?.Invoke(writer, json);
             }
         }
 
@@ -474,7 +474,7 @@ namespace JsonSerializer
                     {
                         lastKeyType = keyType;
                         keyTypeCode = ConvertUtils.GetTypeCode(keyType);
-                        writeKeyFn = FastJsonWriter.GetValueTypeToStringMethod(keyTypeCode);
+                        writeKeyFn = JsonTypeSerializer.GetValueTypeToStringMethod(keyTypeCode);
                     }
 
                     if (ranOnce)
@@ -496,7 +496,7 @@ namespace JsonSerializer
                         {
                             lastValueType = valueType;
                             valueTypeCode = Utility.ConvertUtils.GetTypeCode(keyType);
-                            writeValueFn = FastJsonWriter.GetValueTypeToStringMethod(valueTypeCode);
+                            writeValueFn = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
                         }
 
                         if (!WriteObjectValue(dictionaryValue, writeValueFn, valueType,valueTypeCode))
@@ -598,7 +598,7 @@ namespace JsonSerializer
         private bool SerializeGenericDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType, Type valueType)
         {
 
-            WriteObjectDelegate writeValue = FastJsonWriter.GetValueTypeToStringMethod(valueCodeType);
+            WriteObjectDelegate writeValue = JsonTypeSerializer.GetValueTypeToStringMethod(valueCodeType);
 
             WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
@@ -675,7 +675,7 @@ namespace JsonSerializer
                         foreach (System.Data.DataColumn column in cols)
                         {
                             var typeCode = ConvertUtils.GetTypeCode(column.DataType);
-                            columnType.Add(column, new Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate, Type>(StringExtension.GetEncodeString(column.ColumnName), typeCode, FastJsonWriter.GetValueTypeToStringMethod(typeCode), column.DataType));
+                            columnType.Add(column, new Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate, Type>(StringExtension.GetEncodeString(column.ColumnName), typeCode, JsonTypeSerializer.GetValueTypeToStringMethod(typeCode), column.DataType));
                         }
 
                         foreach (var column in columnType)

@@ -89,6 +89,8 @@ namespace ConsoleTest
         public string Name { get; }
         public int Age { get; }
         public bool Hired { get; }
+        public Guid Id { get; } = Guid.NewGuid();
+        public long BigNumber = 1234565672234;
         public SimpleClass()
         {
             this.Name = "Joe Pickett";
@@ -103,17 +105,17 @@ namespace ConsoleTest
 
         static void Main(string[] args)
         {
-            System.Threading.Thread.Sleep(250);
+            //System.Threading.Thread.Sleep(250);
 
-            var c = new SimpleClass(); //new TestObject();
-            var sb = new JsonSerializer.StringBuilderWriter();
-            for (var i = 0; i < 1000; i++)
-            {
-                JsonSerializer.Serializer2.SerializeObject(c, sb);
-                sb.Clear();
-            }
-            Console.ReadLine();
-            return;
+            //var c = new SimpleClass(); //new TestObject();
+            //var sb = new JsonSerializer.StringBuilderWriter();
+            //for (var i = 0; i < 1000; i++)
+            //{
+            //    JsonSerializer.Serializer2.SerializeObject(c, sb);
+            //    sb.Clear();
+            //}
+            //Console.ReadLine();
+            //return;
 
 
             for (var i = 0; i < 10; i++)

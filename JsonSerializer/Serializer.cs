@@ -527,7 +527,9 @@ namespace JsonSerializer
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
                             if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, value.GetType(),  out obj))
                             {
-                                return this.SerializeValueMemberInfo(value, (IList<ValueMemberInfo>)obj.ToList());
+                                var list = new System.Collections.Generic.List<ValueMemberInfo>(obj.Select(p => (ValueMemberInfo)p));
+          
+                                return this.SerializeValueMemberInfo(value, list);
                             }
                             else
                             {
