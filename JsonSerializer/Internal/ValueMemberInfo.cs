@@ -11,9 +11,10 @@ namespace JsonSerializer.Internal
     {
         private readonly Func<object, object> _getter;
 
+
         private ConvertUtils.TypeCode _typeCode;
 
-        //public MemberInfo MemberInfo { get; }
+     //   public MemberInfo MemberInfo { get; }
         public Type ValueType{get;}
 
         public ConvertUtils.TypeCode Code
@@ -33,7 +34,7 @@ namespace JsonSerializer.Internal
 
         public ValueMemberInfo(MemberInfo memberInfo)
         {
-            //    this.MemberInfo = memberInfo;
+           // this.MemberInfo = memberInfo;
             string name = memberInfo.Name;
             this.NameChar = StringExtension.GetEncodeString(name, true);
             this.Name = new string(StringExtension.GetEncodeString(name, false));

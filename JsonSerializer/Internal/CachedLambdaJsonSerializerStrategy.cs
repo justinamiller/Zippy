@@ -124,7 +124,7 @@ namespace JsonSerializer.Internal
             return (output != null);
         }
 
-        public bool TrySerializeNonPrimitiveObjectImproved(object input, Type type, out ValueMemberInfo[] output)
+        public bool TrySerializeNonPrimitiveObjectImproved(object input, Type type, out IValue[] output)
         {
             output = null;
             ValueMemberInfo[] data;

@@ -121,7 +121,7 @@ namespace JsonSerializer
             }
         }
 
-        public static bool GetValueTypeToStringMethod(ConvertUtils.TypeCode typeCode, object value, TextWriter writer)
+        public static bool WriteToStringMethod(ConvertUtils.TypeCode typeCode, object value, TextWriter writer)
         {
             if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
@@ -130,6 +130,7 @@ namespace JsonSerializer
 
             switch (typeCode)
             {
+
                 case ConvertUtils.TypeCode.CharNullable:
                 case ConvertUtils.TypeCode.Char:
                     {

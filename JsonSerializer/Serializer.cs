@@ -523,11 +523,11 @@ namespace JsonSerializer
                         return SerializeDataTable((System.Data.DataTable)value);
                     default:
                         {
-                            ValueMemberInfo[] obj = null;
+                            IValue[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
                             if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, value.GetType(),  out obj))
                             {
-                                return this.SerializeValueMemberInfo(value, obj.ToList());
+                                return this.SerializeValueMemberInfo(value, (IList<ValueMemberInfo>)obj.ToList());
                             }
                             else
                             {

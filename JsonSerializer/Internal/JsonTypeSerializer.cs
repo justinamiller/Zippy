@@ -10,7 +10,7 @@ using static JsonSerializer.Utility.DateTimeExtension;
 
 namespace JsonSerializer.Internal
 {
-    class JsonTypeSerializer
+    sealed class JsonTypeSerializer
     {
 
         /// <summary>

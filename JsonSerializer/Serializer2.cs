@@ -547,7 +547,7 @@ namespace JsonSerializer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SerializeValueMemberInfo(object instance, ValueMemberInfo[] items)
+        private bool SerializeValueMemberInfo(object instance, IValue[] items)
         {
             WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
@@ -772,7 +772,7 @@ namespace JsonSerializer
                     case ConvertUtils.TypeCode.Custom:
                     case ConvertUtils.TypeCode.NotSetObject:
                         {
-                            ValueMemberInfo[] obj = null;
+                            IValue[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
                             if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, type, out obj))
                             {
