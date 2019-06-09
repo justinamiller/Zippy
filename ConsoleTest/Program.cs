@@ -112,7 +112,9 @@ namespace ConsoleTest
                 JsonSerializer.Serializer2.SerializeObject(c, sb);
                 sb.Clear();
             }
+            Console.ReadLine();
             return;
+
 
             for (var i = 0; i < 10; i++)
             {

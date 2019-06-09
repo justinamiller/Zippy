@@ -33,48 +33,7 @@ namespace JsonSerializer
         public const string ItemSeperatorString = ",";
         public const string MapKeySeperatorString = ":";
 
-
         internal static readonly JsonTypeSerializer Serializer = new JsonTypeSerializer();
-
-
-        private static Dictionary<ConvertUtils.TypeCode, Action<TextWriter, object>> _actions = new Dictionary<ConvertUtils.TypeCode, Action<TextWriter, object>>();
-
-
-        public static Action<TextWriter, object> GetValueTypeActionMethod(ConvertUtils.TypeCode typeCode, WriteObjectDelegate wod)
-        {
-            if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
-            {
-                return null;
-            }
-
-            Action<TextWriter, object> action = null;
-
-            if (_actions.TryGetValue(typeCode, out action))
-            {
-                return action;
-            }
-
-
-            var mi = typeof(JsonTypeSerializer).GetMethod(wod.Method.Name, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance, null, new[] { typeof(TextWriter), typeof(object) }, null);
-            //var actArg = mi.GetParameters()[0];
-            //var args = actArg.ParameterType.GenericTypeArguments;
-
-            //var para = mi.GetParameters().Select(a => Expression.Parameter(a.ParameterType))
-            //    .ToArray();
-
-            var p1 = Expression.Parameter(typeof(TextWriter), "writer");
-            var p2 = Expression.Parameter(typeof(object), "value");
-            // var asDateTime = Expression.Call(typeof(JsonTypeSerializer), "WriteDateTime", null, p1,p2); // calls static method "DateTime.Parse"
-
-            var instance = Expression.Constant(Serializer);
-            var asDateTime = Expression.Call(instance, mi, p1, p2); // calls static method "DateTime.Parse"
-
-            var lamba = Expression.Lambda<Action<TextWriter, object>>(asDateTime, wod.Method.Name, new ParameterExpression[] { p1, p2 });
-            action = lamba.Compile();
-            _actions.Add(typeCode, action);
-
-            return action;
-        }
 
         public static WriteObjectDelegate GetValueTypeToStringMethod(ConvertUtils.TypeCode typeCode)
         {

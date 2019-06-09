@@ -99,7 +99,6 @@ namespace JsonSerializer.Internal
             var len = data?.Length ?? 0;
             if (len > 0)
             {
-                bool hasErrorsInFields = false;
                 List<ValueMemberInfo> ErrorFields = new List<ValueMemberInfo>();
 
                 for(var i=0; i< len; i++)
@@ -115,7 +114,6 @@ namespace JsonSerializer.Internal
                         if (fromCache)
                         {
                             ErrorFields.Add(item);
-                            hasErrorsInFields = true;
                         }
                     }
                 }

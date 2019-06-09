@@ -10,6 +10,7 @@ namespace JsonSerializer.Internal
     sealed class ValueMemberInfo : IValue
     {
         private readonly Func<object, object> _getter;
+
         private ConvertUtils.TypeCode _typeCode;
 
         //public MemberInfo MemberInfo { get; }
@@ -37,6 +38,8 @@ namespace JsonSerializer.Internal
             this.NameChar = StringExtension.GetEncodeString(name, true);
             this.Name = new string(StringExtension.GetEncodeString(name, false));
             this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
+
+
             if (memberInfo is PropertyInfo)
             {
                 ValueType = ((PropertyInfo)memberInfo).PropertyType;
@@ -61,7 +64,6 @@ namespace JsonSerializer.Internal
                 try
                 {
                    object value = _getter(instance);
-
 
                     if (_typeCode == Utility.ConvertUtils.TypeCode.NotSetObject)
                     {

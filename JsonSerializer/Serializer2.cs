@@ -560,6 +560,7 @@ namespace JsonSerializer
                     var item = items[i];
                     WritePropertyName(item.NameChar);
                     var value = item.GetValue(instance);
+
                     if (!WriteObjectValue(value, item.WriteObject, item.ValueType, item.Code))
                     {
                         return false;
