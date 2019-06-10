@@ -150,9 +150,8 @@ namespace ConsoleTest
         {
             int testCount = 1000;
             var data = new Dictionary<string, double>();
-            var sw = System.Diagnostics.Stopwatch.StartNew();
 
-
+                         var sw = System.Diagnostics.Stopwatch.StartNew();
             var charArray = new char[3] { 'a', 'b', 'c' };
             var sb0 = new JsonSerializer.StringBuilderWriter();
             sw.Restart();
@@ -163,6 +162,7 @@ namespace ConsoleTest
                 sb0.Write("hello world");
             }
             data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
+
 
             var sb00 = new JsonSerializer.StringBuilderWriter(0);
             sw.Restart();
@@ -219,124 +219,186 @@ namespace ConsoleTest
 
         }
 
+
         static void TestJson()
         {
-            int testCount = 100000;
-            var data = new Dictionary<string, double>();
-
-            //  System.AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
-
-            var c = new SimpleClass(); //new TestObject();
+            int testCount = 10000;
+          //  var data = new Dictionary<string, double>();
+            var data = new List<Tuple<string, double, string>>();
+         //   var c = new SimpleClass(); 
+            var c = new TestObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            // var a1=  Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            //    var d = sw.Elapsed.TotalMilliseconds;
-            //    sw.Restart();
-            //    var a2 = JsonSerializer.Serializer.SerializeObject(c);
-            //    var dd = sw.Elapsed.TotalMilliseconds;
-            //    dd.ToString();
 
-            //    sw.Restart();
-            Newtonsoft.Json.JsonConvert.SerializeObject(c);
-            //    var d1 = sw.Elapsed.TotalMilliseconds;
-            //    sw.Restart();
-            //    var aa2 = JsonSerializer.Serializer.SerializeObject(c);
-            //    var dd1 = sw.Elapsed.TotalMilliseconds;
+            string json = null;
 
-            Utf8Json.JsonSerializer.ToJsonString<object>(c);
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            try
             {
-                Utf8Json.JsonSerializer.ToJsonString<object>(c);
+                json = Utf8Json.JsonSerializer.ToJsonString<object>(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    Utf8Json.JsonSerializer.ToJsonString<object>(c);
+                }
+                data.Add(new Tuple<string, double, string>("Utf8Json", sw.Elapsed.TotalMilliseconds, json));
             }
-            data.Add("Utf8Json", sw.Elapsed.TotalMilliseconds);
-
-            Jil.JSON.Serialize<object>(c);
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            catch (Exception ex)
             {
-                Jil.JSON.Serialize<object>(c);
+                data.Add(new Tuple<string, double, string>("Utf8Json", Int16.MaxValue, ex.ToString()));
             }
-            data.Add("Jil", sw.Elapsed.TotalMilliseconds);
 
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+
+            try
             {
-                Newtonsoft.Json.JsonConvert.SerializeObject(c);
+                json = Jil.JSON.Serialize<object>(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    Jil.JSON.Serialize<object>(c);
+                }
+                data.Add(new Tuple<string, double, string>("Jil", sw.Elapsed.TotalMilliseconds, json));
             }
-            data.Add("Newtonsoft", sw.Elapsed.TotalMilliseconds);
-
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            catch (Exception ex)
             {
-                JsonSerializer.Serializer.SerializeObject(c);
+                data.Add(new Tuple<string, double, string>("Jil", Int16.MaxValue, ex.ToString()));
             }
-            data.Add("Serializer", sw.Elapsed.TotalMilliseconds);
 
-
-            var js = new System.Web.Script.Serialization.JavaScriptSerializer();
-            js.Serialize(c);
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            try
             {
-                js.Serialize(c);
+                json = Newtonsoft.Json.JsonConvert.SerializeObject(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    Newtonsoft.Json.JsonConvert.SerializeObject(c);
+                }
+                data.Add(new Tuple<string, double, string>("Newtonsoft", sw.Elapsed.TotalMilliseconds, json));
             }
-            data.Add("JavaScriptSerializer", sw.Elapsed.TotalMilliseconds);
-
-            //        // serializable.
-            ServiceStack.Text.Config.Defaults.IncludePublicFields = true;
-            ServiceStack.Text.JsConfig.IncludePublicFields = true;
-            var a4 = ServiceStack.Text.JsonSerializer.SerializeToString(c);
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            catch (Exception ex)
             {
-                ServiceStack.Text.JsonSerializer.SerializeToString(c);
+                data.Add(new Tuple<string, double, string>("Newtonsoft", Int16.MaxValue, ex.ToString()));
             }
-            data.Add("ServiceStack", sw.Elapsed.TotalMilliseconds);
 
-            var xyz = JsonSerializer.Serializer2.SerializeObjectToString(c);
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            try
             {
-                JsonSerializer.Serializer2.SerializeObjectToString(c);
+                json = JsonSerializer.Serializer.SerializeObject(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    JsonSerializer.Serializer.SerializeObject(c);
+                }
+
+                data.Add(new Tuple<string, double, string>("Serializer.V1", sw.Elapsed.TotalMilliseconds, json));
             }
-            data.Add("Serializer2-stringwriter", sw.Elapsed.TotalMilliseconds);
-
-            //sw.Restart();
-            //for (var i = 0; i < testCount; i++)
-            //{
-            //    JsonSerializer.Serializer2.SerializeObjectToString2(c);
-            //}
-            //data.Add("Serializer2-bufferwriter", sw.Elapsed.TotalMilliseconds);
-
-            var z = SimpleJson.SerializeObject(c);
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            catch (Exception ex)
             {
-                SimpleJson.SerializeObject(c);
+                data.Add(new Tuple<string, double, string>("Serializer.V1", Int16.MaxValue, ex.ToString()));
             }
-            data.Add("SimpleJson", sw.Elapsed.TotalMilliseconds);
 
 
-            var nullwriter = new JsonSerializer.NullTextWriter();
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            try
             {
-                JsonSerializer.Serializer2.SerializeObject(c, nullwriter);
+                var js = new System.Web.Script.Serialization.JavaScriptSerializer();
+                json = js.Serialize(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    js.Serialize(c);
+                }
+                data.Add(new Tuple<string, double, string>("JavaScriptSerializer", sw.Elapsed.TotalMilliseconds, json));
             }
-            data.Add("NullTextWriter", sw.Elapsed.TotalMilliseconds);
-
-
-            var sb = new JsonSerializer.StringBuilderWriter();
-            sw.Restart();
-            for (var i = 0; i < testCount; i++)
+            catch (Exception ex)
             {
-                JsonSerializer.Serializer2.SerializeObject(c, sb);
+                data.Add(new Tuple<string, double, string>("JavaScriptSerializer", Int16.MaxValue, ex.ToString()));
+            }
+
+
+
+            try
+            {
+                ServiceStack.Text.Config.Defaults.IncludePublicFields = true;
+                ServiceStack.Text.JsConfig.IncludePublicFields = true;
+                json = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    ServiceStack.Text.JsonSerializer.SerializeToString(c);
+                }
+                data.Add(new Tuple<string, double, string>("ServiceStack", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("ServiceStack", Int16.MaxValue, ex.ToString()));
+            }
+
+            try
+            {
+                json = JsonSerializer.Serializer2.SerializeObjectToString(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    JsonSerializer.Serializer2.SerializeObjectToString(c);
+                }
+                data.Add(new Tuple<string, double, string>("Serializer.V2-StringWriter", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("Serializer.V2-StringWriter", Int16.MaxValue, ex.ToString()));
+            }
+
+            try
+            {
+                json = SimpleJson.SerializeObject(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    SimpleJson.SerializeObject(c);
+                }
+                data.Add(new Tuple<string, double, string>("SimpleJson", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("SimpleJson", Int16.MaxValue, ex.ToString()));
+            }
+
+
+            try
+            {
+                var nullwriter = new JsonSerializer.NullTextWriter();
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    JsonSerializer.Serializer2.SerializeObject(c, nullwriter);
+                }
+                data.Add(new Tuple<string, double, string>("Serializer.V2-NullWriter", sw.Elapsed.TotalMilliseconds, ""));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("Serializer.V2-NullWriter", Int16.MaxValue, ex.ToString()));
+            }
+
+            try
+            {
+                var sb = new JsonSerializer.StringBuilderWriter();
+                json = JsonSerializer.Serializer2.SerializeObject(c, sb).ToString();
                 sb.Clear();
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    JsonSerializer.Serializer2.SerializeObject(c, sb);
+                    sb.Clear();
+                }
+                data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-512", sw.Elapsed.TotalMilliseconds, json));
             }
-            data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-512", Int16.MaxValue, ex.ToString()));
+            }
 
-            var sb2 = new JsonSerializer.StringBuilderWriter(0);
+
+
+            try
+            {
+                var sb2 = new JsonSerializer.StringBuilderWriter(0);
             GC.KeepAlive(sb2);
             sw.Restart();
             for (var i = 0; i < testCount; i++)
@@ -344,145 +406,17 @@ namespace ConsoleTest
                 JsonSerializer.Serializer2.SerializeObject(c, sb2);
                 sb2.Clear();
             }
-            data.Add("StringBuilderWriter2", sw.Elapsed.TotalMilliseconds);
-
-
-            //var charArray = new char[3] { 'a', 'b', 'c' };
-            //var sb0 = new JsonSerializer.StringBuilderWriter();
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb0.Write('a');
-            //    sb0.Write(charArray, 0, 3);
-            //    sb0.Write("hello world");
-            //}
-            //data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var sb00 = new JsonSerializer.StringBuilderWriter2();
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb00.Write('a');
-            //    sb00.Write(charArray, 0, 3);
-            //    sb00.Write("hello world");
-            //}
-            //data.Add("StringBuilderWriter2", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var sb1 = new StringBuilder(1024);
-            //sw.Restart();
-            //for (var i = 0; i < testCount*2; i++)
-            //{
-            //    sb1.Append('a');
-            //    sb1.Append(charArray, 0, 3);
-
-            //    sb1.Append("hello world");
-            //}
-            //data.Add("StringBuilder", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var sb2 = new JsonSerializer.FastString.FastString(1024);
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb2.Append("hello world");
-            //}
-            //data.Add("FastString", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-
-            //var sb3 = new JsonSerializer.FastString.StringBuffer(1024);
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb3.Append("hello world");
-            //}
-            //data.Add("StringBuffer", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var sb4 = new JsonSerializer.FastString.FastStringBuilder(1024);
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb4.Append("hello world");
-            //}
-            //data.Add("FastStringBuilder", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var sb5 = new JsonSerializer.FastString.FastStringBuilder2(1024);
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb5.Append("hello world");
-            //}
-            //data.Add("FastStringBuilder2", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var sb6 = new JsonSerializer.FastString.FastStringBuilder3(1024);
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb6.Append("hello world");
-            //}
-            //data.Add("FastStringBuilder3", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var sb67 = new StringWriter(new StringBuilder(1024));
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb67.Write('a');
-            //    sb67.Write(charArray, 0, 3);
-            //    sb67.Write("hello world");
-            //}
-            //data.Add("StringWriter", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //sb67 = new StringWriter();
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb67.Write('a');
-            //    sb67.Write(charArray, 0, 3);
-            //    sb67.Write("hello world");
-            //}
-            //data.Add("StringWriter2", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-
-            //var sb7 = new JsonSerializer.NullTextWriter();
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    sb7.Write('a');
-            //    sb7.Write(charArray, 0, 3);
-            //    sb7.Write("hello world");
-            //}
-            //data.Add("NullTextWriter", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-            //var ms = new MemoryStream(1024);
-            //var m = new System.IO.BufferedStream(ms);
-            //sw.Restart();
-            //for (var i = 0; i < testCount * 2; i++)
-            //{
-            //    m.WriteByte((byte)'a');
-
-            //    var b = Encoding.Default.GetBytes(charArray, 0, 3);
-            //    m.Write(b, 0, b.Length);
-
-            //    b = Encoding.Default.GetBytes("hello world");
-            //    m.Write(b,0,b.Length);
-
-            //}
-            //data.Add("BufferedStream", sw.Elapsed.TotalMilliseconds);
-            //GC.Collect(GC.MaxGeneration);
-
-
-            foreach (var item in data.OrderBy(v => v.Value))
+            data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-0", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch(Exception ex)
             {
-                Console.WriteLine(item.Key + " : "  + item.Value.ToString("#,##0.00"));
+                data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-0", Int16.MaxValue,ex.ToString()));
+            }
+
+
+            foreach (var item in data.OrderBy(v => v.Item2))
+            {
+                Console.WriteLine(item.Item1 + " : "  + (item.Item2==Int16.MaxValue ? "NA" : item.Item2.ToString("#,##0.00")) + " | " + item.Item3.Length);
             }
 
 
