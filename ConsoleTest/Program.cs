@@ -164,7 +164,7 @@ namespace ConsoleTest
             }
             data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
 
-            var sb00 = new JsonSerializer.StringBuilderWriter2();
+            var sb00 = new JsonSerializer.StringBuilderWriter(0);
             sw.Restart();
             for (var i = 0; i < testCount * 2; i++)
             {
@@ -336,7 +336,7 @@ namespace ConsoleTest
             }
             data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
 
-            var sb2 = new JsonSerializer.StringBuilderWriter2();
+            var sb2 = new JsonSerializer.StringBuilderWriter(0);
             GC.KeepAlive(sb2);
             sw.Restart();
             for (var i = 0; i < testCount; i++)
