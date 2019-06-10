@@ -24,8 +24,6 @@ namespace JsonSerializer.Internal
             int len = allMembers.Count;
             var data = new ValueMemberInfo[len];
             int dataIndex = 0;
-       
-
             for (int i = 0; i < len; i++)
             {
                 //get item
@@ -71,10 +69,14 @@ namespace JsonSerializer.Internal
             }
             else
             {
-                //cache type
+        //reflection on type
                 data = this.GetterValueFactory(type);
-                this.GetCache[type] = data;
-                fromCache = true;
+               if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) ==-1)
+                {
+                    //cache type
+                    this.GetCache[type] = data;
+                    fromCache = true;
+                }
             }
 
             return (data != null);

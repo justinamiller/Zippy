@@ -86,6 +86,23 @@ namespace ConsoleTest
 
     public class SimpleClass
     {
+        private string _test;
+        public string test = "";
+        public string Test1
+        {
+            get
+            {
+                return test;
+            }
+        }
+        public string Test2
+        {
+            get
+            {
+                return _test;
+            }
+        }
+
         public string Name { get; }
         public int Age { get; }
         public bool Hired { get; }

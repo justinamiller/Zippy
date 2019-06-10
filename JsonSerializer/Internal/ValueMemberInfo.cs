@@ -4,6 +4,7 @@ using System.Text;
 using System.Reflection;
 using JsonSerializer.Utility;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace JsonSerializer.Internal
 {
@@ -14,7 +15,6 @@ namespace JsonSerializer.Internal
 
         private ConvertUtils.TypeCode _typeCode;
 
-     //   public MemberInfo MemberInfo { get; }
         public Type ValueType{get;}
 
         public ConvertUtils.TypeCode Code
@@ -34,16 +34,11 @@ namespace JsonSerializer.Internal
 
         public ValueMemberInfo(MemberInfo memberInfo)
         {
-           // this.MemberInfo = memberInfo;
-            string name = memberInfo.Name;
-            this.NameChar = StringExtension.GetEncodeString(name, true);
-            this.Name = new string(StringExtension.GetEncodeString(name, false));
-            this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
-
-
-            if (memberInfo is PropertyInfo)
+            // this.MemberInfo = memberInfo;
+            var propertyInfo = memberInfo as PropertyInfo; 
+            if (propertyInfo!=null)
             {
-                ValueType = ((PropertyInfo)memberInfo).PropertyType;
+                ValueType = propertyInfo.PropertyType;
             }
             else if (memberInfo is FieldInfo)
             {
@@ -55,6 +50,16 @@ namespace JsonSerializer.Internal
                 _typeCode = Utility.ConvertUtils.GetTypeCode(ValueType);
 
                 WriteObject = JsonTypeSerializer.GetValueTypeToStringMethod(Code);
+
+                string name = memberInfo.Name;
+                this.NameChar = StringExtension.GetEncodeString(name, true);
+                this.Name = new string(StringExtension.GetEncodeString(name, false));
+                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
+            }
+            else
+            {
+                //not a field or property
+                _errored = true;
             }
         }
 
@@ -64,7 +69,7 @@ namespace JsonSerializer.Internal
             {
                 try
                 {
-                   object value = _getter(instance);
+                   var value = _getter(instance);
 
                     if (_typeCode == Utility.ConvertUtils.TypeCode.NotSetObject)
                     {

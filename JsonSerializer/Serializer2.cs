@@ -413,22 +413,6 @@ namespace JsonSerializer
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static string SerializeObjectToString2(object Object)
-        {
-            if (Object == null)
-            {
-                return null;
-            }
-
-            // var writer = StringWriterThreadStatic.Allocate();
-            var writer = new BufferWriter();
-            new Serializer2().SerializeObjectInternal(Object, writer);
-            return writer.ToString();
-            // return StringWriterThreadStatic.ReturnAndFree(writer);
-        }
-
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static TextWriter SerializeObject(object Object, TextWriter writer)
         {
             if (writer == null)

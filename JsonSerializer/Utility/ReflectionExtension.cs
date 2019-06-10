@@ -272,6 +272,7 @@ namespace JsonSerializer.Utility
             // update: I think this is fixed in .NET 3.5 SP1 - leave this in for now...
             List<MemberInfo> distinctMembers = new List<MemberInfo>(targetMembers.Count);
 
+            //Automatic Property syntax is actually not recommended if the class can be used in serialization. 
             var groupbyTargetMemebers = targetMembers.Where(l => !l.Name.Contains("k__BackingField")).GroupBy(m => m.Name);
             foreach (var groupedMember in groupbyTargetMemebers)
             {
@@ -280,7 +281,7 @@ namespace JsonSerializer.Utility
 
                 if (count == 1)
                 {
-                    distinctMembers.Add(members.First());
+                    distinctMembers.Add(members[0]);
                 }
                 else
                 {
@@ -375,9 +376,10 @@ namespace JsonSerializer.Utility
         /// </returns>
         public static bool IsIndexedProperty(MemberInfo member)
         {
-            if (member is PropertyInfo)
+            var properyInfo = member as PropertyInfo;
+            if (properyInfo!=null)
             {
-                return IsIndexedProperty((PropertyInfo)member);
+                return IsIndexedProperty(properyInfo);
             }
             else
             {
