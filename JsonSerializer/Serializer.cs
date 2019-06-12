@@ -22,7 +22,7 @@ namespace SwiftJson
     /// <remarks>guide from http://www.json.org/ </remarks>
     public sealed class Serializer
     {
-        private static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new CachedLambdaJsonSerializerStrategy();
+        private static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
         // The following logic performs circular reference detection
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
@@ -752,7 +752,7 @@ namespace SwiftJson
                         {
                             IValue[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
-                            if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, type, out obj))
+                            if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, type, out obj))
                             {
                                 return this.SerializeValueMemberInfo(value, obj);
                             }

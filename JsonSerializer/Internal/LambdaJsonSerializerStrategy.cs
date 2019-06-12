@@ -9,33 +9,41 @@ namespace SwiftJson.Internal
 {
     class LambdaJsonSerializerStrategy : IJsonSerializerStrategy
     {
-        public IDictionary<Type, IDictionary<string, Func<object, object>>> GetCache;
+        public IDictionary<Type, ValueMemberInfo[]> GetCache;
 
         public LambdaJsonSerializerStrategy()
         {
-            this.GetCache = new FactoryDictionary<Type, IDictionary<string, Func<object, object>>>(new ReflectionExtension.DictionaryValueFactory<Type, IDictionary<string, Func<object, object>>>(this.GetterValueFactory));
+            this.GetCache = new Dictionary<Type, ValueMemberInfo[]>();
         }
 
 
-        protected virtual IDictionary<string, Func<object, object>> GetterValueFactory(Type type)
+        protected virtual ValueMemberInfo[] GetterValueFactory(Type type)
         {
-            MemberInfo[] allMembers = ReflectionExtension.GetFieldsAndProperties(type).Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
-            IDictionary<string, Func<object, object>> strs = new Dictionary<string, Func<object, object>>();
+            var allMembers = ReflectionExtension.GetFieldsAndProperties(type);//.Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
 
-            for (int i = 0; i < allMembers.Length; i++)
+            int len = allMembers.Count;
+            var data = new ValueMemberInfo[len];
+            int dataIndex = 0;
+            for (int i = 0; i < len; i++)
             {
+                //get item
                 MemberInfo item = allMembers[i];
 
-                if (item != null && !item.Name.IsNullOrEmpty())
+                if (item != null)
                 {
-
-                    Func<object, object> method = ReflectionExtension.CreateGet<object, object>(item);
-                    if (method != null)
-                        strs[item.Name] = method;
+                    if (!ReflectionExtension.IsIndexedProperty(item))
+                    {
+                        data[dataIndex++] = new ValueMemberInfo(item);
+                    }
                 }
             }
 
-            return strs;
+            if (len != dataIndex)
+            {
+                Array.Resize(ref data, dataIndex);
+            }
+
+            return data;
         }
 
 
@@ -49,7 +57,7 @@ namespace SwiftJson.Internal
             return this.TrySerializeUnknownTypes(input, out output);
         }
 
-        private bool GetValue(Type type, out IDictionary<string, Func<object, object>> data, out bool fromCache)
+        private bool GetValue(Type type, out ValueMemberInfo[] data, out bool fromCache)
         {
             fromCache = false;
             data = null;
@@ -59,16 +67,16 @@ namespace SwiftJson.Internal
                 //cache type
                 fromCache = true;
             }
-            else if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) >= 0)
-            {
-                //dont cache
-                data = this.GetterValueFactory(type);
-            }
             else
             {
-                //cache type
-                data = this.GetCache[type];
-                fromCache = true;
+        //reflection on type
+                data = this.GetterValueFactory(type);
+               if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) ==-1)
+                {
+                    //cache type
+                    this.GetCache[type] = data;
+                    fromCache = true;
+                }
             }
 
             return (data != null);
@@ -83,56 +91,65 @@ namespace SwiftJson.Internal
                 return false;
 
             Type type = input.GetType();
-           
+
             IDictionary<string, object> jsonObjects = new Dictionary<string, object>();// new PocoJsonObject();
-            IDictionary<string, Func<object, object>> data;
+           ValueMemberInfo[] data;
             bool fromCache;
             if (!GetValue(type, out data, out fromCache))
                 return false;
 
-
-            if (data != null && data.Count > 0)
+            var len = data?.Length ?? 0;
+            if (len > 0)
             {
-                bool hasErrorsInFields = false;
-                List<string> ErrorFields = new List<string>();
+                List<ValueMemberInfo> ErrorFields = new List<ValueMemberInfo>();
 
-                foreach (var item in data)
+                for(var i=0; i< len; i++)
                 {
-                    Func<object, object> value = item.Value;
-
+                    var item = data[i];
                     try
                     {
                         //perform reflection here.
-                        jsonObjects.Add(item.Key, value(input));
+                        jsonObjects.Add(item.Name, item.GetValue(input));
                     }
                     catch (Exception)
                     {
                         if (fromCache)
                         {
-                            ErrorFields.Add(item.Key);
-                            hasErrorsInFields = true;
+                            ErrorFields.Add(item);
                         }
                     }
                 }
                 //switch out object
                 output = jsonObjects;
-
-                if (hasErrorsInFields)
-                {
-                    //remove bad items.
-                    foreach (string item in ErrorFields)
-                    {
-                        data.Remove(item);
-                    }
-                }
             }//end if
 
             return (output != null);
         }
 
-        public bool TrySerializeNonPrimitiveObjectImproved(object input, Type type, out IValue[] output)
+        public bool TrySerializeNonPrimitiveObject(object input, Type type, out IValue[] output)
         {
-            throw new NotImplementedException();
+            output = null;
+            ValueMemberInfo[] data;
+            bool fromCache = false;
+
+            if (type == null)
+            {
+                type = input.GetType();
+            }
+
+            if (!GetValue(type, out data, out fromCache))
+            {
+                return false;
+            }
+
+            int len = data.Length;
+            output = new ValueMemberInfo[len];
+            for (var i = 0; i < len; i++)
+            {
+                output[i] = data[i];
+            }
+
+            return output != null;
         }
     }
 }
