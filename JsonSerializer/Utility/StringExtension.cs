@@ -214,33 +214,6 @@ namespace SwiftJson.Utility
             return new string(data);
         }
 
-        public static bool ValidJsonFormat(string value)
-        {
-            if (value != null)
-            {
-                string trimValue = value.Trim();
-                int length = trimValue.Length;
-
-                if (length >= 2)
-                {
-                    char firstchr = trimValue[0];
-                    bool firstPass =
-                        (firstchr == '{' && trimValue[length - 1] == '}') //For object
-                        ||
-                        (firstchr == '[' && trimValue[length - 1] == ']');//For array
-
-                    return firstPass;
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPrintable(this char c)
-        {
-            return c >= 32 && c <= 126;
-        }
-
 
         /// <summary>
         /// Searches the string for one or more non-printable characters.

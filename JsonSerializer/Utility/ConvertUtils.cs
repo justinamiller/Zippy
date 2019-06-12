@@ -148,35 +148,6 @@ new Hashtable()
 #endif
 };
 
-        internal class TypeInformation
-        {
-            public Type Type { get; set; }
-            public TypeCode TypeCode { get; set; }
-        }
-
-        private static readonly TypeInformation[] PrimitiveTypeCodes =
-{
-            // need all of these. lookup against the index with TypeCode value
-            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.Empty },
-            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.NotSetObject },
-            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.DBNull },
-            new TypeInformation { Type = typeof(bool), TypeCode = TypeCode.Boolean },
-            new TypeInformation { Type = typeof(char), TypeCode = TypeCode.Char },
-            new TypeInformation { Type = typeof(sbyte), TypeCode = TypeCode.SByte },
-            new TypeInformation { Type = typeof(byte), TypeCode = TypeCode.Byte },
-            new TypeInformation { Type = typeof(short), TypeCode = TypeCode.Int16 },
-            new TypeInformation { Type = typeof(ushort), TypeCode = TypeCode.UInt16 },
-            new TypeInformation { Type = typeof(int), TypeCode = TypeCode.Int32 },
-            new TypeInformation { Type = typeof(uint), TypeCode = TypeCode.UInt32 },
-            new TypeInformation { Type = typeof(long), TypeCode = TypeCode.Int64 },
-            new TypeInformation { Type = typeof(ulong), TypeCode = TypeCode.UInt64 },
-            new TypeInformation { Type = typeof(float), TypeCode = TypeCode.Single },
-            new TypeInformation { Type = typeof(double), TypeCode = TypeCode.Double },
-            new TypeInformation { Type = typeof(decimal), TypeCode = TypeCode.Decimal },
-            new TypeInformation { Type = typeof(DateTime), TypeCode = TypeCode.DateTime },
-            new TypeInformation { Type = typeof(object), TypeCode = TypeCode.Empty }, // no 17 in TypeCode for some reason
-            new TypeInformation { Type = typeof(string), TypeCode = TypeCode.String }
-        };
 
         public static TypeCode GetInstanceObjectTypeCode(object value)
         {
@@ -222,29 +193,6 @@ new Hashtable()
             return TypeCode.NotSetObject;
         }
 
-        public static TypeCode GetTypeCode(object obj)
-        {
-            Type type = obj.GetType();
-
-            return GetTypeCode(type);
-        }
-
-        public static bool IsNullableType(Type t)
-        {
-            return (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>));
-        }
-
-        public static void ResolveConvertibleValue(IConvertible convertible, out TypeCode typeCode, out object value)
-        {
-            // the value is a non-standard IConvertible
-            // convert to the underlying value and retry
-            TypeInformation typeInformation = PrimitiveTypeCodes[(int)convertible.GetTypeCode()];
-
-            // if convertible has an underlying typecode of Object then attempt to convert it to a string
-            typeCode = typeInformation.TypeCode == TypeCode.NotSetObject ? TypeCode.String : typeInformation.TypeCode;
-            Type resolvedType = typeInformation.TypeCode == TypeCode.NotSetObject ? typeof(string) : typeInformation.Type;
-            value = convertible.ToType(resolvedType, CultureInfo.InvariantCulture);
-        }
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
         {

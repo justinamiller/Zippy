@@ -618,7 +618,7 @@ namespace SwiftJson.Utility
         /// <returns></returns>
         [SuppressMessage("brain-overload", "S1541")]
         [SuppressMessage("brain-overload", "S1067")]
-        private static bool CanSerializeComplexObject(object instance)
+        public static bool CanSerializeComplexObject(object instance)
         {
             string typeFullName = instance.GetType().FullName;
 
