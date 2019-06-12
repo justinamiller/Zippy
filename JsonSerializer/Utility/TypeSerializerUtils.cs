@@ -49,8 +49,6 @@ namespace Zippy.Utility
             GuidNullable = 33,
             TimeSpan = 34,
             TimeSpanNullable = 35,
-            BigInteger = 36,
-            BigIntegerNullable = 37,
             Uri = 38,
             String = 39,
             Bytes = 40,
@@ -103,8 +101,6 @@ namespace Zippy.Utility
                 { typeof(Guid?), TypeCode.GuidNullable },
                 { typeof(TimeSpan), TypeCode.TimeSpan },
                 { typeof(TimeSpan?), TypeCode.TimeSpanNullable },
-                { typeof(BigInteger), TypeCode.BigInteger },
-                { typeof(BigInteger?), TypeCode.BigIntegerNullable },
                 { typeof(Uri), TypeCode.Uri },
                 { typeof(string), TypeCode.String },
                 { typeof(byte[]), TypeCode.Bytes },
@@ -176,29 +172,50 @@ namespace Zippy.Utility
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
         {
-            if(anEnumerable is Array)
-            {
-                return GetTypeCode(anEnumerable.GetType().GetElementType());
-            }
-            else if(anEnumerable is System.Collections.ArrayList)
+          if(anEnumerable is System.Collections.ArrayList)
             {
                 return TypeCode.NotSetObject;
             }
             else if(anEnumerable is System.Collections.IList)
             {
-                return GetIListValueTypeCode((System.Collections.IList)anEnumerable);
+                return GetIListValueTypeCode(anEnumerable.GetType());
             }
-
-             return TypeCode.NotSetObject;
+            else  if (anEnumerable is Array)
+            {
+                return GetArrayValueTypeCode(anEnumerable.GetType());
+            }
+            return TypeCode.NotSetObject;
         }
 
-        public static TypeCode GetIListValueTypeCode(System.Collections.IList list)
+        public static TypeCode GetArrayValueTypeCode(Type type)
         {
-            Type type = list.GetType();
+            return GetTypeCode(type.GetElementType());
+        }
+
+        public static TypeCode GetIListValueTypeCode(Type type)
+        {
             if (type.IsGenericType)
             {
                 return (GetTypeCode(type.GetGenericArguments()[0]));
             }
+
+            return TypeCode.NotSetObject;
+        }
+
+        public static TypeCode GetEnumerableValueTypeCode(Type type)
+        {
+            if (type.IsArray)
+            {
+                return GetTypeCode(type.GetElementType());
+            }
+            //else if (anEnumerable is System.Collections.ArrayList)
+            //{
+            //    return TypeCode.NotSetObject;
+            //}
+            //else if (type is System.Collections.IList)
+            //{
+            //    return GetIListValueTypeCode((System.Collections.IList)anEnumerable);
+            //}
 
             return TypeCode.NotSetObject;
         }

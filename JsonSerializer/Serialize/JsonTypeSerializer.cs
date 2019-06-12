@@ -16,6 +16,7 @@ namespace Zippy.Serialize
     {
         public const char QuoteChar = '"';
         internal static readonly JsonTypeSerializer Serializer = new JsonTypeSerializer();
+        private static readonly CultureInfo _cultureInfo = CultureInfo.InvariantCulture;
 
         public static WriteObjectDelegate GetValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode)
         {
@@ -81,11 +82,6 @@ namespace Zippy.Serialize
                     return Serializer.WriteNullableTimeSpan;
                 case TypeSerializerUtils.TypeCode.TimeSpan:
                     return Serializer.WriteTimeSpan;
-
-                //case PrimitiveTypeCode.BigInteger:
-                //    // this will call to WriteValue(object)
-                //    WriteValue((BigInteger)value);
-                //    return;
                 case TypeSerializerUtils.TypeCode.Uri:
                     return Serializer.WriteUri;
                 case TypeSerializerUtils.TypeCode.String:
@@ -143,19 +139,18 @@ namespace Zippy.Serialize
             if (value == null)
             {
                 WriteNull(writer, null);
-                return;
             }
-
-            if (!value.HasAnyEscapeChars(JSON.Options.EscapeHtmlChars))
+            else if (!value.HasAnyEscapeChars(JSON.Options.EscapeHtmlChars))
             {
                 writer.Write(QuoteChar);
                 writer.Write(value);
                 writer.Write(QuoteChar);
-                return;
             }
-
-            //force encode.
-            writer.Write(StringExtension.GetEncodeString(value));
+            else
+            {
+                //force encode.
+                writer.Write(StringExtension.GetEncodeString(value));
+            }
         }
 
         public void WriteException(TextWriter writer, object value)
@@ -163,7 +158,6 @@ namespace Zippy.Serialize
             WriteString(writer, ((Exception)value).Message);
         }
 
-        private static readonly long DatetimeMinTimeTicks = (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks;
         public void WriteDateTime(TextWriter writer, object oDateTime)
         {
             writer.Write(QuoteChar);
@@ -171,7 +165,8 @@ namespace Zippy.Serialize
             writer.Write(QuoteChar);
         }
 
-        private readonly static TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
+        private static readonly long DatetimeMinTimeTicks = (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks;
+        private  static readonly TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
 
         private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Zippy.Utility
 {
@@ -46,10 +47,19 @@ namespace Zippy.Utility
         }
 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char[] ToTimeOffsetString(this TimeSpan offset)
         {
-            var h = Math.Abs(offset.Hours);
-            var m = Math.Abs(offset.Minutes);
+            var h = offset.Hours;
+            if (h < 0)
+            {
+                h = -h;
+            }
+            var m = offset.Minutes;
+            if (m < 0)
+            {
+                m = -m;
+            }
 
             char[] items = new char[5];
             int index = 0;

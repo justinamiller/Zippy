@@ -11,7 +11,6 @@ namespace Zippy.Internal
         char[] NameChar { get; }
         Utility.TypeSerializerUtils.TypeCode Code { get; }
         object GetValue(object instance);
-
         WriteObjectDelegate WriteObject { get; }
         Type ValueType { get; }
     }

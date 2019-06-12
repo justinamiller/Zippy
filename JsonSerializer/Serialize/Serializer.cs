@@ -167,7 +167,7 @@ namespace Zippy.Serialize
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SerializeArray(Array array)
+        private bool SerializeArray(Array array, Type type)
         {
             if (array.Rank > 1)
             {
@@ -180,34 +180,37 @@ namespace Zippy.Serialize
             bool flag1 = true;
             WriteStartArray();
 
-            var currentType = TypeSerializerUtils.GetEnumerableValueTypeCode(array);
+            Type valueType = null;
+            var currentType = GetArrayValueTypeCode(type);
             bool isTyped = currentType != TypeSerializerUtils.TypeCode.NotSetObject;
             if (isTyped)
             {
                 valueTypeCode = currentType;
                 writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+                valueType = type.GetElementType();
             }
-
 
             int len = array.Length;
             try
             {
-
                 // note that an error in the IEnumerable won't be caught
                 for (var i = 0; i <len; i++)
                 {
-                    var value = array.GetValue(i);
                     if (!flag1)
                     {
                         _writer.Write(',');
                     }
 
-                    Type valueType = value.GetType();
-                    if (lastType != valueType)
+                    var value = array.GetValue(i);
+                    if (!isTyped)
                     {
-                        lastType = valueType;
-                        valueTypeCode = GetTypeCode(valueType);
-                        writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+                        valueType = value.GetType();
+                        if (lastType != valueType)
+                        {
+                            lastType = valueType;
+                            valueTypeCode = GetTypeCode(valueType);
+                            writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+                        }
                     }
 
                     if (!WriteObjectValue(value, writeObject, valueType, valueTypeCode))
@@ -443,7 +446,7 @@ namespace Zippy.Serialize
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SerializeGenericDictionary(IDictionary values)
+        private bool SerializeGenericDictionary(IDictionary values, Type type)
         {
             if (values.Count == 0)
             {
@@ -452,7 +455,6 @@ namespace Zippy.Serialize
                 return true;
             }
             //check if key is string type
-            Type type = values.GetType();
             Type[] args = type.GetGenericArguments();
 
             if (args.Length == 0)
@@ -484,13 +486,16 @@ namespace Zippy.Serialize
             {
                 for (var i = 0; i < len; i++)
                 {
-                    var item = items[i];
-                    WritePropertyName(item.NameChar);
+                    IValue item = items[i];
                     var value = item.GetValue(instance);
-
-                    if (!WriteObjectValue(value, item.WriteObject, item.ValueType, item.Code))
+                    if (value != null || !JSON.Options.ShouldExcludeNulls)
                     {
-                        return false;
+                        WritePropertyName(item.NameChar);
+
+                        if (!WriteObjectValue(value, item.WriteObject, item.ValueType, item.Code))
+                        {
+                            return false;
+                        }
                     }
                 }
             }
@@ -677,7 +682,7 @@ namespace Zippy.Serialize
                 {
                     case TypeSerializerUtils.TypeCode.Array:
                         {
-                            return SerializeArray((Array)value);
+                            return SerializeArray((Array)value, type);
                         }
                     case TypeSerializerUtils.TypeCode.IList:
                         {
@@ -693,7 +698,7 @@ namespace Zippy.Serialize
                         }
                     case TypeSerializerUtils.TypeCode.GenericDictionary:
                         {
-                            return SerializeGenericDictionary((IDictionary)value);
+                            return SerializeGenericDictionary((IDictionary)value, type);
                         }
                     case TypeSerializerUtils.TypeCode.NameValueCollection:
                         {

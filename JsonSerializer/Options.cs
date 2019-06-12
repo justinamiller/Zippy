@@ -25,6 +25,8 @@ namespace Zippy
             this.RecursionLimit = recursionLimit;
             this.IsElasticSearchReady = isElasticSearchReady;
         }
+        public bool PrettyPrint { get; set; }
+        public bool ShouldExcludeNulls { get; set; }
 
         /// <summary>
         /// ensure format takes account for elastic search

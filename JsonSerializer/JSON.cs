@@ -27,7 +27,16 @@ namespace Zippy
 
             var writer = StringWriterThreadStatic.Allocate();
             new Serializer().SerializeObjectInternal(Object, writer);
-            return StringWriterThreadStatic.ReturnAndFree(writer);
+            var json =StringWriterThreadStatic.ReturnAndFree(writer);
+
+            if (Options.PrettyPrint)
+            {
+               return StringExtension.PrettyPrint(json);
+            }
+            else
+            {
+                return json;
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
@@ -43,6 +52,7 @@ namespace Zippy
             }
 
             new Serializer().SerializeObjectInternal(Object, writer);
+
             return writer;
         }
     }

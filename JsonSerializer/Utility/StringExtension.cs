@@ -76,7 +76,8 @@ namespace Zippy.Utility
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static unsafe char[] GetEncodeString(string str, bool quote = true)
         {
-            char[] bufferWriter = new char[(str.Length * 2) + 2];
+            int len = (str.Length * 2) + 2;
+            char[] bufferWriter = new char[len];
             int bufferIndex = 0;
 
             if (quote)
@@ -86,7 +87,7 @@ namespace Zippy.Utility
                 bufferIndex++;
             }
 
-            if (bufferWriter.Length > 2)
+            if (len > 2)
             {
                 char c;
                 fixed (char* chr = str)

@@ -23,6 +23,7 @@ namespace Zippy.Internal
 
         private bool _errored = false;
 
+
         public ValueMemberInfo(MemberInfo memberInfo)
         {
             // this.MemberInfo = memberInfo;
@@ -42,6 +43,7 @@ namespace Zippy.Internal
                 WriteObject = JsonTypeSerializer.GetValueTypeToStringMethod(Code);
                 this.NameChar = StringExtension.GetEncodeString(memberInfo.GetSerializationName(), true);
                 this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
+
             }
             else
             {
@@ -52,7 +54,7 @@ namespace Zippy.Internal
 
         public object GetValue(object instance)
         {
-            if (!_errored)
+            if (!_errored &&instance!=null)
             {
                 try
                 {

@@ -18,6 +18,16 @@ namespace Zippy
         DateHandler DateHandler { get; set; }
 
     bool EscapeHtmlChars { get; set; }
+
+        /// <summary>
+        /// whether or not to include whitespace and newlines for ease of reading
+        /// </summary>
+        bool PrettyPrint { get; set; }
+
+        /// <summary>
+        /// whether or not to write object members whose value is null
+        /// </summary>
+       bool ShouldExcludeNulls { get; set; }
     }
 
     public enum DateHandler

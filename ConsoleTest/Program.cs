@@ -127,9 +127,9 @@ namespace ConsoleTest
             System.Threading.Thread.Sleep(250);
 
             //var c = new SimpleClass(); //new TestObject();
-            var c= new TestObject();
+            var c = new TestObject();
             var sb = new Zippy.Serialize.Writers.StringBuilderWriter();
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 100000; i++)
             {
                 Zippy.JSON.SerializeObject(c, sb);
                 sb.Clear();
@@ -143,7 +143,7 @@ namespace ConsoleTest
             {
 
                 TestJson();
-              //  TestWriters();
+                TestWriters();
                 Console.WriteLine("========================");
             }
             Console.WriteLine("DONE");
@@ -332,20 +332,6 @@ namespace ConsoleTest
                 data.Add(new Tuple<string, double, string>("Serializer.V2-StringWriter", Int16.MaxValue, ex.ToString()));
             }
 
-            try
-            {
-                json = SimpleJson.SerializeObject(c);
-                sw.Restart();
-                for (var i = 0; i < testCount; i++)
-                {
-                    SimpleJson.SerializeObject(c);
-                }
-                data.Add(new Tuple<string, double, string>("SimpleJson", sw.Elapsed.TotalMilliseconds, json));
-            }
-            catch (Exception ex)
-            {
-                data.Add(new Tuple<string, double, string>("SimpleJson", Int16.MaxValue, ex.ToString()));
-            }
 
 
             try
@@ -400,18 +386,12 @@ namespace ConsoleTest
                 data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-0", Int16.MaxValue,ex.ToString()));
             }
 
-
             foreach (var item in data.OrderBy(v => v.Item2))
             {
-                Console.WriteLine(item.Item1 + " : "  + (item.Item2==Int16.MaxValue ? "NA" : item.Item2.ToString("#,##0.00")) + " | " + item.Item3.Length);
+                Console.WriteLine(item.Item1 + " : "  + (item.Item2==Int16.MaxValue ? "NA" : item.Item2.ToString("#,##0.00")) +  " | " + item.Item3.Length);
             }
 
-
-       
-
-
             c.ToString();
-       
         }
 
         public class ContractlessSample
