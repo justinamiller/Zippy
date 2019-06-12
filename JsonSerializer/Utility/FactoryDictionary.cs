@@ -76,7 +76,7 @@ namespace SwiftJson.Utility
         private TValue AddValue(TKey key)
         {
             if (key == null)
-                return default(TValue);
+                return default;
             TValue tValue1 = this._valueFactory(key);
 
             Monitor.Enter(this._lock);

@@ -73,7 +73,6 @@ namespace SwiftJson.Internal
             fromCache = false;
             data = null;
 
-
             if (GetCache.TryGetValue(type, out data))
             {
                 //cache type
