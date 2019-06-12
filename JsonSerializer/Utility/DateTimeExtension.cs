@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
 
-namespace SwiftJson.Utility
+namespace Zippy.Utility
 {
     static class DateTimeExtension
     {

@@ -4,14 +4,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 
-namespace SwiftJson.Utility
+namespace Zippy.Utility
 {
     static class ReflectionExtension
     {
         private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-
 
         public static IEnumerable<FieldInfo> GetFields(Type type, BindingFlags bindingFlags)
         {
@@ -282,23 +282,30 @@ namespace SwiftJson.Utility
 
                 if (count == 1)
                 {
-                    distinctMembers.Add(members[0]);
+                    var member = members[0];
+                    if (member.ShouldUseMember())
+                    {
+                        distinctMembers.Add(member);
+                    }
                 }
                 else
                 {
                     IList<MemberInfo> resolvedMembers = new List<MemberInfo>();
                     foreach (MemberInfo memberInfo in members)
                     {
-                        // this is a bit hacky
-                        // if the hiding property is hiding a base property and it is virtual
-                        // then this ensures the derived property gets used
-                        if (resolvedMembers.Count == 0)
+                        if (memberInfo.ShouldUseMember())
                         {
-                            resolvedMembers.Add(memberInfo);
-                        }
-                        else if (!IsOverridenGenericMember(memberInfo, bindingAttr) || memberInfo.Name == "Item")
-                        {
-                            resolvedMembers.Add(memberInfo);
+                            // this is a bit hacky
+                            // if the hiding property is hiding a base property and it is virtual
+                            // then this ensures the derived property gets used
+                            if (resolvedMembers.Count == 0)
+                            {
+                                resolvedMembers.Add(memberInfo);
+                            }
+                            else if (!IsOverridenGenericMember(memberInfo, bindingAttr) || memberInfo.Name == "Item")
+                            {
+                                resolvedMembers.Add(memberInfo);
+                            }
                         }
                     }
 
@@ -559,16 +566,6 @@ namespace SwiftJson.Utility
             }
         }
 
-        public static Type GetTypeInfo(Type type)
-        {
-            return type;
-        }
-
-        public static bool IsTypeGeneric(Type type)
-        {
-            return ReflectionExtension.GetTypeInfo(type).IsGenericType;
-        }
-
         public delegate object GetDelegate(object source);
 
         public delegate TValue DictionaryValueFactory<TKey, TValue>(TKey key);
@@ -620,30 +617,27 @@ namespace SwiftJson.Utility
         [SuppressMessage("brain-overload", "S1067")]
         public static bool CanSerializeComplexObject(object instance)
         {
-            string typeFullName = instance.GetType().FullName;
+            return CanSerialize(instance.GetType());
+        }
 
-            //filter out unknown type
-            if (typeFullName == null)
-            {
-                return false;
-            }
+        public static bool ShouldUseMember(this MemberInfo memberInfo)
+        {
+            var jilDirectiveAttributes = memberInfo.GetCustomAttributes<SwiftDirectiveAttribute>();
+            if (jilDirectiveAttributes.Count() > 0) return !jilDirectiveAttributes.Any(d => d.Ignore);
 
-            //filter out by namespace & Types
-            else if (typeFullName.FastStartsWith("System."))
-            {
-                if (typeFullName.FastStartsWith("System.Reflection")
-                    || typeFullName.FastStartsWith("System.Runtime")
-                    || typeFullName.FastStartsWith("System.Threading")
-                    || typeFullName.FastStartsWith("System.Security")
-                    || typeFullName == "System.RuntimeType"
-                    || typeFullName == "System.AppDomain"
-                    )
-                {
-                    return false;
-                }
-            }
+            var ignoreDataMemberAttributes = memberInfo.GetCustomAttributes<IgnoreDataMemberAttribute>();
+            return ignoreDataMemberAttributes.Count() == 0;
+        }
 
-            return true;
+        public static string GetSerializationName(this MemberInfo member)
+        {
+            var jilDirectiveAttr = member.GetCustomAttribute<SwiftDirectiveAttribute>();
+            if (jilDirectiveAttr != null && jilDirectiveAttr.Name != null) return jilDirectiveAttr.Name;
+
+            var dataMemberAttr = member.GetCustomAttribute<DataMemberAttribute>();
+            if (dataMemberAttr != null && dataMemberAttr.Name != null) return dataMemberAttr.Name;
+
+            return member.Name;
         }
     }
 }

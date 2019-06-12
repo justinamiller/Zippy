@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace SwiftJson
+namespace Zippy.Serialize
 {
     public sealed class NullTextWriter : TextWriter
     {

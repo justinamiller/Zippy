@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SwiftJson
+namespace Zippy
 {
-    public interface IJsonSerializerSetting
+    public interface IOptions
     {
         int MaxJsonLength { get; set; }
 

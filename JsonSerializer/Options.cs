@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SwiftJson
+namespace Zippy
 {
-    sealed class JsonSerializerSetting : IJsonSerializerSetting
+    sealed class Options : IOptions
     {
         internal const int MAXJSONLENGTH = 2097152;
         internal const int RECURSIONLIMIT = 7;
@@ -12,15 +12,13 @@ namespace SwiftJson
         int _MaxJsonLength = MAXJSONLENGTH;
         int _RecursionLimit = RECURSIONLIMIT;
 
-        public static JsonSerializerSetting Current { get; } = new JsonSerializerSetting();
-
-        private JsonSerializerSetting()
+        internal Options()
         {
 
         }
 
 
-        private JsonSerializerSetting(int maxJsonLength, int recursionLimit, bool isElasticSearchReady)
+        internal Options(int maxJsonLength, int recursionLimit, bool isElasticSearchReady)
         {
             this.MaxJsonLength = maxJsonLength;
             this.RecursionLimit = recursionLimit;

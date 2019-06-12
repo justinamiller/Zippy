@@ -155,7 +155,7 @@ namespace ConsoleTest
 
                          var sw = System.Diagnostics.Stopwatch.StartNew();
             var charArray = new char[3] { 'a', 'b', 'c' };
-            var sb0 = new SwiftJson.StringBuilderWriter();
+            var sb0 = new Zippy.Serialize.StringBuilderWriter();
             sw.Restart();
             for (var i = 0; i < testCount * 2; i++)
             {
@@ -166,7 +166,7 @@ namespace ConsoleTest
             data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
 
 
-            var sb00 = new SwiftJson.StringBuilderWriter(0);
+            var sb00 = new Zippy.Serialize.StringBuilderWriter(0);
             sw.Restart();
             for (var i = 0; i < testCount * 2; i++)
             {
@@ -227,11 +227,10 @@ namespace ConsoleTest
             int testCount = 10000;
           //  var data = new Dictionary<string, double>();
             var data = new List<Tuple<string, double, string>>();
-         //   var c = new SimpleClass(); 
+            //   var c = new SimpleClass(); 
             var c = new TestObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-
             string json = null;
 
             try
@@ -318,11 +317,11 @@ namespace ConsoleTest
 
             try
             {
-                json = SwiftJson.Serializer.SerializeObjectToString(c);
+                json = Zippy.JSON.SerializeObjectToString(c);
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
-                    SwiftJson.Serializer.SerializeObjectToString(c);
+                    Zippy.JSON.SerializeObjectToString(c);
                 }
                 data.Add(new Tuple<string, double, string>("Serializer.V2-StringWriter", sw.Elapsed.TotalMilliseconds, json));
             }
@@ -349,11 +348,11 @@ namespace ConsoleTest
 
             try
             {
-                var nullwriter = new SwiftJson.NullTextWriter();
+                var nullwriter = new Zippy.Serialize.NullTextWriter();
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
-                    SwiftJson.Serializer.SerializeObject(c, nullwriter);
+                    Zippy.JSON.SerializeObject(c, nullwriter);
                 }
                 data.Add(new Tuple<string, double, string>("Serializer.V2-NullWriter", sw.Elapsed.TotalMilliseconds, ""));
             }
@@ -364,13 +363,13 @@ namespace ConsoleTest
 
             try
             {
-                var sb = new SwiftJson.StringBuilderWriter();
-                json = SwiftJson.Serializer.SerializeObject(c, sb).ToString();
+                var sb = new Zippy.Serialize.StringBuilderWriter();
+                json = Zippy.JSON.SerializeObject(c, sb).ToString();
                 sb.Clear();
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
-                    SwiftJson.Serializer.SerializeObject(c, sb);
+                    Zippy.JSON.SerializeObject(c, sb);
                     sb.Clear();
                 }
                 data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-512", sw.Elapsed.TotalMilliseconds, json));
@@ -384,12 +383,12 @@ namespace ConsoleTest
 
             try
             {
-                var sb2 = new SwiftJson.StringBuilderWriter(0);
+                var sb2 = new Zippy.Serialize.StringBuilderWriter(0);
             GC.KeepAlive(sb2);
             sw.Restart();
             for (var i = 0; i < testCount; i++)
             {
-                SwiftJson.Serializer.SerializeObject(c, sb2);
+                Zippy.JSON.SerializeObject(c, sb2);
                 sb2.Clear();
             }
             data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-0", sw.Elapsed.TotalMilliseconds, json));

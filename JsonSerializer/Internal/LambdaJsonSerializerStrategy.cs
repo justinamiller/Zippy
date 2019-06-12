@@ -1,11 +1,11 @@
-﻿using SwiftJson.Utility;
+﻿using Zippy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace SwiftJson.Internal
+namespace Zippy.Internal
 {
     class LambdaJsonSerializerStrategy : IJsonSerializerStrategy
     {
@@ -16,8 +16,7 @@ namespace SwiftJson.Internal
             this.GetCache = new Dictionary<Type, ValueMemberInfo[]>();
         }
 
-
-        protected virtual ValueMemberInfo[] GetterValueFactory(Type type)
+    private static ValueMemberInfo[] GetterValueFactory(Type type)
         {
             var allMembers = ReflectionExtension.GetFieldsAndProperties(type);//.Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
 
@@ -46,17 +45,6 @@ namespace SwiftJson.Internal
             return data;
         }
 
-
-        protected virtual string MapClrMemberNameToJsonFieldName(string clrPropertyName)
-        {
-            return clrPropertyName;
-        }
-
-        public virtual bool TrySerializeNonPrimitiveObject(object input, out IDictionary<string, object> output)
-        {
-            return this.TrySerializeUnknownTypes(input, out output);
-        }
-
         private bool GetValue(Type type, out ValueMemberInfo[] data, out bool fromCache)
         {
             fromCache = false;
@@ -70,7 +58,7 @@ namespace SwiftJson.Internal
             else
             {
         //reflection on type
-                data = this.GetterValueFactory(type);
+                data = GetterValueFactory(type);
                if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) ==-1)
                 {
                     //cache type
@@ -80,50 +68,6 @@ namespace SwiftJson.Internal
             }
 
             return (data != null);
-        }
-
-
-        protected virtual bool TrySerializeUnknownTypes(object input, out IDictionary<string, object> output)
-        {
-            output = null;
-
-            if (input == null)
-                return false;
-
-            Type type = input.GetType();
-
-            IDictionary<string, object> jsonObjects = new Dictionary<string, object>();// new PocoJsonObject();
-           ValueMemberInfo[] data;
-            bool fromCache;
-            if (!GetValue(type, out data, out fromCache))
-                return false;
-
-            var len = data?.Length ?? 0;
-            if (len > 0)
-            {
-                List<ValueMemberInfo> ErrorFields = new List<ValueMemberInfo>();
-
-                for(var i=0; i< len; i++)
-                {
-                    var item = data[i];
-                    try
-                    {
-                        //perform reflection here.
-                        jsonObjects.Add(item.Name, item.GetValue(input));
-                    }
-                    catch (Exception)
-                    {
-                        if (fromCache)
-                        {
-                            ErrorFields.Add(item);
-                        }
-                    }
-                }
-                //switch out object
-                output = jsonObjects;
-            }//end if
-
-            return (output != null);
         }
 
         public bool TrySerializeNonPrimitiveObject(object input, Type type, out IValue[] output)

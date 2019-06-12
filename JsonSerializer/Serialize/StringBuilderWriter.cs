@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace SwiftJson
+namespace Zippy.Serialize
 {
     public sealed class StringBuilderWriter:TextWriter
     {

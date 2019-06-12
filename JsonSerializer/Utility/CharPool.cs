@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SwiftJson.Utility
+namespace Zippy.Utility
 {
    static class CharPool
     {

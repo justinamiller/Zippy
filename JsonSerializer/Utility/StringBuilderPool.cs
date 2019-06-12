@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SwiftJson.Utility
+namespace Zippy.Utility
 {
     /// <summary>
     /// Provides a cached reusable instance of a StringBuilder per thread.

@@ -2,29 +2,19 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using SwiftJson.Utility;
+using Zippy.Utility;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace SwiftJson.Internal
+namespace Zippy.Internal
 {
     sealed class ValueMemberInfo : IValue
     {
         private readonly Func<object, object> _getter;
 
-
-        private ConvertUtils.TypeCode _typeCode;
-
         public Type ValueType{get;}
 
-        public ConvertUtils.TypeCode Code
-        {
-            get
-            {
-                return _typeCode;
-            }
-        }
-        public string Name { get;}
+        public ConvertUtils.TypeCode Code  { get; }
 
         public WriteObjectDelegate WriteObject { get; }
 
@@ -47,13 +37,9 @@ namespace SwiftJson.Internal
 
             if (ValueType != null)
             {
-                _typeCode = Utility.ConvertUtils.GetTypeCode(ValueType);
-
+                this.Code = Utility.ConvertUtils.GetTypeCode(ValueType);
                 WriteObject = JsonTypeSerializer.GetValueTypeToStringMethod(Code);
-
-                string name = memberInfo.Name;
-                this.NameChar = StringExtension.GetEncodeString(name, true);
-                this.Name = new string(StringExtension.GetEncodeString(name, false));
+                this.NameChar = StringExtension.GetEncodeString(memberInfo.GetSerializationName(), true);
                 this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
             }
             else
@@ -69,14 +55,7 @@ namespace SwiftJson.Internal
             {
                 try
                 {
-                   var value = _getter(instance);
-
-                    if (_typeCode == Utility.ConvertUtils.TypeCode.NotSetObject)
-                    {
-                        //now try to get value type.
-                        _typeCode = Utility.ConvertUtils.GetInstanceObjectTypeCode(value);
-                    }
-                    return value;
+                    return _getter(instance);
                 }
                 catch (Exception)
                 {
@@ -90,7 +69,7 @@ namespace SwiftJson.Internal
 
         public override string ToString()
         {
-            return this.Name;
+            return new string(this.NameChar);
         }
     }
 }

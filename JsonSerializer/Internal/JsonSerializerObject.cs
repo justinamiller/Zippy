@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-namespace SwiftJson.Internal
+namespace Zippy.Internal
 {
     sealed class JsonSerializerObject : IDictionary<string, object>//, ICollection<KeyValuePair<string, object>>, IEnumerable<KeyValuePair<string, object>>, IEnumerable
     {

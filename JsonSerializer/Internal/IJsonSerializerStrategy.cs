@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SwiftJson.Internal
+namespace Zippy.Internal
 {
     interface IJsonSerializerStrategy
     {

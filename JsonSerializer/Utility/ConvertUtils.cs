@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace SwiftJson.Utility
+namespace Zippy.Utility
 {
    static class ConvertUtils
     {
@@ -63,8 +63,7 @@ namespace SwiftJson.Utility
             Enumerable = 105,
             Array=106,
             IList=107,
-            GenericDictionary=108,
-           Custom = 200
+            GenericDictionary=108
         }
 
         private static readonly Hashtable TypeCodeMap=
@@ -159,11 +158,10 @@ new Hashtable()
                 }
 
                 return TypeCode.Enumerable;
-
             }//IEnumerable
 
 
-            return TypeCode.Custom;
+            return TypeCode.NotSetObject;
         }
 
         public static TypeCode GetTypeCode(Type type)
@@ -202,14 +200,14 @@ new Hashtable()
             }
             else if(anEnumerable is System.Collections.ArrayList)
             {
-                return TypeCode.Custom;
+                return TypeCode.NotSetObject;
             }
             else if(anEnumerable is System.Collections.IList)
             {
                 return GetIListValueTypeCode((System.Collections.IList)anEnumerable);
             }
 
-             return TypeCode.Custom;
+             return TypeCode.NotSetObject;
         }
 
         public static TypeCode GetIListValueTypeCode(System.Collections.IList list)
@@ -220,7 +218,7 @@ new Hashtable()
                 return (GetTypeCode(type.GetGenericArguments()[0]));
             }
 
-            return TypeCode.Custom;
+            return TypeCode.NotSetObject;
         }
     }
 }

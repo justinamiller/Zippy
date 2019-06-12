@@ -1,4 +1,4 @@
-﻿using SwiftJson.Utility;
+﻿using Zippy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,9 +6,9 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using static SwiftJson.Utility.DateTimeExtension;
+using static Zippy.Utility.DateTimeExtension;
 
-namespace SwiftJson.Internal
+namespace Zippy.Internal
 {
 
    delegate void WriteObjectDelegate(TextWriter writer, object obj);
@@ -177,7 +177,7 @@ namespace SwiftJson.Internal
 
         private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
         {
-            switch (JsonSerializerSetting.Current.DateHandler)
+            switch (Options.Current.DateHandler)
             {
                 case DateHandler.ISO8601:
                     writer.Write(dateTime.ToString("o", CultureInfo.InvariantCulture));

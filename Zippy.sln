@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SwiftJson", "JsonSerializer\SwiftJson.csproj", "{000BC650-72C6-48EE-8B7B-884A70BDE90F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zippy", "JsonSerializer\Zippy.csproj", "{000BC650-72C6-48EE-8B7B-884A70BDE90F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{9798F02E-0688-4374-886C-692709BC2A84}"
 EndProject

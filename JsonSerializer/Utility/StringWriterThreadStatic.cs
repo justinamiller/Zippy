@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace SwiftJson.Utility
+namespace Zippy.Utility
 {
     //Use separate cache internally to avoid reallocations and cache misses
      static class StringWriterThreadStatic

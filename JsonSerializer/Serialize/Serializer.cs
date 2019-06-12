@@ -1,5 +1,5 @@
-﻿using SwiftJson.Internal;
-using SwiftJson.Utility;
+﻿using Zippy.Internal;
+using Zippy.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,16 +11,16 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using static SwiftJson.Utility.ConvertUtils;
+using static Zippy.Utility.ConvertUtils;
 using System.IO;
 
-namespace SwiftJson
+namespace Zippy.Serialize
 {
     /// <summary>
     /// Json Serializer.
     /// </summary>
     /// <remarks>guide from http://www.json.org/ </remarks>
-    public sealed class Serializer
+    sealed class Serializer
     {
         private static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
@@ -47,31 +47,31 @@ namespace SwiftJson
             }
         }
 
-        private Serializer()
+        public Serializer()
         {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteEndObject()
+        internal void WriteEndObject()
         {
             this._propertyInUse = true;
             this._writer.Write('}');
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteEndArray()
+        internal void WriteEndArray()
         {
             this._writer.Write(']');
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteStartArray()
+        internal void WriteStartArray()
         {
             this._writer.Write('[');
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteStartObject()
+        internal void WriteStartObject()
         {
             this._writer.Write('{');
             this._propertyInUse = false;
@@ -150,7 +150,7 @@ namespace SwiftJson
                         valueType = GetEnumerableValueTypeCode(anEnumerable);
                         writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
 
-                        isTyped = valueType != ConvertUtils.TypeCode.Custom;
+                        isTyped = valueType != ConvertUtils.TypeCode.NotSetObject;
                         flag1 = false;
                     }
 
@@ -198,7 +198,7 @@ namespace SwiftJson
             WriteStartArray();
 
             var currentType = ConvertUtils.GetEnumerableValueTypeCode(array);
-            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+            bool isTyped = currentType != ConvertUtils.TypeCode.NotSetObject;
             if (isTyped)
             {
                 valueTypeCode = currentType;
@@ -250,7 +250,7 @@ namespace SwiftJson
             Type lastType = null;
 
           var  currentType = ConvertUtils.GetEnumerableValueTypeCode(list);
-            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+            bool isTyped = currentType != ConvertUtils.TypeCode.NotSetObject;
 
             if (isTyped)
             {
@@ -378,7 +378,7 @@ namespace SwiftJson
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SerializeObjectInternal(object json, TextWriter writer)
+        public void SerializeObjectInternal(object json, TextWriter writer)
         {
             Type type = json.GetType();
             var typeCode = ConvertUtils.GetTypeCode(type);
@@ -392,40 +392,6 @@ namespace SwiftJson
             {
                 JsonTypeSerializer.GetValueTypeToStringMethod(typeCode)?.Invoke(writer, json);
             }
-        }
-
-        /// <summary>
-        /// use default settings
-        /// </summary>
-        /// <param name="json"></param>
-        /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static string SerializeObjectToString(object Object)
-        {
-            if (Object == null)
-            {
-                return null;
-            }
-
-            var writer = StringWriterThreadStatic.Allocate();
-            new Serializer().SerializeObjectInternal(Object, writer);
-            return StringWriterThreadStatic.ReturnAndFree(writer);
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static TextWriter SerializeObject(object Object, TextWriter writer)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException("writer");
-            }
-            if (Object == null)
-            {
-                return null;
-            }
-
-            new Serializer().SerializeObjectInternal(Object, writer);
-            return writer;
         }
 
         private bool SerializeNonGenericDictionary(IDictionary values)
@@ -710,15 +676,16 @@ namespace SwiftJson
             else if (_currentDepth > 0)
             {
                 //_circular = true;
-                return false;
+                WriteNull();
+                return true;
             }
             _currentDepth++;
             //recursion limit or max char length
-            if (_currentDepth >= JsonSerializerSetting.Current.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
+            if (_currentDepth >= JSON.Options.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
             {
                 _currentDepth--;
                 WriteNull();
-                return false;
+                return true;
             }
 
             try
@@ -757,7 +724,6 @@ namespace SwiftJson
                         {
                             return SerializeDataTable((System.Data.DataTable)value);
                         }
-                    case ConvertUtils.TypeCode.Custom:
                     case ConvertUtils.TypeCode.NotSetObject:
                         {
                             IValue[] obj = null;

@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace SwiftJson.Utility
+namespace Zippy.Utility
 {
     static class StringExtension
     {

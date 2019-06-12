@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static SwiftJson.Utility.ConvertUtils;
+using static Zippy.Utility.ConvertUtils;
 
-namespace SwiftJson.Internal
+namespace Zippy.Internal
 {
     interface IValue
     {
-        string Name { get; }
         char[] NameChar { get; }
         Utility.ConvertUtils.TypeCode Code { get; }
         object GetValue(object instance);

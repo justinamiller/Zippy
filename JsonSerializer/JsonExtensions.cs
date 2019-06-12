@@ -1,10 +1,10 @@
-﻿using SwiftJson.Utility;
+﻿using Zippy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace SwiftJson
+namespace Zippy
 {
    public static class JsonExtensions
     {
@@ -22,7 +22,7 @@ namespace SwiftJson
                 return null;
             }
            
-            return Serializer.SerializeObjectToString(instance);
+            return JSON.SerializeObjectToString(instance);
         }
 
         public static string BeautifyJson(string input)
