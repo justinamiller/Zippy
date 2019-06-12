@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
     sealed class FactoryDictionary<TKey, TValue> : IDictionary<TKey, TValue>//, ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable
     {

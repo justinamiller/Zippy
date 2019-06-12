@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
     static class ReflectionExtension
     {
@@ -602,6 +603,41 @@ namespace JsonSerializer.Utility
                     return false;
                 }
                 if (typeFullName.IndexOf("System.Threading.Task", StringComparison.Ordinal) == 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// List of namespaces where we do not Serialize
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        [SuppressMessage("brain-overload", "S1541")]
+        [SuppressMessage("brain-overload", "S1067")]
+        private static bool CanSerializeComplexObject(object instance)
+        {
+            string typeFullName = instance.GetType().FullName;
+
+            //filter out unknown type
+            if (typeFullName == null)
+            {
+                return false;
+            }
+
+            //filter out by namespace & Types
+            else if (typeFullName.FastStartsWith("System."))
+            {
+                if (typeFullName.FastStartsWith("System.Reflection")
+                    || typeFullName.FastStartsWith("System.Runtime")
+                    || typeFullName.FastStartsWith("System.Threading")
+                    || typeFullName.FastStartsWith("System.Security")
+                    || typeFullName == "System.RuntimeType"
+                    || typeFullName == "System.AppDomain"
+                    )
                 {
                     return false;
                 }

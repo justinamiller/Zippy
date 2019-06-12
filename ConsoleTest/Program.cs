@@ -20,6 +20,8 @@ namespace ConsoleTest
         public class Result
         {
             public bool IsGood { get; set; }
+            public Guid Id { get; } = Guid.NewGuid();
+            public DateTime Date { get; } = DateTime.Now;
         }
 
         public string Version = "1.0";
@@ -47,7 +49,7 @@ namespace ConsoleTest
         public sbyte SB { get; }
 
         //    public IDictionary<string, string> Data = new Dictionary<string, string>();
-        //  public DataTable DT = new DataTable();
+       // public DataTable DT = new DataTable();
         //  public DataSet DS = new DataSet();
         public Result[] Results { get; set; } = Array.Empty<Result>();
         public IList<Result> ResultList { get; set; } = new List<Result>();
@@ -139,7 +141,7 @@ namespace ConsoleTest
             {
 
                 TestJson();
-                TestWriters();
+              //  TestWriters();
                 Console.WriteLine("========================");
             }
             Console.WriteLine("DONE");
@@ -153,7 +155,7 @@ namespace ConsoleTest
 
                          var sw = System.Diagnostics.Stopwatch.StartNew();
             var charArray = new char[3] { 'a', 'b', 'c' };
-            var sb0 = new JsonSerializer.StringBuilderWriter();
+            var sb0 = new SwiftJson.StringBuilderWriter();
             sw.Restart();
             for (var i = 0; i < testCount * 2; i++)
             {
@@ -164,7 +166,7 @@ namespace ConsoleTest
             data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
 
 
-            var sb00 = new JsonSerializer.StringBuilderWriter(0);
+            var sb00 = new SwiftJson.StringBuilderWriter(0);
             sw.Restart();
             for (var i = 0; i < testCount * 2; i++)
             {
@@ -278,23 +280,7 @@ namespace ConsoleTest
                 data.Add(new Tuple<string, double, string>("Newtonsoft", Int16.MaxValue, ex.ToString()));
             }
 
-            try
-            {
-                json = JsonSerializer.Serializer.SerializeObject(c);
-                sw.Restart();
-                for (var i = 0; i < testCount; i++)
-                {
-                    JsonSerializer.Serializer.SerializeObject(c);
-                }
-
-                data.Add(new Tuple<string, double, string>("Serializer.V1", sw.Elapsed.TotalMilliseconds, json));
-            }
-            catch (Exception ex)
-            {
-                data.Add(new Tuple<string, double, string>("Serializer.V1", Int16.MaxValue, ex.ToString()));
-            }
-
-
+         
             try
             {
                 var js = new System.Web.Script.Serialization.JavaScriptSerializer();
@@ -332,11 +318,11 @@ namespace ConsoleTest
 
             try
             {
-                json = JsonSerializer.Serializer2.SerializeObjectToString(c);
+                json = SwiftJson.Serializer.SerializeObjectToString(c);
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
-                    JsonSerializer.Serializer2.SerializeObjectToString(c);
+                    SwiftJson.Serializer.SerializeObjectToString(c);
                 }
                 data.Add(new Tuple<string, double, string>("Serializer.V2-StringWriter", sw.Elapsed.TotalMilliseconds, json));
             }
@@ -363,11 +349,11 @@ namespace ConsoleTest
 
             try
             {
-                var nullwriter = new JsonSerializer.NullTextWriter();
+                var nullwriter = new SwiftJson.NullTextWriter();
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
-                    JsonSerializer.Serializer2.SerializeObject(c, nullwriter);
+                    SwiftJson.Serializer.SerializeObject(c, nullwriter);
                 }
                 data.Add(new Tuple<string, double, string>("Serializer.V2-NullWriter", sw.Elapsed.TotalMilliseconds, ""));
             }
@@ -378,13 +364,13 @@ namespace ConsoleTest
 
             try
             {
-                var sb = new JsonSerializer.StringBuilderWriter();
-                json = JsonSerializer.Serializer2.SerializeObject(c, sb).ToString();
+                var sb = new SwiftJson.StringBuilderWriter();
+                json = SwiftJson.Serializer.SerializeObject(c, sb).ToString();
                 sb.Clear();
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
-                    JsonSerializer.Serializer2.SerializeObject(c, sb);
+                    SwiftJson.Serializer.SerializeObject(c, sb);
                     sb.Clear();
                 }
                 data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-512", sw.Elapsed.TotalMilliseconds, json));
@@ -398,12 +384,12 @@ namespace ConsoleTest
 
             try
             {
-                var sb2 = new JsonSerializer.StringBuilderWriter(0);
+                var sb2 = new SwiftJson.StringBuilderWriter(0);
             GC.KeepAlive(sb2);
             sw.Restart();
             for (var i = 0; i < testCount; i++)
             {
-                JsonSerializer.Serializer2.SerializeObject(c, sb2);
+                SwiftJson.Serializer.SerializeObject(c, sb2);
                 sb2.Clear();
             }
             data.Add(new Tuple<string, double, string>("Serializer.V2-StringBuilderWriter-0", sw.Elapsed.TotalMilliseconds, json));

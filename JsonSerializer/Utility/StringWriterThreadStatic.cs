@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
     //Use separate cache internally to avoid reallocations and cache misses
      static class StringWriterThreadStatic

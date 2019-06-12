@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
     static class DateTimeUtils
     {

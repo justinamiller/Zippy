@@ -2,8 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-
-namespace JsonSerializer.Internal
+namespace SwiftJson.Internal
 {
     sealed class JsonSerializerObject : IDictionary<string, object>//, ICollection<KeyValuePair<string, object>>, IEnumerable<KeyValuePair<string, object>>, IEnumerable
     {
@@ -175,7 +174,7 @@ namespace JsonSerializer.Internal
 
         public override string ToString()
         {
-            return Serializer.SerializeObject(this);
+            return Serializer.SerializeObjectToString(this);
         }
 
         public bool TryGetValue(string key, out object value)

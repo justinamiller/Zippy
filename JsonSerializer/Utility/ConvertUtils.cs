@@ -6,9 +6,9 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
-    class ConvertUtils
+   static class ConvertUtils
     {
         internal enum TypeCode
         {
@@ -54,6 +54,7 @@ namespace JsonSerializer.Utility
             String = 39,
             Bytes = 40,
             DBNull = 41,
+            Exception=42,
             NotSetObject=100,
             DataTable = 101,
             DataSet = 102,
@@ -65,98 +66,6 @@ namespace JsonSerializer.Utility
             GenericDictionary=108,
            Custom = 200
         }
-
-        internal enum ObjectTypeCode
-        {
-            Empty = 0,
-            Custom = 1,
-            DataTable=2,
-            DataSet = 3,
-            Dictionary = 4,
-            NameValueCollection = 5,
-             Enumerable=6
-        }
-
-    //    private static readonly Dictionary<Type, TypeCode> TypeCodeMap =
-    //new Dictionary<Type, TypeCode>
-    //{
-    //            { typeof(char), TypeCode.Char },
-    //            { typeof(char?), TypeCode.CharNullable },
-    //            { typeof(bool), TypeCode.Boolean },
-    //            { typeof(bool?), TypeCode.BooleanNullable },
-    //            { typeof(sbyte), TypeCode.SByte },
-    //            { typeof(sbyte?), TypeCode.SByteNullable },
-    //            { typeof(short), TypeCode.Int16 },
-    //            { typeof(short?), TypeCode.Int16Nullable },
-    //            { typeof(ushort), TypeCode.UInt16 },
-    //            { typeof(ushort?), TypeCode.UInt16Nullable },
-    //            { typeof(int), TypeCode.Int32 },
-    //            { typeof(int?), TypeCode.Int32Nullable },
-    //            { typeof(byte), TypeCode.Byte },
-    //            { typeof(byte?), TypeCode.ByteNullable },
-    //            { typeof(uint), TypeCode.UInt32 },
-    //            { typeof(uint?), TypeCode.UInt32Nullable },
-    //            { typeof(long), TypeCode.Int64 },
-    //            { typeof(long?), TypeCode.Int64Nullable },
-    //            { typeof(ulong), TypeCode.UInt64 },
-    //            { typeof(ulong?), TypeCode.UInt64Nullable },
-    //            { typeof(float), TypeCode.Single },
-    //            { typeof(float?), TypeCode.SingleNullable },
-    //            { typeof(double), TypeCode.Double },
-    //            { typeof(double?), TypeCode.DoubleNullable },
-    //            { typeof(DateTime), TypeCode.DateTime },
-    //            { typeof(DateTime?), TypeCode.DateTimeNullable },
-    //            { typeof(DateTimeOffset), TypeCode.DateTimeOffset },
-    //            { typeof(DateTimeOffset?), TypeCode.DateTimeOffsetNullable },
-    //            { typeof(decimal), TypeCode.Decimal },
-    //            { typeof(decimal?), TypeCode.DecimalNullable },
-    //            { typeof(Guid), TypeCode.Guid },
-    //            { typeof(Guid?), TypeCode.GuidNullable },
-    //            { typeof(TimeSpan), TypeCode.TimeSpan },
-    //            { typeof(TimeSpan?), TypeCode.TimeSpanNullable },
-    //            { typeof(BigInteger), TypeCode.BigInteger },
-    //            { typeof(BigInteger?), TypeCode.BigIntegerNullable },
-    //            { typeof(Uri), TypeCode.Uri },
-    //            { typeof(string), TypeCode.String },
-    //            { typeof(byte[]), TypeCode.Bytes },
-    //            { typeof(DBNull), TypeCode.DBNull },
-    //           {typeof(List<>), TypeCode.Enumerable},
-    //        {typeof(LinkedList<>),TypeCode.Enumerable},
-    //        {typeof(Queue<>), TypeCode.Enumerable},
-    //        {typeof(Stack<>), TypeCode.Enumerable},
-    //        {typeof(HashSet<>), TypeCode.Enumerable},
-    //        {typeof(System.Collections.ObjectModel.ReadOnlyCollection<>), TypeCode.Enumerable},
-    //    {typeof(System.Collections.IList), TypeCode.IList },
-    //        {typeof(IList<>), TypeCode.Enumerable},
-    //        {typeof(ICollection<>), TypeCode.Enumerable},
-    //        {typeof(IEnumerable<>), TypeCode.Enumerable},
-    //        {typeof(Dictionary<,>), TypeCode.GenericDictionary},
-    //        {typeof(IDictionary<,>), TypeCode.GenericDictionary},
-    //        {typeof(SortedDictionary<,>), TypeCode.Dictionary},
-    //        {typeof(SortedList<,>), TypeCode.Dictionary},
-    //        {typeof(System.Linq.ILookup<,>), TypeCode.Enumerable},
-    //        {typeof(System.Linq.IGrouping<,>), TypeCode.Enumerable},
-    //        #if NETSTANDARD
-    //        {typeof(System.Collections.ObjectModel.ObservableCollection<>), TypeCode.Enumerable},
-    //        {typeof(System.Collections.ObjectModel.ReadOnlyObservableCollection<>),TypeCode.Enumerable},
-    //        {typeof(IReadOnlyList<>), TypeCode.Enumerable},
-    //        {typeof(IReadOnlyCollection<>),TypeCode.Enumerable},
-    //        {typeof(ISet<>), TypeCode.Enumerable},
-    //        {typeof(System.Collections.Concurrent.ConcurrentBag<>), TypeCode.Enumerable},
-    //        {typeof(System.Collections.Concurrent.ConcurrentQueue<>),TypeCode.Enumerable},
-    //        {typeof(System.Collections.Concurrent.ConcurrentStack<>), TypeCode.Enumerable},
-    //        {typeof(System.Collections.ObjectModel.ReadOnlyDictionary<,>), TypeCode.Dictionary},
-    //        {typeof(IReadOnlyDictionary<,>),TypeCode.Dictionary},
-    //        {typeof(System.Collections.Concurrent.ConcurrentDictionary<,>), TypeCode.Dictionary},
-    //        {typeof(System.Data.DataTable), TypeCode.DataTable},
-    //        {typeof(System.Data.DataSet), TypeCode.DataSet},
-    //         {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
-    //        {typeof(System.Collections.IDictionary), TypeCode.Dictionary}
-    //      //  {typeof(Lazy<>), typeof(LazyFormatter<>)},
-    //        //{typeof(Task<>), typeof(TaskValueFormatter<>)},
-    //        #endif
-    //};
-
 
         private static readonly Hashtable TypeCodeMap=
 new Hashtable()
@@ -201,6 +110,7 @@ new Hashtable()
                 { typeof(string), TypeCode.String },
                 { typeof(byte[]), TypeCode.Bytes },
                 { typeof(DBNull), TypeCode.DBNull },
+            {typeof(Exception), TypeCode.Exception },
                {typeof(List<>), TypeCode.Enumerable},
             {typeof(LinkedList<>),TypeCode.Enumerable},
             {typeof(Queue<>), TypeCode.Enumerable},
@@ -238,16 +148,6 @@ new Hashtable()
 #endif
 };
 
-        private static readonly Dictionary<Type, ObjectTypeCode> ObjectTypeCodeMap =
-new Dictionary<Type, ObjectTypeCode>
-{
-                { typeof(System.Data.DataTable), ObjectTypeCode.DataTable },
-                { typeof(System.Data.DataSet), ObjectTypeCode.DataSet },
-                { typeof(System.Collections.IDictionary), ObjectTypeCode.Dictionary },
-                { typeof(System.Collections.Specialized.NameValueCollection), ObjectTypeCode.NameValueCollection },
-                { typeof(Array), ObjectTypeCode.Enumerable }
-};
-
         internal class TypeInformation
         {
             public Type Type { get; set; }
@@ -278,23 +178,6 @@ new Dictionary<Type, ObjectTypeCode>
             new TypeInformation { Type = typeof(string), TypeCode = TypeCode.String }
         };
 
-        public static ObjectTypeCode GetObjectTypeCode(Type t)
-        {
-            if (ObjectTypeCodeMap.TryGetValue(t, out ObjectTypeCode typeCode))
-            {
-                return typeCode;
-            }
-            var baseType = t.BaseType;
-            if (baseType!=null && baseType != typeof(object))
-            {
-                return GetObjectTypeCode(t.BaseType);
-            }
-
-
-            return ObjectTypeCode.Empty;
-        }
-
-
         public static TypeCode GetInstanceObjectTypeCode(object value)
         {
             if (value is System.Collections.IEnumerable)
@@ -314,18 +197,11 @@ new Dictionary<Type, ObjectTypeCode>
 
         public static TypeCode GetTypeCode(Type type)
         {
-            //if (TypeCodeMap.TryGetValue(type, out TypeCode typeCode))
-            //{
-            //    return typeCode;
-            //}
-
             var typeCode = TypeCodeMap[type];
             if (typeCode != null)
             {
                 return (TypeCode)typeCode;
             }
-
-
             else if (type.IsEnum)
             {
                 return GetTypeCode(Enum.GetUnderlyingType(type));
@@ -334,9 +210,7 @@ new Dictionary<Type, ObjectTypeCode>
             {
                 return TypeCode.Array;
             }
-            //    else if (type.IsGenericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
-            //return typeCode;
-                else if(type.IsGenericType)
+           else if(type.IsGenericType)
             {
                 typeCode = TypeCodeMap[type.GetGenericTypeDefinition()];
                 if (typeCode != null)

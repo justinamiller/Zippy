@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using JsonSerializer.Utility;
+using SwiftJson.Utility;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace JsonSerializer.Internal
+namespace SwiftJson.Internal
 {
     sealed class ValueMemberInfo : IValue
     {

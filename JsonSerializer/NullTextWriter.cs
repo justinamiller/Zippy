@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace JsonSerializer
+namespace SwiftJson
 {
     public sealed class NullTextWriter : TextWriter
     {

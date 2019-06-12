@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JsonSerializer
+namespace SwiftJson
 {
     sealed class JsonSerializerSetting : IJsonSerializerSetting
     {

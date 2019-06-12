@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace JsonSerializer
+namespace SwiftJson
 {
     public sealed class StringBuilderWriter:TextWriter
     {
@@ -17,7 +17,7 @@ namespace JsonSerializer
 
         public StringBuilderWriter(int capacity)
         {
-            _sb = new StringBuilder(capacity>=0 ? capacity : 512);
+            _sb = Utility.StringBuilderPool.Get(capacity>=0 ? capacity : 512);
         }
 
 
@@ -31,7 +31,7 @@ namespace JsonSerializer
 
         public override string ToString()
         {
-            return _sb.ToString();
+            return Utility.StringBuilderPool.GetStringAndRelease(_sb);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

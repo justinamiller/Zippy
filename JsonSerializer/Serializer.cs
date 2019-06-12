@@ -1,5 +1,5 @@
-﻿using JsonSerializer.Internal;
-using JsonSerializer.Utility;
+﻿using SwiftJson.Internal;
+using SwiftJson.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,9 +11,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using static JsonSerializer.Utility.ConvertUtils;
+using static SwiftJson.Utility.ConvertUtils;
+using System.IO;
 
-namespace JsonSerializer
+namespace SwiftJson
 {
     /// <summary>
     /// Json Serializer.
@@ -21,131 +22,300 @@ namespace JsonSerializer
     /// <remarks>guide from http://www.json.org/ </remarks>
     public sealed class Serializer
     {
-        private static IJsonSerializerStrategy s_currentJsonSerializerStrategy;
+        private static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new CachedLambdaJsonSerializerStrategy();
 
-        private static IJsonSerializerStrategy s_defaultJsonSerializerStrategy;
         // The following logic performs circular reference detection
-       private readonly Hashtable _serializeStack = new Hashtable(new ReferenceComparer());//new HashSet<object>();
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private int _currentDepth = 0;
+        private TextWriter _writer;
+        private bool _propertyInUse;
+
 
         internal static IJsonSerializerStrategy CurrentJsonSerializerStrategy
         {
             get
             {
-                IJsonSerializerStrategy jsonSerializerStrategy = s_currentJsonSerializerStrategy;
-                if (jsonSerializerStrategy == null)
-                {
-                    jsonSerializerStrategy = DefaultJsonSerializerStrategy;
-                    s_currentJsonSerializerStrategy = jsonSerializerStrategy;
-                }
-                return jsonSerializerStrategy;
+                return s_currentJsonSerializerStrategy;
             }
             set
             {
+                if (s_currentJsonSerializerStrategy == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
                 s_currentJsonSerializerStrategy = value;
             }
         }
 
-        internal static IJsonSerializerStrategy DefaultJsonSerializerStrategy
+        private Serializer()
         {
-            get
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteEndObject()
+        {
+            this._propertyInUse = true;
+            this._writer.Write('}');
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteEndArray()
+        {
+            this._writer.Write(']');
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteStartArray()
+        {
+            this._writer.Write('[');
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteStartObject()
+        {
+            this._writer.Write('{');
+            this._propertyInUse = false;
+        }
+
+        private void WritePropertyName(string value)
+        {
+            WritePropertyName(StringExtension.GetEncodeString(value));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteNull()
+        {
+            _writer.Write(JsonTypeSerializer.Null, 0, 4);
+        }
+
+        private void WritePropertyName(char[] value)
+        {
+            if (this._propertyInUse)
             {
-                if (s_defaultJsonSerializerStrategy == null)
-                {
-                    s_defaultJsonSerializerStrategy = new CachedLambdaJsonSerializerStrategy();
-                    //   s_defaultJsonSerializerStrategy = new DelegateJsonSerializerStrategy();
-                }
-                return s_defaultJsonSerializerStrategy;
+                this._writer.Write(',');
             }
+            else
+            {
+                this._propertyInUse = true;
+            }
+
+            _writer.Write(value, 0, value.Length);
+            _writer.Write(':');
         }
 
-        public Serializer()
-        {
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value)
         {
-            _builder.WriteStartObject();
+            WriteStartObject();
             try
             {
                 string[] keys = value.AllKeys;
-
-                for (int i = 0; i < keys.Length; i++)
+                int len= keys.Length;
+                for (int i = 0; i < len; i++)
                 {
-                    _builder.WriteProperty(keys[i], value.Get(i));
+                    WritePropertyName(keys[i]);
+                    JsonTypeSerializer.Serializer.WriteString(_writer, value.Get(i));
                 }
             }
             finally
             {
-                _builder.WriteEndObject();
+                WriteEndObject();
             }
 
             return true;
         }
 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeEnumerable(IEnumerable anEnumerable)
         {
-            var anArray = anEnumerable as Array;
-            if (anArray != null && anArray.Rank > 1)
-            {
-                return SerializeMultidimensionalArray(anArray);
-            }
-
             ConvertUtils.TypeCode valueType = ConvertUtils.TypeCode.Empty;
+            WriteObjectDelegate writeObject = null;
+            Type type = null;
             bool flag1 = true;
-            _builder.WriteStartArray();
+            bool isTyped = false;
+            WriteStartArray();
             try
             {
                 // note that an error in the IEnumerable won't be caught
                 foreach (object value in anEnumerable)
                 {
-                   if (!flag1)
+                    if (!flag1)
                     {
-                        _builder.WriteComma();
+                        _writer.Write(',');
                     }
                     else
                     {
                         //first record.
                         valueType = GetEnumerableValueTypeCode(anEnumerable);
+                        writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
+
+                        isTyped = valueType != ConvertUtils.TypeCode.Custom;
                         flag1 = false;
                     }
 
                     if (value == null)
                     {
-                        _builder.WriteNull();
-                    }
-                    else if (valueType >= ConvertUtils.TypeCode.NotSetObject)
-                    {
-                        //will require more reflection
-                       if (!this.SerializeValue(value, valueType))
-                        {
-                            return false;
-                        }
+                        WriteNull();
                     }
                     else
                     {
-                        //shortcut 
-                        _builder.WriteObjectValue(value, valueType);
+                        if (!isTyped)
+                        {
+                            //is not generic
+                            type = value.GetType();
+                            valueType = GetTypeCode(type);
+                            writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
+                        }
+
+                        if (!WriteObjectValue(value, writeObject, type, valueType))
+                        {
+                            return false;
+                        }
                     }
                 }
             }
             finally
             {
-                _builder.WriteEndArray();
+                WriteEndArray();
             }
 
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeMultidimensionalArray(Array values)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SerializeArray(Array array)
         {
-              return SerializeMultidimensionalArray(values, Array.Empty<int>());
+            if (array.Rank > 1)
+            {
+                return SerializeMultidimensionalArray(array);
+            }
+
+            ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
+            WriteObjectDelegate writeObject = null;
+            Type lastType = null;
+            bool flag1 = true;
+            WriteStartArray();
+
+            var currentType = ConvertUtils.GetEnumerableValueTypeCode(array);
+            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+            if (isTyped)
+            {
+                valueTypeCode = currentType;
+                writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+            }
+
+
+            int len = array.Length;
+            try
+            {
+
+                // note that an error in the IEnumerable won't be caught
+                for (var i = 0; i <len; i++)
+                {
+                    var value = array.GetValue(i);
+                    if (!flag1)
+                    {
+                        _writer.Write(',');
+                    }
+
+                    Type valueType = value.GetType();
+                    if (lastType != valueType)
+                    {
+                        lastType = valueType;
+                        valueTypeCode = GetTypeCode(valueType);
+                        writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+                    }
+
+                    if (!WriteObjectValue(value, writeObject, valueType, valueTypeCode))
+                    {
+                        return false;
+                    }
+                }
+            }
+            finally
+            {
+                WriteEndArray();
+            }
+
+            return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SerializeList(System.Collections.IList list)
+        {
+            ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
+            WriteObjectDelegate writeObject = null;
+            bool flag1 = true;
+            Type lastType = null;
+
+          var  currentType = ConvertUtils.GetEnumerableValueTypeCode(list);
+            bool isTyped = currentType != ConvertUtils.TypeCode.Custom;
+
+            if (isTyped)
+            {
+                valueTypeCode = currentType;
+                writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+            }
+
+            WriteStartArray();
+            try
+            {
+                int len = list.Count;
+                // note that an error in the IEnumerable won't be caught
+                for (var i = 0; i < len; i++)
+                {
+                    var value = list[i];
+                    if (!flag1)
+                    {
+                        _writer.Write(',');
+                    }
+                    else
+                    {
+                        //first record.
+                        flag1 = false;
+                    }
+
+                    if (value == null)
+                    {
+                        WriteNull();
+                    }
+                    else
+                    {
+                        if (!isTyped)
+                        {
+                            Type valueType = value.GetType();
+                            if (lastType != valueType)
+                            {
+                                lastType = valueType;
+                                valueTypeCode = GetTypeCode(valueType);
+                                writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+                            }
+                        }
+
+                        if (!WriteObjectValue(value, writeObject, lastType, valueTypeCode))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                WriteEndArray();
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SerializeMultidimensionalArray(Array values)
+        {
+            return SerializeMultidimensionalArray(values, Array.Empty<int>());
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeMultidimensionalArray(Array values, int[] indices)
         {
             bool flag = true;
@@ -156,34 +326,44 @@ namespace JsonSerializer
                 newIndices[i] = indices[i];
             }
 
-            _builder.WriteStartArray();
+            WriteStartArray();
             try
             {
+                Type lastTypeCode = null;
+                WriteObjectDelegate writeValueFn = null;
+                ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
+
                 for (int i = values.GetLowerBound(dimension); i <= values.GetUpperBound(dimension); i++)
                 {
                     newIndices[dimension] = i;
                     bool isTopLevel = (newIndices.Length == values.Rank);
-
                     if (isTopLevel)
                     {
                         object value = values.GetValue(newIndices);
 
                         if (!flag)
                         {
-                            _builder.WriteComma();
+                            _writer.Write(',');
                         }
-                        if (!this.SerializeValue(value, ConvertUtils.GetTypeCode(value.GetType())))
+
+                        var typeCode = value.GetType();
+                        if (lastTypeCode != typeCode)
+                        {
+                            lastTypeCode = typeCode;
+                            valueTypeCode = Utility.ConvertUtils.GetTypeCode(typeCode);
+                            writeValueFn = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+                        }
+                        if (!WriteObjectValue(value, writeValueFn, typeCode, valueTypeCode))
                         {
                             return false;
                         }
-
                         flag = false;
                     }
                     else
                     {
                         if (i != 0)
                         {
-                            _builder.WriteComma();
+                            _writer.Write(',');
                         }
 
                         SerializeMultidimensionalArray(values, newIndices);
@@ -192,40 +372,26 @@ namespace JsonSerializer
             }
             finally
             {
-                _builder.WriteEndArray();
+                WriteEndArray();
             }
             return true;
         }
 
-        //string builder
-       //private JsonWriter _builder = null;
-       private JsWriter _builder = null;
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private string SerializeObjectInternal(object json)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SerializeObjectInternal(object json, TextWriter writer)
         {
-            if (json == null)
-            {
-                return null;
-            }
-
-
-            _builder = new JsWriter() //new JsonTextWriter()
-            //_builder = new JsonTextWriter()
-            {
-                IsElasticSearchReady = JsonSerializerSetting.Current.IsElasticSearchReady
-            };
-            var typeCode = ConvertUtils.GetTypeCode(json.GetType());
+            Type type = json.GetType();
+            var typeCode = ConvertUtils.GetTypeCode(type);
             if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
             {
+                _writer = writer;
                 //handle for object
-                SerializeNonPrimitiveValue(json, typeCode);
+                SerializeNonPrimitiveValue(json,type, typeCode);
             }
             else
             {
-                _builder.WriteObjectValue(json, typeCode);
+                JsonTypeSerializer.GetValueTypeToStringMethod(typeCode)?.Invoke(writer, json);
             }
-
-            return _builder.ToString();
         }
 
         /// <summary>
@@ -234,101 +400,185 @@ namespace JsonSerializer
         /// <param name="json"></param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static string SerializeObject(object Object)
+        public static string SerializeObjectToString(object Object)
         {
-            return new Serializer().SerializeObjectInternal(Object);
+            if (Object == null)
+            {
+                return null;
+            }
+
+            var writer = StringWriterThreadStatic.Allocate();
+            new Serializer().SerializeObjectInternal(Object, writer);
+            return StringWriterThreadStatic.ReturnAndFree(writer);
         }
 
-        /// <summary>
-        /// use your settings
-        /// </summary>
-        /// <param name="json"></param>
-        /// <param name="settings"></param>
-        /// <returns></returns>
-        //[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        //[MethodImpl(MethodImplOptions.NoInlining)]
-        //public static string SerializeObject(object Object, IJsonSerializerSetting settings)
-        //{
-        //    return new Serializer(settings).SerializeObjectInternal(Object);
-        //}
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
+        public static TextWriter SerializeObject(object Object, TextWriter writer)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException("writer");
+            }
+            if (Object == null)
+            {
+                return null;
+            }
 
+            new Serializer().SerializeObjectInternal(Object, writer);
+            return writer;
+        }
 
+        private bool SerializeNonGenericDictionary(IDictionary values)
+        {
+            WriteObjectDelegate writeKeyFn = null;
+            WriteObjectDelegate writeValueFn = null;
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeDictionary(IDictionary values)
+            ConvertUtils.TypeCode keyTypeCode = ConvertUtils.TypeCode.Empty;
+            ConvertUtils.TypeCode valueTypeCode = ConvertUtils.TypeCode.Empty;
+
+            Type lastKeyType = null;
+            Type lastValueType = null;
+
+            var ranOnce = false;
+            WriteStartObject();
+            try
+            {
+                foreach (var key in values.Keys)
+                {
+                    var dictionaryValue = values[key];
+
+                    var keyType = key.GetType();
+                    if (lastKeyType != keyType)
+                    {
+                        lastKeyType = keyType;
+                        keyTypeCode = ConvertUtils.GetTypeCode(keyType);
+                        writeKeyFn = JsonTypeSerializer.GetValueTypeToStringMethod(keyTypeCode);
+                    }
+
+                    if (ranOnce)
+                    {
+                        _writer.Write(',');
+                    }
+
+                    WriteObjectValue(key, writeKeyFn, keyType, keyTypeCode);
+                    _writer.Write(':');
+
+                    if (dictionaryValue == null)
+                    {
+                        WriteNull();
+                    }
+                    else
+                    {
+                        var valueType = dictionaryValue.GetType();
+                        if (lastValueType != valueType)
+                        {
+                            lastValueType = valueType;
+                            valueTypeCode = Utility.ConvertUtils.GetTypeCode(keyType);
+                            writeValueFn = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
+                        }
+
+                        if (!WriteObjectValue(dictionaryValue, writeValueFn, valueType,valueTypeCode))
+                        {
+                            return false;
+                        }
+                    }
+                    ranOnce = true;
+                }
+            }
+            finally
+            {
+                WriteEndObject();
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SerializeGenericDictionary(IDictionary values)
         {
             if (values.Count == 0)
             {
-                _builder.WriteStartObject();
-                _builder.WriteEndObject();
+                WriteStartObject();
+                WriteEndObject();
                 return true;
             }
             //check if key is string type
             Type type = values.GetType();
             Type[] args = type.GetGenericArguments();
 
-            ConvertUtils.TypeCode keyCodeType = ConvertUtils.TypeCode.String;
-            ConvertUtils.TypeCode valueCodeType = ConvertUtils.TypeCode.String;
-            if (args.Length > 0)
+            if (args.Length == 0)
             {
-    keyCodeType = ConvertUtils.GetTypeCode(args[0]);
-                if (keyCodeType != ConvertUtils.TypeCode.String)
-                {
-                    return false;
-                }
-        valueCodeType = ConvertUtils.GetTypeCode(args[1]);
+                //System.Collections.IDictionary
+                return SerializeNonGenericDictionary(values);
             }
 
+            //System.Collections.Generic.IDictionary
+            var keyCodeType = ConvertUtils.GetTypeCode(args[0]);
+            if (keyCodeType != ConvertUtils.TypeCode.String)
+            {
+                return false;
+            }
 
-            return SerializeDictionaryInternal(values, valueCodeType);
+            type = args[1];
+            var valueCodeType = ConvertUtils.GetTypeCode(type);
+            return SerializeGenericDictionaryInternal(values, valueCodeType, type);
         }
 
-
-        private bool SerializeValueMemberInfo(object instance, IList<ValueMemberInfo> items)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SerializeValueMemberInfo(object instance, IValue[] items)
         {
-            _builder.WriteStartObject();
+            WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
+
+            int len = items.Length;
             try
             {
-                foreach(var item in items)
+                for (var i = 0; i < len; i++)
                 {
-                    _builder.WritePropertyName(item.Name,false);
-
+                    var item = items[i];
+                    WritePropertyName(item.NameChar);
                     var value = item.GetValue(instance);
-                    if(value == null)
+
+                    if (!WriteObjectValue(value, item.WriteObject, item.ValueType, item.Code))
                     {
-                        _builder.WriteNull();
-                    }
-                    else if (item.Code >= ConvertUtils.TypeCode.NotSetObject)
-                    {
-                     //   if (!this.SerializeValue(value, item.Code))
-                     if(!SerializeNonPrimitiveValue(value, item.Code))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        //short cut.
-                        _builder.WriteObjectValue(value, item.Code);
+                        return false;
                     }
                 }
             }
             finally
             {
-                _builder.WriteEndObject();
+                WriteEndObject();
             }
 
             return true;
         }
 
-
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool WriteObjectValue(object value, WriteObjectDelegate writeValueFn, Type type, ConvertUtils.TypeCode valueTypeCode)
         {
-            _builder.WriteStartObject();
+            if (value == null)
+            {
+                WriteNull();
+                return true;
+            }
+            else if (writeValueFn != null)
+            {
+                writeValueFn(_writer, value);
+                return true;
+            }
+            else
+            {
+                return SerializeNonPrimitiveValue(value, type, valueTypeCode);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SerializeGenericDictionaryInternal(IDictionary values, ConvertUtils.TypeCode valueCodeType, Type valueType)
+        {
+
+            WriteObjectDelegate writeValue = JsonTypeSerializer.GetValueTypeToStringMethod(valueCodeType);
+
+            WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
             IDictionaryEnumerator e = values.GetEnumerator();
             try
@@ -338,38 +588,27 @@ namespace JsonSerializer
                     DictionaryEntry entry = e.Entry;
 
                     string name = Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                    _builder.WritePropertyName(name);
+                    WritePropertyName(name);
                     var value = entry.Value;
-                    if (value == null)
+
+                    if (!WriteObjectValue(value, writeValue, valueType, valueCodeType))
                     {
-                        _builder.WriteNull();
-                    }
-                    else if (valueCodeType >= ConvertUtils.TypeCode.NotSetObject)
-                    {
-                        if (!this.SerializeValue(value))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        //short cut.
-                        _builder.WriteObjectValue(value, valueCodeType);
+                        return false;
                     }
                 }
             }
             finally
             {
-                _builder.WriteEndObject();
+                WriteEndObject();
             }
 
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeDataSet(System.Data.DataSet ds)
         {
-            _builder.WriteStartObject();
+            WriteStartObject();
             try
             {
                 foreach (System.Data.DataTable table in ds.Tables)
@@ -380,13 +619,12 @@ namespace JsonSerializer
             }
             finally
             {
-                _builder.WriteEndObject();
+                WriteEndObject();
             }
 
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private void SerializeDataTableData(System.Data.DataTable table)
         {
             var rows = table.Rows;
@@ -394,8 +632,8 @@ namespace JsonSerializer
             {
                 return;
             }
-            _builder.WritePropertyName(table.TableName);
-            _builder.WriteStartArray();
+            WritePropertyName(table.TableName);
+            WriteStartArray();
 
             try
             {
@@ -405,170 +643,134 @@ namespace JsonSerializer
                 {
                     if (rowseparator)
                     {
-                        _builder.WriteComma();
+                        _writer.Write(',');
                     }
                     rowseparator = true;
-                    _builder.WriteStartObject();
-
-                    foreach (System.Data.DataColumn column in cols)
+                    WriteStartObject();
+                    try
                     {
-                        //build column name
-                        _builder.WritePropertyName(column.ColumnName);
-                        //build column data
-                        SerializeValue(row[column]);
+                        var columnType = new Dictionary<System.Data.DataColumn, Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate, Type>>();
+                        foreach (System.Data.DataColumn column in cols)
+                        {
+                            var typeCode = ConvertUtils.GetTypeCode(column.DataType);
+                            columnType.Add(column, new Tuple<char[], ConvertUtils.TypeCode, WriteObjectDelegate, Type>(StringExtension.GetEncodeString(column.ColumnName), typeCode, JsonTypeSerializer.GetValueTypeToStringMethod(typeCode), column.DataType));
+                        }
+
+                        foreach (var column in columnType)
+                        {
+                            //build column name
+                            WritePropertyName(column.Value.Item1);
+                            //build column data
+                            var value = row[column.Key];
+
+                            if (!WriteObjectValue(value, column.Value.Item3, column.Value.Item4, column.Value.Item2))
+                            {
+                                return;
+                            }
+
+                        }
                     }
-                    _builder.WriteEndObject();
+                    finally
+                    {
+                        WriteEndObject();
+                    }
                 }
             }
             finally
             {
-                _builder.WriteEndArray();
+                WriteEndArray();
             }
         }
 
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeDataTable(System.Data.DataTable dt)
         {
-            _builder.WriteStartObject();
+            WriteStartObject();
             try
             {
                 SerializeDataTableData(dt);
             }
             finally
             {
-                _builder.WriteEndObject();
+                WriteEndObject();
             }
             // end datatable
 
             return true;
         }
 
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeValue(object value, ConvertUtils.TypeCode typeCode = ConvertUtils.TypeCode.Empty )
+        private bool SerializeNonPrimitiveValue(object value, Type type, ConvertUtils.TypeCode objectTypeCode)
         {
-            //prevent null
-            if (value == null)
-            {
-                _builder.WriteNull();
-                return true;
-            }
-
-            if(typeCode == ConvertUtils.TypeCode.Empty)
-            {
-                typeCode = ConvertUtils.GetTypeCode(value);
-            }
-           
-            if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
-            {
-                //handle for object
-                return SerializeNonPrimitiveValue(value, typeCode);
-            }
-            else
-            {
-                _builder.WriteObjectValue(value, typeCode);
-                return true;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool SerializeNonPrimitiveValue(object value, ConvertUtils.TypeCode objectTypeCode)
-        {
-            int i = 0;
             //this prevents recursion
+            int i = 0;
             if (!_cirobj.TryGetValue(value, out i))
-                _cirobj.Add(value, _cirobj.Count + 1);
-            else
             {
-                if (_currentDepth > 0)
-                {
-                    //_circular = true;
-                    _builder.WriteValue("{\"$i\":");
-                    _builder.WriteValue(i.ToString());
-                    _builder.WriteValue("}");
-                    return false;
-                }
+                _cirobj.Add(value, _cirobj.Count + 1);
+            }
+            else if (_currentDepth > 0)
+            {
+                //_circular = true;
+                return false;
             }
             _currentDepth++;
-            try
-            {
-
             //recursion limit or max char length
             if (_currentDepth >= JsonSerializerSetting.Current.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
             {
-                _builder.WriteNull();
-                return true;
+                _currentDepth--;
+                WriteNull();
+                return false;
             }
 
-            //if (!AddObjectAsReferenceCheck(value))
-            //    return true;
-
-            //try
-            //{
-            switch (objectTypeCode)
+            try
+            {
+                switch (objectTypeCode)
                 {
                     case ConvertUtils.TypeCode.Array:
-                    case ConvertUtils.TypeCode.Enumerable:
+                        {
+                            return SerializeArray((Array)value);
+                        }
                     case ConvertUtils.TypeCode.IList:
-                        return this.SerializeEnumerable((IEnumerable)value);
+                        {
+                            return SerializeList((IList)value);
+                        }
+                    case ConvertUtils.TypeCode.Enumerable:
+                        {
+                            return this.SerializeEnumerable((IEnumerable)value);
+                        }
                     case ConvertUtils.TypeCode.Dictionary:
+                        return SerializeNonGenericDictionary((IDictionary)value);
                     case ConvertUtils.TypeCode.GenericDictionary:
-                        return SerializeDictionary((IDictionary)value);
+                        return SerializeGenericDictionary((IDictionary)value);
                     case ConvertUtils.TypeCode.NameValueCollection:
                         return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value);
                     case ConvertUtils.TypeCode.DataSet:
                         return SerializeDataSet((System.Data.DataSet)value);
                     case ConvertUtils.TypeCode.DataTable:
                         return SerializeDataTable((System.Data.DataTable)value);
-                    default:
+                    case ConvertUtils.TypeCode.Custom:
+                    case ConvertUtils.TypeCode.NotSetObject:
                         {
                             IValue[] obj = null;
                             // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
-                            if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, value.GetType(),  out obj))
+                            if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObjectImproved(value, type, out obj))
                             {
-                                var list = new System.Collections.Generic.List<ValueMemberInfo>(obj.Select(p => (ValueMemberInfo)p));
-          
-                                return this.SerializeValueMemberInfo(value, list);
+                                return this.SerializeValueMemberInfo(value, obj);
                             }
                             else
                             {
-                                _builder.WriteNull();
+                                WriteNull();
                                 return true;//was false but when false prevent continuing.
                             }
                         }
+                    default:
+                        {
+                            throw new NotImplementedException(objectTypeCode.ToString());
+                        }
                 }
-                //}
-                //catch (Exception)
-                //{
-                //    _builder.WriteNull();
-                //    return true;//was false but when false prevent continuing.
-                //}
-
-                //finally
-                //{
-                //    RemoveObjectAsReferenceCheck(value);
-                //}
             }
             finally
             {
                 _currentDepth--;
-            }
-        }
-
-        /// <summary>
-        ///We use this for our cycle detection for the case where objects override equals/gethashcode
-        /// </summary>
-        private class ReferenceComparer : IEqualityComparer
-        {
-            bool IEqualityComparer.Equals(object x, object y)
-            {
-                return x == y;
-            }
-
-            int IEqualityComparer.GetHashCode(object obj)
-            {
-                return RuntimeHelpers.GetHashCode(obj);
             }
         }
     }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JsonSerializer
+namespace SwiftJson
 {
     public interface IJsonSerializerSetting
     {
@@ -20,11 +20,11 @@ namespace JsonSerializer
 
     public enum DateHandler
     {
-        TimestampOffset,
-        DCJSCompatible,
-        ISO8601,
-        ISO8601DateOnly,
-        ISO8601DateTime,
-        RFC1123
+        TimestampOffset=0,
+        DCJSCompatible=1,
+        ISO8601=2,
+        ISO8601DateOnly=3,
+        ISO8601DateTime=4,
+        RFC1123=5
     }
 }

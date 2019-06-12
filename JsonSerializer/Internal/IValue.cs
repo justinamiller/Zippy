@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static JsonSerializer.Utility.ConvertUtils;
+using static SwiftJson.Utility.ConvertUtils;
 
-namespace JsonSerializer.Internal
+namespace SwiftJson.Internal
 {
     interface IValue
     {

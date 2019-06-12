@@ -1,4 +1,4 @@
-﻿using JsonSerializer.Utility;
+﻿using SwiftJson.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,12 +6,12 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using static JsonSerializer.Utility.DateTimeExtension;
+using static SwiftJson.Utility.DateTimeExtension;
 
-namespace JsonSerializer.Internal
+namespace SwiftJson.Internal
 {
 
-   public delegate void WriteObjectDelegate(TextWriter writer, object obj);
+   delegate void WriteObjectDelegate(TextWriter writer, object obj);
     sealed class JsonTypeSerializer
     {
 
@@ -75,9 +75,11 @@ namespace JsonSerializer.Internal
                 case ConvertUtils.TypeCode.Decimal:
                     return Serializer.WriteDecimal;
                 case ConvertUtils.TypeCode.GuidNullable:
+                    return Serializer.WriteNullableGuid;
                 case ConvertUtils.TypeCode.Guid:
                     return Serializer.WriteGuid;
                 case ConvertUtils.TypeCode.TimeSpanNullable:
+                    return Serializer.WriteNullableTimeSpan;
                 case ConvertUtils.TypeCode.TimeSpan:
                     return Serializer.WriteTimeSpan;
 
@@ -93,6 +95,8 @@ namespace JsonSerializer.Internal
                     return Serializer.WriteBytes;
                 case ConvertUtils.TypeCode.DBNull:
                     return Serializer.WriteNull;
+                case ConvertUtils.TypeCode.Exception:
+                    return Serializer.WriteException;
 
                 default:
                     throw new NotImplementedException();
@@ -156,22 +160,9 @@ namespace JsonSerializer.Internal
             writer.Write(StringExtension.GetEncodeString(value));
         }
 
-        public void WriteBuiltIn(TextWriter writer, object value)
-        {
-       
-        }
-
-        public void WriteObjectString(TextWriter writer, object value)
-        {
-
-        }
-
-        public void WriteFormattableObjectString(TextWriter writer, object value)
-        {
-        }
-
         public void WriteException(TextWriter writer, object value)
         {
+            WriteString(writer, ((Exception)value).Message);
         }
 
         private static readonly long DatetimeMinTimeTicks = (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks;
@@ -201,8 +192,6 @@ namespace JsonSerializer.Internal
                     writer.Write(dateTime.ToUniversalTime().ToString("R", CultureInfo.InvariantCulture));
                     return;
             }
-
-
 
             string offset = null;
             DateTime utcDate = dateTime;

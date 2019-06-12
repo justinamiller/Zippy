@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
-    internal static class DateTimeExtension
+    static class DateTimeExtension
     {
         private const long UnixEpoch = 621355968000000000L;
         private static readonly DateTime UnixEpochDateTimeUtc = new DateTime(UnixEpoch, DateTimeKind.Utc);

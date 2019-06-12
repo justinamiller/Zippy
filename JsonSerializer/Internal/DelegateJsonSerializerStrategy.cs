@@ -1,11 +1,11 @@
-﻿using JsonSerializer.Utility;
+﻿using SwiftJson.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace JsonSerializer.Internal
+namespace SwiftJson.Internal
 {
     class DelegateJsonSerializerStrategy : IJsonSerializerStrategy
     {

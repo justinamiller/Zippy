@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
     static class StringExtension
     {

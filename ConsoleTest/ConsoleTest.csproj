@@ -109,9 +109,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JsonSerializer\JsonSerializer.csproj">
+    <ProjectReference Include="..\JsonSerializer\SwiftJson.csproj">
       <Project>{000bc650-72c6-48ee-8b7b-884a70bde90f}</Project>
-      <Name>JsonSerializer</Name>
+      <Name>SwiftJson</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JsonSerializer.Utility
+namespace SwiftJson.Utility
 {
     /// <summary>
     /// Provides a cached reusable instance of a StringBuilder per thread.

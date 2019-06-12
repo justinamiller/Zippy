@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JsonSerializer.Internal
+namespace SwiftJson.Internal
 {
     interface IJsonSerializerStrategy
     {
