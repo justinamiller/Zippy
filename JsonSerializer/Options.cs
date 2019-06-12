@@ -14,7 +14,6 @@ namespace Zippy
 
         internal Options()
         {
-
         }
 
 
