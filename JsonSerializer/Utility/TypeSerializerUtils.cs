@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Zippy.Utility
 {
-   static class ConvertUtils
+   sealed class TypeSerializerUtils
     {
         internal enum TypeCode
         {
@@ -66,8 +67,7 @@ namespace Zippy.Utility
             GenericDictionary=108
         }
 
-        private static readonly Hashtable TypeCodeMap=
-new Hashtable()
+        private static readonly Hashtable TypeCodeMap=new Hashtable()
 {
                 { typeof(char), TypeCode.Char },
                 { typeof(char?), TypeCode.CharNullable },
@@ -147,23 +147,6 @@ new Hashtable()
 #endif
 };
 
-
-        public static TypeCode GetInstanceObjectTypeCode(object value)
-        {
-            if (value is System.Collections.IEnumerable)
-            {
-                if (value is System.Collections.IDictionary)
-                {
-                    return TypeCode.Dictionary;
-                }
-
-                return TypeCode.Enumerable;
-            }//IEnumerable
-
-
-            return TypeCode.NotSetObject;
-        }
-
         public static TypeCode GetTypeCode(Type type)
         {
             var typeCode = TypeCodeMap[type];
@@ -171,7 +154,7 @@ new Hashtable()
             {
                 return (TypeCode)typeCode;
             }
-            else if (type.IsEnum)
+           else if (type.IsEnum)
             {
                 return GetTypeCode(Enum.GetUnderlyingType(type));
             }
@@ -190,7 +173,6 @@ new Hashtable()
 
             return TypeCode.NotSetObject;
         }
-
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
         {

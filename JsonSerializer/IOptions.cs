@@ -13,9 +13,11 @@ namespace Zippy
         /// <summary>
         /// Addtional encoding for supporting direct elastic search write.
         /// </summary>
-        bool IsElasticSearchReady { get; set; }
+     //   bool IsElasticSearchReady { get; set; }
 
         DateHandler DateHandler { get; set; }
+
+    bool EscapeHtmlChars { get; set; }
     }
 
     public enum DateHandler

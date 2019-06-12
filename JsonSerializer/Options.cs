@@ -12,6 +12,8 @@ namespace Zippy
         int _MaxJsonLength = MAXJSONLENGTH;
         int _RecursionLimit = RECURSIONLIMIT;
 
+       public  bool EscapeHtmlChars { get; set; }
+
         internal Options()
         {
         }

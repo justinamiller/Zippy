@@ -568,8 +568,6 @@ namespace Zippy.Utility
 
         public delegate object GetDelegate(object source);
 
-        public delegate TValue DictionaryValueFactory<TKey, TValue>(TKey key);
-
         public static bool CanSerialize(Type type)
         {
             string typeFullName = type.FullName;
@@ -622,6 +620,12 @@ namespace Zippy.Utility
 
         public static bool ShouldUseMember(this MemberInfo memberInfo)
         {
+            if (IsIndexedProperty(memberInfo))
+            {
+                return false;
+            }
+
+
             var jilDirectiveAttributes = memberInfo.GetCustomAttributes<SwiftDirectiveAttribute>();
             if (jilDirectiveAttributes.Count() > 0) return !jilDirectiveAttributes.Any(d => d.Ignore);
 

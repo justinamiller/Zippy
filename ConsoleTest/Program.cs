@@ -124,17 +124,19 @@ namespace ConsoleTest
 
         static void Main(string[] args)
         {
-            //System.Threading.Thread.Sleep(250);
+            System.Threading.Thread.Sleep(250);
 
             //var c = new SimpleClass(); //new TestObject();
-            //var sb = new JsonSerializer.StringBuilderWriter();
-            //for (var i = 0; i < 1000; i++)
-            //{
-            //    JsonSerializer.Serializer2.SerializeObject(c, sb);
-            //    sb.Clear();
-            //}
-            //Console.ReadLine();
-            //return;
+            var c= new TestObject();
+            var sb = new Zippy.Serialize.Writers.StringBuilderWriter();
+            for (var i = 0; i < 1000; i++)
+            {
+                Zippy.JSON.SerializeObject(c, sb);
+                sb.Clear();
+            }
+            Console.WriteLine("DONE");
+            Console.ReadLine();
+            return;
 
 
             for (var i = 0; i < 10; i++)
@@ -155,7 +157,7 @@ namespace ConsoleTest
 
                          var sw = System.Diagnostics.Stopwatch.StartNew();
             var charArray = new char[3] { 'a', 'b', 'c' };
-            var sb0 = new Zippy.Serialize.StringBuilderWriter();
+            var sb0 = new Zippy.Serialize.Writers.StringBuilderWriter();
             sw.Restart();
             for (var i = 0; i < testCount * 2; i++)
             {
@@ -166,7 +168,7 @@ namespace ConsoleTest
             data.Add("StringBuilderWriter", sw.Elapsed.TotalMilliseconds);
 
 
-            var sb00 = new Zippy.Serialize.StringBuilderWriter(0);
+            var sb00 = new Zippy.Serialize.Writers.StringBuilderWriter(0);
             sw.Restart();
             for (var i = 0; i < testCount * 2; i++)
             {
@@ -348,7 +350,7 @@ namespace ConsoleTest
 
             try
             {
-                var nullwriter = new Zippy.Serialize.NullTextWriter();
+                var nullwriter = new Zippy.Serialize.Writers.NullTextWriter();
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
@@ -363,7 +365,7 @@ namespace ConsoleTest
 
             try
             {
-                var sb = new Zippy.Serialize.StringBuilderWriter();
+                var sb = new Zippy.Serialize.Writers.StringBuilderWriter();
                 json = Zippy.JSON.SerializeObject(c, sb).ToString();
                 sb.Clear();
                 sw.Restart();
@@ -383,7 +385,7 @@ namespace ConsoleTest
 
             try
             {
-                var sb2 = new Zippy.Serialize.StringBuilderWriter(0);
+                var sb2 = new Zippy.Serialize.Writers.StringBuilderWriter(0);
             GC.KeepAlive(sb2);
             sw.Restart();
             for (var i = 0; i < testCount; i++)

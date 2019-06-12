@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-namespace Zippy.Internal
+namespace Zippy.Serialize
 {
     sealed class JsonSerializerObject : IDictionary<string, object>//, ICollection<KeyValuePair<string, object>>, IEnumerable<KeyValuePair<string, object>>, IEnumerable
     {
@@ -174,7 +174,7 @@ namespace Zippy.Internal
 
         public override string ToString()
         {
-            return Serializer.SerializeObjectToString(this);
+            return JSON.SerializeObjectToString(this);
         }
 
         public bool TryGetValue(string key, out object value)

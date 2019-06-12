@@ -8,94 +8,93 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using static Zippy.Utility.DateTimeExtension;
 
-namespace Zippy.Internal
+namespace Zippy.Serialize
 {
 
    delegate void WriteObjectDelegate(TextWriter writer, object obj);
     sealed class JsonTypeSerializer
     {
-
         public const char QuoteChar = '"';
         internal static readonly JsonTypeSerializer Serializer = new JsonTypeSerializer();
 
-        public static WriteObjectDelegate GetValueTypeToStringMethod(ConvertUtils.TypeCode typeCode)
+        public static WriteObjectDelegate GetValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode)
         {
-            if (typeCode >= ConvertUtils.TypeCode.NotSetObject)
+            if (typeCode >= TypeSerializerUtils.TypeCode.NotSetObject)
             {
                 return null;
             }
 
             switch (typeCode)
             {
-                case ConvertUtils.TypeCode.CharNullable:
-                case ConvertUtils.TypeCode.Char:
+                case TypeSerializerUtils.TypeCode.CharNullable:
+                case TypeSerializerUtils.TypeCode.Char:
                     return Serializer.WriteChar;
-                case ConvertUtils.TypeCode.BooleanNullable:
-                case ConvertUtils.TypeCode.Boolean:
+                case TypeSerializerUtils.TypeCode.BooleanNullable:
+                case TypeSerializerUtils.TypeCode.Boolean:
                     return Serializer.WriteBool;
-                case ConvertUtils.TypeCode.SByteNullable:
-                case ConvertUtils.TypeCode.SByte:
+                case TypeSerializerUtils.TypeCode.SByteNullable:
+                case TypeSerializerUtils.TypeCode.SByte:
                     return Serializer.WriteSByte;
-                case ConvertUtils.TypeCode.Int16Nullable:
-                case ConvertUtils.TypeCode.Int16:
+                case TypeSerializerUtils.TypeCode.Int16Nullable:
+                case TypeSerializerUtils.TypeCode.Int16:
                     return Serializer.WriteInt16;
-                case ConvertUtils.TypeCode.UInt16Nullable:
-                case ConvertUtils.TypeCode.UInt16:
+                case TypeSerializerUtils.TypeCode.UInt16Nullable:
+                case TypeSerializerUtils.TypeCode.UInt16:
                     return Serializer.WriteUInt16;
-                case ConvertUtils.TypeCode.Int32Nullable:
-                case ConvertUtils.TypeCode.Int32:
+                case TypeSerializerUtils.TypeCode.Int32Nullable:
+                case TypeSerializerUtils.TypeCode.Int32:
                     return Serializer.WriteInt32;
-                case ConvertUtils.TypeCode.ByteNullable:
-                case ConvertUtils.TypeCode.Byte:
+                case TypeSerializerUtils.TypeCode.ByteNullable:
+                case TypeSerializerUtils.TypeCode.Byte:
                     return Serializer.WriteByte;
-                case ConvertUtils.TypeCode.UInt32Nullable:
-                case ConvertUtils.TypeCode.UInt32:
+                case TypeSerializerUtils.TypeCode.UInt32Nullable:
+                case TypeSerializerUtils.TypeCode.UInt32:
                     return Serializer.WriteUInt32;
-                case ConvertUtils.TypeCode.Int64Nullable:
-                case ConvertUtils.TypeCode.Int64:
+                case TypeSerializerUtils.TypeCode.Int64Nullable:
+                case TypeSerializerUtils.TypeCode.Int64:
                     return Serializer.WriteInt64;
-                case ConvertUtils.TypeCode.UInt64Nullable:
-                case ConvertUtils.TypeCode.UInt64:
+                case TypeSerializerUtils.TypeCode.UInt64Nullable:
+                case TypeSerializerUtils.TypeCode.UInt64:
                     return Serializer.WriteUInt64;
-                case ConvertUtils.TypeCode.SingleNullable:
-                case ConvertUtils.TypeCode.Single:
+                case TypeSerializerUtils.TypeCode.SingleNullable:
+                case TypeSerializerUtils.TypeCode.Single:
                     return Serializer.WriteFloat;
-                case ConvertUtils.TypeCode.DoubleNullable:
-                case ConvertUtils.TypeCode.Double:
+                case TypeSerializerUtils.TypeCode.DoubleNullable:
+                case TypeSerializerUtils.TypeCode.Double:
                     return Serializer.WriteDouble;
-                case ConvertUtils.TypeCode.DateTimeNullable:
+                case TypeSerializerUtils.TypeCode.DateTimeNullable:
                     return Serializer.WriteNullableDateTime;
-                case ConvertUtils.TypeCode.DateTime:
+                case TypeSerializerUtils.TypeCode.DateTime:
                     return Serializer.WriteDateTime;
-                case ConvertUtils.TypeCode.DateTimeOffsetNullable:
+                case TypeSerializerUtils.TypeCode.DateTimeOffsetNullable:
                     return Serializer.WriteNullableDateTimeOffset;
-                case ConvertUtils.TypeCode.DateTimeOffset:
+                case TypeSerializerUtils.TypeCode.DateTimeOffset:
                     return Serializer.WriteDateTimeOffset;
-                case ConvertUtils.TypeCode.DecimalNullable:
-                case ConvertUtils.TypeCode.Decimal:
+                case TypeSerializerUtils.TypeCode.DecimalNullable:
+                case TypeSerializerUtils.TypeCode.Decimal:
                     return Serializer.WriteDecimal;
-                case ConvertUtils.TypeCode.GuidNullable:
+                case TypeSerializerUtils.TypeCode.GuidNullable:
                     return Serializer.WriteNullableGuid;
-                case ConvertUtils.TypeCode.Guid:
+                case TypeSerializerUtils.TypeCode.Guid:
                     return Serializer.WriteGuid;
-                case ConvertUtils.TypeCode.TimeSpanNullable:
+                case TypeSerializerUtils.TypeCode.TimeSpanNullable:
                     return Serializer.WriteNullableTimeSpan;
-                case ConvertUtils.TypeCode.TimeSpan:
+                case TypeSerializerUtils.TypeCode.TimeSpan:
                     return Serializer.WriteTimeSpan;
 
                 //case PrimitiveTypeCode.BigInteger:
                 //    // this will call to WriteValue(object)
                 //    WriteValue((BigInteger)value);
                 //    return;
-                case ConvertUtils.TypeCode.Uri:
+                case TypeSerializerUtils.TypeCode.Uri:
                     return Serializer.WriteUri;
-                case ConvertUtils.TypeCode.String:
+                case TypeSerializerUtils.TypeCode.String:
                     return Serializer.WriteString;
-                case ConvertUtils.TypeCode.Bytes:
+                case TypeSerializerUtils.TypeCode.Bytes:
                     return Serializer.WriteBytes;
-                case ConvertUtils.TypeCode.DBNull:
+                case TypeSerializerUtils.TypeCode.DBNull:
                     return Serializer.WriteNull;
-                case ConvertUtils.TypeCode.Exception:
+                case TypeSerializerUtils.TypeCode.Exception:
                     return Serializer.WriteException;
 
                 default:
@@ -147,8 +146,7 @@ namespace Zippy.Internal
                 return;
             }
 
-            var escapeHtmlChars = false;
-            if (!value.HasAnyEscapeChars(escapeHtmlChars))
+            if (!value.HasAnyEscapeChars(JSON.Options.EscapeHtmlChars))
             {
                 writer.Write(QuoteChar);
                 writer.Write(value);
@@ -177,7 +175,7 @@ namespace Zippy.Internal
 
         private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
         {
-            switch (Options.Current.DateHandler)
+            switch (JSON.Options.DateHandler)
             {
                 case DateHandler.ISO8601:
                     writer.Write(dateTime.ToString("o", CultureInfo.InvariantCulture));
@@ -193,21 +191,26 @@ namespace Zippy.Internal
                     return;
             }
 
-            string offset = null;
+            char[] offset = null;
             DateTime utcDate = dateTime;
             if (dateTime.Kind != DateTimeKind.Utc)
             {
                 if (dateTime.Kind == DateTimeKind.Unspecified)
-                    offset = "-0000";
+                {
+                    offset = new char[5] { '-', '0', '0', '0', '0' };
+                }
                 else
+                {
                     offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString();
-
+                }
+                    
                 //need to convert to utc time
                 utcDate = dateTime.ToUniversalTime();
             }
 
             writer.Write(@"\/Date(");
-            writer.Write((utcDate.Ticks - DatetimeMinTimeTicks) / 10000);
+            var value = (utcDate.Ticks - DatetimeMinTimeTicks) / 10000;
+            writer.Write(value.ToString());
             if (offset != null)
             {
                 writer.Write(offset);
@@ -401,21 +404,17 @@ namespace Zippy.Internal
                 writer.Write(((decimal)decimalValue).ToString(CultureInfo.InvariantCulture));
         }
 
-        readonly static char[] s_Number = new char[10]
-           {
-            '0','1','2','3','4','5','6','7','8','9'
-           };
-
         private static void WriteIntegerValue(TextWriter writer, int value)
         {
             if (value >= 0 && value <= 9)
             {
-                writer.Write(s_Number[value]);
+                writer.Write(MathUtils.charNumbers[value]);
             }
             else
             {
-                bool negative = value < 0;
-                WriteIntegerValue(writer, negative ? (uint)-value : (uint)value, negative);
+                writer.Write(value.ToString());
+               // bool negative = value < 0;
+                //WriteIntegerValue(writer, negative ? (uint)-value : (uint)value, negative);
             }
         }
 
@@ -423,7 +422,7 @@ namespace Zippy.Internal
         {
             if (!negative && value <= 9)
             {
-                writer.Write(s_Number[value]);
+                writer.Write(MathUtils.charNumbers[value]);
             }
             else
             {
@@ -437,12 +436,13 @@ namespace Zippy.Internal
         {
             if (value >= 0 && value <= 9)
             {
-                writer.Write(s_Number[value]);
+                writer.Write(MathUtils.charNumbers[value]);
             }
             else
             {
-                bool negative = value < 0;
-                WriteIntegerValue(writer, negative ? (ulong)-value : (ulong)value, negative);
+                writer.Write(value.ToString());
+                // bool negative = value < 0;
+                //WriteIntegerValue(writer, negative ? (ulong)-value : (ulong)value, negative);
             }
         }
 
@@ -450,7 +450,7 @@ namespace Zippy.Internal
         {
             if (!negative && value <= 9)
             {
-                writer.Write(s_Number[value]);
+                writer.Write(MathUtils.charNumbers[value]);
             }
             else
             {
@@ -477,7 +477,7 @@ namespace Zippy.Internal
             {
                 uint quotient = value / 10;
                 uint digit = value - (quotient * 10);
-                buffer[--index] = s_Number[digit];
+                buffer[--index] = MathUtils.charNumbers[digit];
                 value = quotient;
             } while (value != 0);
 
@@ -492,9 +492,9 @@ namespace Zippy.Internal
                 return WriteNumberToBuffer((uint)value, negative, ref totalLength);
             }
 
-
-            char[] buffer = new char[35];
             totalLength = MathUtils.IntLength(value);
+
+            char[] buffer = new char[totalLength+1];
 
             if (negative)
             {
@@ -508,7 +508,7 @@ namespace Zippy.Internal
             {
                 ulong quotient = value / 10;
                 ulong digit = value - (quotient * 10);
-                buffer[--index] = s_Number[digit];
+                buffer[--index] = MathUtils.charNumbers[digit];
                 value = quotient;
             } while (value != 0);
 

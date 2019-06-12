@@ -11,12 +11,6 @@ namespace Zippy.Utility
         private static readonly DateTime UnixEpochDateTimeUtc = new DateTime(UnixEpoch, DateTimeKind.Utc);
         private static readonly DateTime MinDateTimeUtc = new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public static long ToUnixTimeMs(this DateTime dateTime)
-        {
-            var universal = ToDateTimeSinceUnixEpoch(dateTime);
-            return (long)universal.TotalMilliseconds;
-        }
-
         private static TimeSpan ToDateTimeSinceUnixEpoch(this DateTime dateTime)
         {
             var dtUtc = dateTime;
@@ -41,52 +35,57 @@ namespace Zippy.Utility
             return dateTime.ToUniversalTime();
         }
 
-        public static long ToUnixTimeMs(this long ticks)
+        readonly static IList<char[]> _time = new List<char[]>();
+
+        static DateTimeExtension()
         {
-            return (ticks - UnixEpoch) / TimeSpan.TicksPerMillisecond;
+            for(var i=0; i < 60; i++)
+            {
+                _time.Add(i.ToString().ToCharArray());
+            }
         }
 
-        readonly static string[] _time = new string[24]
-        {
-            "0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23"
-        };
 
-        readonly static char[] _number = new char[10]
+        public static char[] ToTimeOffsetString(this TimeSpan offset)
         {
-            '0','1','2','3','4','5','6','7','8','9'
-        };
-
-        public static string ToTimeOffsetString(this TimeSpan offset)
-        {
-            string hours;
-            string minutes;
             var h = Math.Abs(offset.Hours);
             var m = Math.Abs(offset.Minutes);
 
+            char[] items = new char[5];
+            int index = 0;
+
+            items[index++] = offset < TimeSpan.Zero ? '-' : '+';
+
             if (9 >= h)
             {
-                hours = new string(new char[2] { '0', _number[h] });
+                items[index++] = '0';
+                items[index++] = MathUtils.charNumbers[h];
             }
             else
             {
-                hours = _time[h];
+                var time = _time[h];
+                items[index++] = time[0];
+                items[index++] = time[1];
             }
 
             if (m == 0)
             {
-                minutes = "00";
+                items[index++] = '0';
+                items[index++] = '0';
             }
             else if (9 >= m)
             {
-                minutes = new string(new char[2] { '0', _number[m] });
+                items[index++] = '0';
+                items[index++] = MathUtils.charNumbers[m];
             }
             else
             {
-                minutes = _time[m];
+                var time = _time[m];
+                items[index++] = time[0];
+                items[index++] = time[1];
             }
 
-
-            return string.Concat((offset < TimeSpan.Zero ? "-" : "+"), hours, minutes);
+            return items;
         }
     }
 }

@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Zippy.Serialize
+namespace Zippy.Serialize.Writers
 {
     public sealed class StringBuilderWriter:TextWriter
     {

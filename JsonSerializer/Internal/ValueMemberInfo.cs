@@ -5,6 +5,7 @@ using System.Reflection;
 using Zippy.Utility;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Zippy.Serialize;
 
 namespace Zippy.Internal
 {
@@ -14,7 +15,7 @@ namespace Zippy.Internal
 
         public Type ValueType{get;}
 
-        public ConvertUtils.TypeCode Code  { get; }
+        public TypeSerializerUtils.TypeCode Code  { get; }
 
         public WriteObjectDelegate WriteObject { get; }
 
@@ -37,7 +38,7 @@ namespace Zippy.Internal
 
             if (ValueType != null)
             {
-                this.Code = Utility.ConvertUtils.GetTypeCode(ValueType);
+                this.Code = Utility.TypeSerializerUtils.GetTypeCode(ValueType);
                 WriteObject = JsonTypeSerializer.GetValueTypeToStringMethod(Code);
                 this.NameChar = StringExtension.GetEncodeString(memberInfo.GetSerializationName(), true);
                 this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);

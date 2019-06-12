@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Zippy.Internal;
 
-namespace Zippy.Internal
+namespace Zippy.Serialize
 {
     class LambdaJsonSerializerStrategy : IJsonSerializerStrategy
     {
@@ -26,20 +27,7 @@ namespace Zippy.Internal
             for (int i = 0; i < len; i++)
             {
                 //get item
-                MemberInfo item = allMembers[i];
-
-                if (item != null)
-                {
-                    if (!ReflectionExtension.IsIndexedProperty(item))
-                    {
-                        data[dataIndex++] = new ValueMemberInfo(item);
-                    }
-                }
-            }
-
-            if (len != dataIndex)
-            {
-                Array.Resize(ref data, dataIndex);
+                data[dataIndex++] = new ValueMemberInfo(allMembers[i]);
             }
 
             return data;

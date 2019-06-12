@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static Zippy.Utility.ConvertUtils;
+using Zippy.Serialize;
+using static Zippy.Utility.TypeSerializerUtils;
 
 namespace Zippy.Internal
 {
     interface IValue
     {
         char[] NameChar { get; }
-        Utility.ConvertUtils.TypeCode Code { get; }
+        Utility.TypeSerializerUtils.TypeCode Code { get; }
         object GetValue(object instance);
 
         WriteObjectDelegate WriteObject { get; }

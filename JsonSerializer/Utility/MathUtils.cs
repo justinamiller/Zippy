@@ -7,6 +7,12 @@ namespace Zippy.Utility
 {
     static class MathUtils
     {
+        internal readonly static char[] charNumbers = new char[10]
+   {
+            '0','1','2','3','4','5','6','7','8','9'
+   };
+
+
         public static int IntLength(ulong i)
         {
             if (i < 10000000000)
