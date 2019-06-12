@@ -738,20 +738,29 @@ namespace SwiftJson
                             return this.SerializeEnumerable((IEnumerable)value);
                         }
                     case ConvertUtils.TypeCode.Dictionary:
-                        return SerializeNonGenericDictionary((IDictionary)value);
+                        {
+                            return SerializeNonGenericDictionary((IDictionary)value);
+                        }
                     case ConvertUtils.TypeCode.GenericDictionary:
-                        return SerializeGenericDictionary((IDictionary)value);
+                        {
+                            return SerializeGenericDictionary((IDictionary)value);
+                        }
                     case ConvertUtils.TypeCode.NameValueCollection:
-                        return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value);
+                        {
+                            return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value);
+                        }
                     case ConvertUtils.TypeCode.DataSet:
-                        return SerializeDataSet((System.Data.DataSet)value);
+                        {
+                            return SerializeDataSet((System.Data.DataSet)value);
+                        }
                     case ConvertUtils.TypeCode.DataTable:
-                        return SerializeDataTable((System.Data.DataTable)value);
+                        {
+                            return SerializeDataTable((System.Data.DataTable)value);
+                        }
                     case ConvertUtils.TypeCode.Custom:
                     case ConvertUtils.TypeCode.NotSetObject:
                         {
                             IValue[] obj = null;
-                            // if (CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out obj))
                             if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, type, out obj))
                             {
                                 return this.SerializeValueMemberInfo(value, obj);
