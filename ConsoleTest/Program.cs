@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -159,6 +160,23 @@ namespace ConsoleTest
 
             try
             {
+                var rj = new Revenj.Serialization.JsonSerialization(new RevenjBinder());
+
+                json = rj.Serialize(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    json = rj.Serialize(c);
+                }
+                data.Add(new Tuple<string, double, string>("Revenj", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("Revenj", Int16.MaxValue, ex.ToString()));
+            }
+
+            try
+            {
                 json = Zippy.JSON.SerializeObjectToString(c);
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
@@ -195,6 +213,20 @@ namespace ConsoleTest
             }
 
             c.ToString();
+        }
+
+        class RevenjBinder : SerializationBinder
+        {
+            public override Type BindToType(string assemblyName, string typeName)
+            {
+                return null;
+            }
+
+            public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                assemblyName = null;
+                typeName = serializedType.FullName;
+            }
         }
 
         static void TestWriters()
