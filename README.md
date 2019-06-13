@@ -55,6 +55,28 @@ For comparison, here's how Zippy stacks up against other popular .NET serializer
  - Milliseconds since the unix epoch: is essentially the same
  - Seconds since the unix epoch: just has a different divisor
  
+ ## Benchmarks
+ ``` ini
+ BenchmarkDotNet=v0.11.5, OS=Windows 10.0.17134.753 (1803/April2018Update/Redstone4)
+Intel Core i7-6820HQ CPU 2.70GHz (Skylake), 1 CPU, 8 logical and 4 physical cores
+Frequency=2648441 Hz, Resolution=377.5806 ns, Timer=TSC
+  [Host] : .NET Framework 4.7.2 (CLR 4.0.30319.42000), 32bit LegacyJIT-v4.7.3394.0
+```
+
+|                          Method |     Mean |     Error |     StdDev |   Median | Rank | Rank |
+|-------------------------------- |---------:|----------:|-----------:|---------:|-----:|-----:|
+|        Zippy_ComplexModelObject | 12.79 us | 0.1165 us |  0.0973 us | 12.80 us |    1 |    * |
+| ServiceStack_ComplexModelObject | 15.99 us | 0.2597 us |  0.2303 us | 15.98 us |    2 |   ** |
+|   NewtonSoft_ComplexModelObject | 18.58 us | 0.2679 us |  0.2506 us | 18.62 us |    3 |  *** |
+|          Jil_ComplexModelObject | 50.17 us | 5.4556 us | 15.9142 us | 44.74 us |    4 | **** |
+
+|                           Method |     Mean |     Error |    StdDev | Rank | Rank |
+|--------------------------------- |---------:|----------:|----------:|-----:|-----:|
+|          Jil_ModelWithCommonType | 2.913 us | 0.0298 us | 0.0264 us |    1 |    * |
+|        Zippy_ModelWithCommonType | 3.795 us | 0.0741 us | 0.0964 us |    2 |   ** |
+| ServiceStack_ModelWithCommonType | 5.284 us | 0.1013 us | 0.1317 us |    3 |  *** |
+|   NewtonSoft_ModelWithCommonType | 5.783 us | 0.0764 us | 0.0715 us |    4 | **** |
+ 
    
    
 
