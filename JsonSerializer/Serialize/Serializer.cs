@@ -82,7 +82,7 @@ namespace Zippy.Serialize
                 this._propertyInUse = true;
             }
 
-            _writer.Write(value, 0, value.Length);
+            _writer.Write(value);
             _writer.Write(':');
         }
 

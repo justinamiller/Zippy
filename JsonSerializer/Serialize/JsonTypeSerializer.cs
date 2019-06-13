@@ -205,7 +205,7 @@ namespace Zippy.Serialize
 
             writer.Write(@"\/Date(");
             var value = (utcDate.Ticks - DatetimeMinTimeTicks) / 10000;
-            writer.Write(value.ToString());
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
             if (offset != null)
             {
                 writer.Write(offset);
@@ -360,7 +360,7 @@ namespace Zippy.Serialize
                 WriteNull(writer, null);
             }
             else
-                writer.Write((ulong)ulongValue);
+                WriteIntegerValue(writer, (ulong)ulongValue);
         }
 
         public void WriteBool(TextWriter writer, object boolValue)
@@ -428,6 +428,20 @@ namespace Zippy.Serialize
         }
 
         private static void WriteIntegerValue(TextWriter writer,long value)
+        {
+            if (value >= 0 && value <= 9)
+            {
+                writer.Write(MathUtils.charNumbers[value]);
+            }
+            else
+            {
+                writer.Write(value.ToString());
+                // bool negative = value < 0;
+                //WriteIntegerValue(writer, negative ? (ulong)-value : (ulong)value, negative);
+            }
+        }
+
+        private static void WriteIntegerValue(TextWriter writer, ulong value)
         {
             if (value >= 0 && value <= 9)
             {

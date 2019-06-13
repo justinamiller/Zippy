@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Zippy.Serialize.Writers;
 
 namespace Zippy.Utility
 {
@@ -10,31 +11,32 @@ namespace Zippy.Utility
      static class StringWriterThreadStatic
     {
         [ThreadStatic]
-        static StringWriter s_Cache;
+        static StringBuilderWriter s_Cache;
 
-        public static StringWriter Allocate()
+        public static StringBuilderWriter Allocate()
         {
             var ret = s_Cache;
             if (ret == null)
             {
-                return new StringWriter(new StringBuilder(512),CultureInfo.InvariantCulture);
+                return new StringBuilderWriter(256);//StringWriter(new StringBuilder(512),CultureInfo.InvariantCulture);
             }
             else
             {
-                var sb = ret.GetStringBuilder();
-                sb.Length = 0;
+                //  var sb = ret.GetStringBuilder();
+                //sb.Length = 0;
+                ret.Clear();
             }
                         
             s_Cache = null;  //don't re-issue cached instance until it's freed
             return ret;
         }
 
-        public static void Free(StringWriter writer)
+        public static void Free(StringBuilderWriter writer)
         {
             s_Cache = writer;
         }
 
-        public static string ReturnAndFree(StringWriter writer)
+        public static string ReturnAndFree(StringBuilderWriter writer)
         {
             var ret = writer.ToString();
             s_Cache = writer;

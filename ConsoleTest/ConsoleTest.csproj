@@ -112,6 +112,10 @@
       <Project>{000bc650-72c6-48ee-8b7b-884a70bde90f}</Project>
       <Name>Zippy</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Models\Models.csproj">
+      <Project>{5eaa74f1-e06a-41eb-ab19-5143571b07d8}</Project>
+      <Name>Models</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

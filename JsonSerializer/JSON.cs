@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Zippy.Serialize;
+using Zippy.Serialize.Writers;
 using Zippy.Utility;
 
 namespace Zippy
@@ -39,7 +40,7 @@ namespace Zippy
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
+[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static TextWriter SerializeObject(object Object, TextWriter writer)
         {
             if (writer == null)

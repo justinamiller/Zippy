@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Zippy.Serialize.Writers
 {
-    public sealed class StringBuilderWriter:TextWriter
+    sealed class StringBuilderWriter:TextWriter
     {
         private readonly static Encoding s_encoding = Encoding.Default;
         private readonly StringBuilder _sb = null;
@@ -32,6 +32,14 @@ namespace Zippy.Serialize.Writers
         public override string ToString()
         {
             return Utility.StringBuilderPool.GetStringAndRelease(_sb);
+        }
+
+        public int Length
+        {
+            get
+            {
+                return _sb.Length;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
