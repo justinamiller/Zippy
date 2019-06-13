@@ -129,7 +129,7 @@ namespace ConsoleTest
             //var c = new SimpleClass(); //new TestObject();
             var c = new TestObject();
             var sb = new Zippy.Serialize.Writers.StringBuilderWriter();
-            for (var i = 0; i < 100000; i++)
+            for (var i = 0; i < 10000; i++)
             {
                 Zippy.JSON.SerializeObject(c, sb);
                 sb.Clear();
