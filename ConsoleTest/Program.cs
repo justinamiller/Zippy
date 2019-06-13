@@ -53,7 +53,7 @@ namespace ConsoleTest
           //  var data = new Dictionary<string, double>();
             var data = new List<Tuple<string, double, string>>();
             //var c = new SimpleClass(); 
-           var c = new Models.ComplexModelObject();
+            var c = new Models.ComplexModelObject();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string json = null;

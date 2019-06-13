@@ -171,8 +171,8 @@ namespace Zippy.Utility
         }
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
-        {
-          if(anEnumerable is System.Collections.ArrayList)
+        {      
+            if (anEnumerable is System.Collections.ArrayList)
             {
                 return TypeCode.NotSetObject;
             }

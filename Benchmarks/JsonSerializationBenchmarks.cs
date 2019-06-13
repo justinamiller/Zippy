@@ -19,7 +19,7 @@ namespace Benchmarks
     {
         private static Models.ComplexModelObject _ComplexModelObject=new Models.ComplexModelObject();
         private static Models.SimpleModelType _SimpleModelType = new Models.SimpleModelType();
-        private static Models.ModelWithCommonTypes _ModelWithCommonTypes = new Models.ModelWithCommonTypes();
+        private static Models.ModelWithCommonTypes _ModelWithCommonTypes = Models.ModelWithCommonTypes.Create(3);
 
         static JsonSerializationBenchmarks()
         {

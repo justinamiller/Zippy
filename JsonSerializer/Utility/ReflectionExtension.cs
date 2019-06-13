@@ -13,13 +13,14 @@ namespace Zippy.Utility
     {
         private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
 
-        public static IEnumerable<FieldInfo> GetFields(Type type, BindingFlags bindingFlags)
+        public static List<MemberInfo> GetFields(Type type, BindingFlags bindingFlags)
         {
             List<MemberInfo> fieldInfos = new List<MemberInfo>(type.GetFields(bindingFlags));
 
             GetChildPrivateFields(fieldInfos, type, bindingFlags);
 
-            return fieldInfos.Cast<FieldInfo>();
+            return fieldInfos;
+           // return fieldInfos.Cast<FieldInfo>();
         }
 
         private static void GetChildPrivateFields(IList<MemberInfo> initialFields, Type targetType, BindingFlags bindingAttr)
@@ -225,7 +226,7 @@ namespace Zippy.Utility
             return (object source) => fieldInfo.GetValue(source);
         }
 
-        public static IEnumerable<PropertyInfo> GetProperties(Type type, BindingFlags bindingFlags)
+        public static List<PropertyInfo> GetProperties(Type type, BindingFlags bindingFlags)
         {
             List<PropertyInfo> propertyInfos = new List<PropertyInfo>(type.GetProperties(bindingFlags));
 
@@ -260,7 +261,7 @@ namespace Zippy.Utility
             return GetFieldsAndProperties(type, DefaultFlags);
         }
 
-        public static List<MemberInfo> GetFieldsAndProperties(Type type, BindingFlags bindingAttr)
+        public static List<MemberInfo> GetFieldsAndPropertiesLegacy(Type type, BindingFlags bindingAttr)
         {
             List<MemberInfo> targetMembers = new List<MemberInfo>();
 
@@ -272,6 +273,7 @@ namespace Zippy.Utility
             // filter members to only return the override on the topmost class
             // update: I think this is fixed in .NET 3.5 SP1 - leave this in for now...
             List<MemberInfo> distinctMembers = new List<MemberInfo>(targetMembers.Count);
+
 
             //Automatic Property syntax is actually not recommended if the class can be used in serialization. 
             var groupbyTargetMemebers = targetMembers.Where(l => !l.Name.Contains("k__BackingField")).GroupBy(m => m.Name);
@@ -314,6 +316,25 @@ namespace Zippy.Utility
             }
 
             return distinctMembers;
+        }
+
+        public static List<MemberInfo> GetFieldsAndProperties(Type type, BindingFlags bindingAttr)
+        {
+            List<MemberInfo> targetMembers = new List<MemberInfo>();
+
+            targetMembers.AddRange(GetFields(type, bindingAttr));
+            targetMembers.AddRange(GetProperties(type, bindingAttr));
+
+            List<MemberInfo> filterMembers = new List<MemberInfo>(targetMembers.Count);
+
+            foreach (var member in targetMembers)
+            {
+                if (member.ShouldUseMember())
+                {
+                    filterMembers.Add(member);
+                }
+            }
+            return filterMembers;
         }
 
         private static bool IsOverridenGenericMember(MemberInfo memberInfo, BindingFlags bindingAttr)

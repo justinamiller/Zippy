@@ -19,7 +19,7 @@ namespace Zippy.Serialize
 
     private static ValueMemberInfo[] GetterValueFactory(Type type)
         {
-            var allMembers = ReflectionExtension.GetFieldsAndProperties(type);//.Where(m => !ReflectionExtension.IsIndexedProperty(m)).ToArray();
+            var allMembers = ReflectionExtension.GetFieldsAndProperties(type);
 
             int len = allMembers.Count;
             var data = new ValueMemberInfo[len];
@@ -33,15 +33,11 @@ namespace Zippy.Serialize
             return data;
         }
 
-        private bool GetValue(Type type, out ValueMemberInfo[] data, out bool fromCache)
+        private bool GetValue(Type type, out ValueMemberInfo[] data)
         {
-            fromCache = false;
-            data = null;
-
             if (this.GetCache.TryGetValue(type, out data))
             {
                 //cache type
-                fromCache = true;
             }
             else
             {
@@ -51,7 +47,6 @@ namespace Zippy.Serialize
                 {
                     //cache type
                     this.GetCache[type] = data;
-                    fromCache = true;
                 }
             }
 
@@ -62,24 +57,13 @@ namespace Zippy.Serialize
         {
             output = null;
             ValueMemberInfo[] data;
-            bool fromCache = false;
 
-            if (type == null)
-            {
-                type = input.GetType();
-            }
-
-            if (!GetValue(type, out data, out fromCache))
+            if (!GetValue(type, out data))
             {
                 return false;
             }
-
-            int len = data.Length;
-            output = new ValueMemberInfo[len];
-            for (var i = 0; i < len; i++)
-            {
-                output[i] = data[i];
-            }
+            //ref
+            output = data;
 
             return output != null;
         }
