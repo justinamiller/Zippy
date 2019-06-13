@@ -143,7 +143,7 @@ namespace ConsoleTest
             {
 
                 TestJson();
-                TestWriters();
+             //   TestWriters();
                 Console.WriteLine("========================");
             }
             Console.WriteLine("DONE");
