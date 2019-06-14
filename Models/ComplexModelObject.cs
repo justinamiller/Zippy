@@ -63,6 +63,7 @@ namespace Models
 
         public Result[] Results { get; set; } = Array.Empty<Result>();
 
+        public IList<object> MixObjects { get; set; } = new List<object>();
         public IList<Result> ResultList { get; set; } = new List<Result>();
         //  public System.Collections.ArrayList ResultAL { get; set; } = new System.Collections.ArrayList();
         // public System.Collections.IList ResultSL { get; set; } = new System.Collections.ArrayList();
@@ -89,6 +90,10 @@ namespace Models
             //   var r=DT.NewRow();
             //   r[0] = "Test";
             // DT.Rows.Add(r);
+
+            MixObjects.Add("Test");
+            MixObjects.Add(1);
+            MixObjects.Add(true);
         }
 
         public static void Testing()

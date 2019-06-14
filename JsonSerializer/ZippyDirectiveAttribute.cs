@@ -29,12 +29,12 @@ namespace Zippy
         public string Name { get; set; }
 
         /// <summary>
-        /// Create a new JilDirectiveAttribute
+        /// Create a new SwiftDirectiveAttribute
         /// </summary>
         public SwiftDirectiveAttribute() { }
 
         /// <summary>
-        /// Create a new JilDirectiveAttribute, with a name override.
+        /// Create a new SwiftDirectiveAttribute, with a name override.
         /// </summary>
         public SwiftDirectiveAttribute(string name)
         {
@@ -42,7 +42,7 @@ namespace Zippy
         }
 
         /// <summary>
-        /// Create a new JilDirectiveAttribute, optionally ignoring the decorated member.
+        /// Create a new SwiftDirectiveAttribute, optionally ignoring the decorated member.
         /// </summary>
         public SwiftDirectiveAttribute(bool ignore)
         {

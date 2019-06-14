@@ -15,7 +15,7 @@ namespace Zippy.Internal
 
         public WriteObjectDelegate WriteObject { get; }
 
-        public char[] NameChar { get; }
+        public string Name { get; }
 
         private bool _errored = false;
 
@@ -37,9 +37,10 @@ namespace Zippy.Internal
             {
                 this.Code = Utility.TypeSerializerUtils.GetTypeCode(ValueType);
                 WriteObject = JsonTypeSerializer.GetValueTypeToStringMethod(Code);
-                this.NameChar = StringExtension.GetEncodeString(memberInfo.GetSerializationName(), true);
-                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
 
+                var name = memberInfo.GetSerializationName();
+                this.Name = TypeSerializerUtils.BuildPropertyName(name);
+                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
             }
             else
             {
@@ -48,7 +49,7 @@ namespace Zippy.Internal
             }
         }
 
-        public object GetValue(object instance)
+        public object GetValue(object instance, ref bool isError)
         {
             if (!_errored && instance != null)
             {
@@ -56,19 +57,24 @@ namespace Zippy.Internal
                 {
                     return _getter(instance);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    if (JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ThrowException)
+                    {
+                        throw ex;
+                    }
                     _errored = true;
                 }
             }
 
+            isError = true;
             //has errored
             return null;
         }
 
         public override string ToString()
         {
-            return new string(this.NameChar);
+            return this.Name;
         }
     }
 }

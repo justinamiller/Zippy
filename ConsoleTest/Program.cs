@@ -24,16 +24,16 @@ namespace ConsoleTest
         {
             System.Threading.Thread.Sleep(250);
 
-            //  var c = new SimpleClass(); //new TestObject();
-            //var c = new Models.ModelWithCommonTypes();
-            //for (var i = 0; i < 10000; i++)
-            //{
-            //    Zippy.JSON.SerializeObjectToString(c);
-            //}
-            //Console.WriteLine("DONE");
-            //Console.ReadLine();
-            //return;
+          //  var c = new SimpleClass(); //new TestObject();
 
+            var c = new Models.ComplexModelObject();
+            for (var i = 0; i < 10000; i++)
+            {
+                Zippy.JSON.SerializeObjectToString(c);
+            }
+            Console.WriteLine("DONE");
+            Console.ReadLine();
+            return;
 
             for (var i = 0; i < 10; i++)
             {

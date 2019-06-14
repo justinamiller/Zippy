@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Zippy.Utility
 {
@@ -58,6 +60,7 @@ namespace Zippy.Utility
             Array = 106,
             IList = 107,
             GenericDictionary = 108
+            //    ,Object=200
         }
 
         private static readonly Hashtable TypeCodeMap = new Hashtable()
@@ -133,6 +136,7 @@ namespace Zippy.Utility
             {typeof(System.Data.DataSet), TypeCode.DataSet},
              {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
             {typeof(System.Collections.IDictionary), TypeCode.Dictionary}
+              //          ,{typeof(object), TypeCode.Object}
 //  {typeof(Lazy<>), typeof(LazyFormatter<>)},
 //{typeof(Task<>), typeof(TaskValueFormatter<>)},
 #endif
@@ -145,11 +149,12 @@ namespace Zippy.Utility
             {
                 return (TypeCode)typeCode;
             }
-            else if (type.IsEnum)
+            var baseType = type.BaseType;
+            if (baseType == typeof(Enum))
             {
                 return GetTypeCode(Enum.GetUnderlyingType(type));
             }
-            else if (type.IsArray)
+            else if (baseType==typeof(Array))
             {
                 return TypeCode.Array;
             }
@@ -163,6 +168,28 @@ namespace Zippy.Utility
             }
 
             return TypeCode.NotSetObject;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string  FormatPropertyName(string value)
+        {
+            switch (JSON.Options.TextCase)
+            {
+                case TextCase.CamelCase:
+                    return value.ToCamelCase();
+                case TextCase.SnakeCase:
+                    return value.ToLowercaseUnderscore();
+                default:
+                    return value;
+            }
+        }
+
+        public static string BuildPropertyName(string name)
+        {
+            name = FormatPropertyName(name);
+            name = ArrayUtil.ToString(StringExtension.GetEncodeString(name, true));
+            name = string.Concat(name, ":");
+            return name;
         }
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)

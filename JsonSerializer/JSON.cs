@@ -23,9 +23,11 @@ namespace Zippy
                 return null;
             }
 
-            var writer = StringWriterThreadStatic.Allocate();
+          //  var writer = StringWriterThreadStatic.Allocate();
+           var writer = new Serialize.Writers.BufferTextWriter();
             new Serializer().SerializeObjectInternal(Object, writer);
-            var json = StringWriterThreadStatic.ReturnAndFree(writer);
+            //var json = StringWriterThreadStatic.ReturnAndFree(writer);
+            var json = "";
 
             if (Options.PrettyPrint)
             {

@@ -5,7 +5,7 @@ namespace Zippy.Utility
 {
     internal sealed class BinaryUtil
     {
-        const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
+        public const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnsureCapacity<T>(ref T[] bytes, int offset, int appendLength)

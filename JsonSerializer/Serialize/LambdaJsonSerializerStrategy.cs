@@ -24,7 +24,17 @@ namespace Zippy.Serialize
             for (int i = 0; i < len; i++)
             {
                 //get item
-                data[dataIndex++] = new ValueMemberInfo(allMembers[i]);
+                var valueInfo = new ValueMemberInfo(allMembers[i]);
+                if(!valueInfo.Name.IsNullOrEmpty())
+                {
+                    //must have property name.
+                    data[dataIndex++] = valueInfo;
+                }
+            }
+
+            if (dataIndex != len)
+            {
+                Array.Resize(ref data, dataIndex);
             }
 
             return data;
