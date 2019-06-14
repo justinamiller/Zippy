@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
-using Zippy.Utility;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Zippy.Serialize;
+using Zippy.Utility;
 
 namespace Zippy.Internal
 {
@@ -13,9 +9,9 @@ namespace Zippy.Internal
     {
         private readonly Func<object, object> _getter;
 
-        public Type ValueType{get;}
+        public Type ValueType { get; }
 
-        public TypeSerializerUtils.TypeCode Code  { get; }
+        public TypeSerializerUtils.TypeCode Code { get; }
 
         public WriteObjectDelegate WriteObject { get; }
 
@@ -27,8 +23,8 @@ namespace Zippy.Internal
         public ValueMemberInfo(MemberInfo memberInfo)
         {
             // this.MemberInfo = memberInfo;
-            var propertyInfo = memberInfo as PropertyInfo; 
-            if (propertyInfo!=null)
+            var propertyInfo = memberInfo as PropertyInfo;
+            if (propertyInfo != null)
             {
                 ValueType = propertyInfo.PropertyType;
             }
@@ -54,7 +50,7 @@ namespace Zippy.Internal
 
         public object GetValue(object instance)
         {
-            if (!_errored &&instance!=null)
+            if (!_errored && instance != null)
             {
                 try
                 {

@@ -1,17 +1,13 @@
-﻿using Zippy.Utility;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text;
+using Zippy.Utility;
 using static Zippy.Utility.DateTimeExtension;
 
 namespace Zippy.Serialize
 {
 
-   delegate void WriteObjectDelegate(TextWriter writer, object obj);
+    delegate void WriteObjectDelegate(TextWriter writer, object obj);
     sealed class JsonTypeSerializer
     {
         public const char QuoteChar = '"';
@@ -130,7 +126,7 @@ namespace Zippy.Serialize
 
         public void WriteString(TextWriter writer, object value)
         {
-          //  WriteString1(writer, value);
+            //  WriteString1(writer, value);
             WriteString(writer, (string)value);
         }
 
@@ -166,7 +162,7 @@ namespace Zippy.Serialize
         }
 
         private static readonly long DatetimeMinTimeTicks = (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks;
-        private  static readonly TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
+        private static readonly TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
 
         private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
         {
@@ -198,7 +194,7 @@ namespace Zippy.Serialize
                 {
                     offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString();
                 }
-                    
+
                 //need to convert to utc time
                 utcDate = dateTime.ToUniversalTime();
             }
@@ -368,7 +364,7 @@ namespace Zippy.Serialize
             if (boolValue == null)
                 WriteNull(writer, null);
             else
-                writer.Write(((bool)boolValue) ?"true" :"false");
+                writer.Write(((bool)boolValue) ? "true" : "false");
         }
 
         public void WriteFloat(TextWriter writer, object floatValue)
@@ -377,7 +373,7 @@ namespace Zippy.Serialize
                 WriteNull(writer, null);
             else
             {
-               writer.Write(((float)floatValue).ToString("r", CultureInfo.InvariantCulture));
+                writer.Write(((float)floatValue).ToString("r", CultureInfo.InvariantCulture));
             }
         }
 
@@ -387,7 +383,7 @@ namespace Zippy.Serialize
                 WriteNull(writer, null);
             else
             {
-                    writer.Write(((double)doubleValue).ToString(CultureInfo.InvariantCulture));
+                writer.Write(((double)doubleValue).ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -408,12 +404,12 @@ namespace Zippy.Serialize
             else
             {
                 writer.Write(value.ToString());
-               // bool negative = value < 0;
+                // bool negative = value < 0;
                 //WriteIntegerValue(writer, negative ? (uint)-value : (uint)value, negative);
             }
         }
 
-        private static void WriteIntegerValue(TextWriter writer,uint value, bool negative)
+        private static void WriteIntegerValue(TextWriter writer, uint value, bool negative)
         {
             if (!negative && value <= 9)
             {
@@ -427,7 +423,7 @@ namespace Zippy.Serialize
             }
         }
 
-        private static void WriteIntegerValue(TextWriter writer,long value)
+        private static void WriteIntegerValue(TextWriter writer, long value)
         {
             if (value >= 0 && value <= 9)
             {
@@ -503,7 +499,7 @@ namespace Zippy.Serialize
 
             totalLength = MathUtils.IntLength(value);
 
-            char[] buffer = new char[totalLength+1];
+            char[] buffer = new char[totalLength + 1];
 
             if (negative)
             {

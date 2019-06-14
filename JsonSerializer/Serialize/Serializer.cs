@@ -1,18 +1,12 @@
-﻿using Zippy.Internal;
-using Zippy.Utility;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using static Zippy.Utility.TypeSerializerUtils;
 using System.IO;
+using System.Runtime.CompilerServices;
+using Zippy.Internal;
+using Zippy.Utility;
+using static Zippy.Utility.TypeSerializerUtils;
 
 namespace Zippy.Serialize
 {
@@ -93,7 +87,7 @@ namespace Zippy.Serialize
             try
             {
                 string[] keys = value.AllKeys;
-                int len= keys.Length;
+                int len = keys.Length;
                 for (int i = 0; i < len; i++)
                 {
                     WritePropertyName(keys[i]);
@@ -194,7 +188,7 @@ namespace Zippy.Serialize
             try
             {
                 // note that an error in the IEnumerable won't be caught
-                for (var i = 0; i <len; i++)
+                for (var i = 0; i < len; i++)
                 {
                     if (!flag1)
                     {
@@ -235,7 +229,7 @@ namespace Zippy.Serialize
             bool flag1 = true;
             Type lastType = null;
 
-          var  currentType = TypeSerializerUtils.GetEnumerableValueTypeCode(list);
+            var currentType = TypeSerializerUtils.GetEnumerableValueTypeCode(list);
             bool isTyped = currentType != TypeSerializerUtils.TypeCode.NotSetObject;
 
             if (isTyped)
@@ -372,7 +366,7 @@ namespace Zippy.Serialize
             {
                 _writer = writer;
                 //handle for object
-                SerializeNonPrimitiveValue(json,type, typeCode);
+                SerializeNonPrimitiveValue(json, type, typeCode);
             }
             else
             {
@@ -429,7 +423,7 @@ namespace Zippy.Serialize
                             writeValueFn = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
                         }
 
-                        if (!WriteObjectValue(dictionaryValue, writeValueFn, valueType,valueTypeCode))
+                        if (!WriteObjectValue(dictionaryValue, writeValueFn, valueType, valueTypeCode))
                         {
                             return false;
                         }
@@ -470,6 +464,7 @@ namespace Zippy.Serialize
                 return false;
             }
 
+            //get value type
             type = args[1];
             var valueCodeType = TypeSerializerUtils.GetTypeCode(type);
             return SerializeGenericDictionaryInternal(values, valueCodeType, type);

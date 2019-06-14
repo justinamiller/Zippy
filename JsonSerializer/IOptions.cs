@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Zippy
+﻿namespace Zippy
 {
     public interface IOptions
     {
@@ -17,7 +13,7 @@ namespace Zippy
 
         DateHandler DateHandler { get; set; }
 
-    bool EscapeHtmlChars { get; set; }
+        bool EscapeHtmlChars { get; set; }
 
         /// <summary>
         /// whether or not to include whitespace and newlines for ease of reading
@@ -27,16 +23,16 @@ namespace Zippy
         /// <summary>
         /// whether or not to write object members whose value is null
         /// </summary>
-       bool ShouldExcludeNulls { get; set; }
+        bool ShouldExcludeNulls { get; set; }
     }
 
     public enum DateHandler
     {
-        TimestampOffset=0,
-        DCJSCompatible=1,
-        ISO8601=2,
-        ISO8601DateOnly=3,
-        ISO8601DateTime=4,
-        RFC1123=5
+        TimestampOffset = 0,
+        DCJSCompatible = 1,
+        ISO8601 = 2,
+        ISO8601DateOnly = 3,
+        ISO8601DateTime = 4,
+        RFC1123 = 5
     }
 }

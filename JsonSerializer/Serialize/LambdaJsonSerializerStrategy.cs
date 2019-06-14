@@ -1,10 +1,7 @@
-﻿using Zippy.Utility;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using Zippy.Internal;
+using Zippy.Utility;
 
 namespace Zippy.Serialize
 {
@@ -17,7 +14,7 @@ namespace Zippy.Serialize
             this.GetCache = new Dictionary<Type, ValueMemberInfo[]>();
         }
 
-    private static ValueMemberInfo[] GetterValueFactory(Type type)
+        private static ValueMemberInfo[] GetterValueFactory(Type type)
         {
             var allMembers = ReflectionExtension.GetFieldsAndProperties(type);
 
@@ -41,9 +38,9 @@ namespace Zippy.Serialize
             }
             else
             {
-        //reflection on type
+                //reflection on type
                 data = GetterValueFactory(type);
-               if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) ==-1)
+                if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) == -1)
                 {
                     //cache type
                     this.GetCache[type] = data;

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Zippy.Utility
 {
-   static class CharPool
+    static class CharPool
     {
         [ThreadStatic]
         static char[] _buffer = null;
@@ -13,7 +11,7 @@ namespace Zippy.Utility
         {
             if (capacity <= 512)
             {
-              var buffer = _buffer;
+                var buffer = _buffer;
                 if (buffer != null)
                 {
                     // Avoid stringbuilder block fragmentation by getting a new StringBuilder

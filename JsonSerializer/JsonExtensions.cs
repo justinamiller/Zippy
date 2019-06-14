@@ -1,12 +1,10 @@
-﻿using Zippy.Utility;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+using Zippy.Utility;
 
 namespace Zippy
 {
-   public static class JsonExtensions
+    public static class JsonExtensions
     {
         /// <summary>
         /// will serialize an object into json string
@@ -21,7 +19,7 @@ namespace Zippy
             {
                 return null;
             }
-           
+
             return JSON.SerializeObjectToString(instance);
         }
 

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Zippy.Serialize;
-using static Zippy.Utility.TypeSerializerUtils;
 
 namespace Zippy.Internal
 {

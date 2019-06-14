@@ -5,7 +5,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace Zippy.Utility
 {
@@ -20,7 +19,7 @@ namespace Zippy.Utility
             GetChildPrivateFields(fieldInfos, type, bindingFlags);
 
             return fieldInfos;
-           // return fieldInfos.Cast<FieldInfo>();
+            // return fieldInfos.Cast<FieldInfo>();
         }
 
         private static void GetChildPrivateFields(IList<MemberInfo> initialFields, Type targetType, BindingFlags bindingAttr)
@@ -148,7 +147,7 @@ namespace Zippy.Utility
 
                 resultExpression = EnsureCastExpression(resultExpression, typeof(object));
                 LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<TKey, TValue>), resultExpression, parameterExpression);
-                
+
                 return (Func<TKey, TValue>)lambdaExpression.Compile();
             }
             catch (Exception)
@@ -406,7 +405,7 @@ namespace Zippy.Utility
         public static bool IsIndexedProperty(MemberInfo member)
         {
             var properyInfo = member as PropertyInfo;
-            if (properyInfo!=null)
+            if (properyInfo != null)
             {
                 return IsIndexedProperty(properyInfo);
             }

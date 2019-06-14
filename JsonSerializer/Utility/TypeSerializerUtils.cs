@@ -1,20 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Numerics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Zippy.Utility
 {
-   sealed class TypeSerializerUtils
+    sealed class TypeSerializerUtils
     {
         internal enum TypeCode
         {
             Empty = 0,
-       //Object = 1,
+            //Object = 1,
             Char = 2,
             CharNullable = 3,
             Boolean = 4,
@@ -53,19 +48,19 @@ namespace Zippy.Utility
             String = 39,
             Bytes = 40,
             DBNull = 41,
-            Exception=42,
-            NotSetObject=100,
+            Exception = 42,
+            NotSetObject = 100,
             DataTable = 101,
             DataSet = 102,
             Dictionary = 103,
             NameValueCollection = 104,
             Enumerable = 105,
-            Array=106,
-            IList=107,
-            GenericDictionary=108
+            Array = 106,
+            IList = 107,
+            GenericDictionary = 108
         }
 
-        private static readonly Hashtable TypeCodeMap=new Hashtable()
+        private static readonly Hashtable TypeCodeMap = new Hashtable()
 {
                 { typeof(char), TypeCode.Char },
                 { typeof(char?), TypeCode.CharNullable },
@@ -150,7 +145,7 @@ namespace Zippy.Utility
             {
                 return (TypeCode)typeCode;
             }
-           else if (type.IsEnum)
+            else if (type.IsEnum)
             {
                 return GetTypeCode(Enum.GetUnderlyingType(type));
             }
@@ -158,7 +153,7 @@ namespace Zippy.Utility
             {
                 return TypeCode.Array;
             }
-           else if(type.IsGenericType)
+            else if (type.IsGenericType)
             {
                 typeCode = TypeCodeMap[type.GetGenericTypeDefinition()];
                 if (typeCode != null)
@@ -171,16 +166,16 @@ namespace Zippy.Utility
         }
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
-        {      
+        {
             if (anEnumerable is System.Collections.ArrayList)
             {
                 return TypeCode.NotSetObject;
             }
-            else if(anEnumerable is System.Collections.IList)
+            else if (anEnumerable is System.Collections.IList)
             {
                 return GetIListValueTypeCode(anEnumerable.GetType());
             }
-            else  if (anEnumerable is Array)
+            else if (anEnumerable is Array)
             {
                 return GetArrayValueTypeCode(anEnumerable.GetType());
             }

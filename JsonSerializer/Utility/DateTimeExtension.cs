@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Zippy.Utility
@@ -40,7 +38,7 @@ namespace Zippy.Utility
 
         static DateTimeExtension()
         {
-            for(var i=0; i < 60; i++)
+            for (var i = 0; i < 60; i++)
             {
                 _time.Add(i.ToString().ToCharArray());
             }

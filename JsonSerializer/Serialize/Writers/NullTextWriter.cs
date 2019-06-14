@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 
 namespace Zippy.Serialize.Writers
 {
     sealed class NullTextWriter : TextWriter
     {
-        private readonly static Encoding s_encoding= Encoding.Default;
+        private readonly static Encoding s_encoding = Encoding.Default;
 
         public override Encoding Encoding { get; } = s_encoding;
 

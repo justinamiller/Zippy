@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
 using Zippy.Serialize;
-using Zippy.Serialize.Writers;
 using Zippy.Utility;
 
 namespace Zippy
 {
     public sealed class JSON
     {
-        public  static IOptions Options { get; } = new Options();
+        public static IOptions Options { get; } = new Options();
 
         /// <summary>
         /// use default settings
@@ -28,11 +25,11 @@ namespace Zippy
 
             var writer = StringWriterThreadStatic.Allocate();
             new Serializer().SerializeObjectInternal(Object, writer);
-            var json =StringWriterThreadStatic.ReturnAndFree(writer);
+            var json = StringWriterThreadStatic.ReturnAndFree(writer);
 
             if (Options.PrettyPrint)
             {
-               return StringExtension.PrettyPrint(json);
+                return StringExtension.PrettyPrint(json);
             }
             else
             {
@@ -40,7 +37,7 @@ namespace Zippy
             }
         }
 
-[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static TextWriter SerializeObject(object Object, TextWriter writer)
         {
             if (writer == null)

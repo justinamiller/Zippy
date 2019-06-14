@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Zippy
 {
@@ -29,7 +27,7 @@ namespace Zippy
         /// case sensitive.
         /// </summary>
         public string Name { get; set; }
-  
+
         /// <summary>
         /// Create a new JilDirectiveAttribute
         /// </summary>

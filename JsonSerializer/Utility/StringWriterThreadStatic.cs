@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Text;
 using Zippy.Serialize.Writers;
 
 namespace Zippy.Utility
 {
     //Use separate cache internally to avoid reallocations and cache misses
-     static class StringWriterThreadStatic
+    static class StringWriterThreadStatic
     {
         [ThreadStatic]
         static StringBuilderWriter s_Cache;
@@ -26,7 +22,7 @@ namespace Zippy.Utility
                 //sb.Length = 0;
                 ret.Clear();
             }
-                        
+
             s_Cache = null;  //don't re-issue cached instance until it's freed
             return ret;
         }
