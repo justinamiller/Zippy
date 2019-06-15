@@ -52,9 +52,9 @@ namespace ConsoleTest
             int testCount = 10000;
           //  var data = new Dictionary<string, double>();
             var data = new List<Tuple<string, double, string>>();
-            //var c = new SimpleClass(); 
-            var c = new Models.ComplexModelObject();
-
+           // var c = new Models.SimpleModelType(); 
+            //var c = new Models.ComplexModelObject();
+            var c = Models.ModelWithCommonTypes.Create(23);
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string json = null;
 
@@ -188,6 +188,21 @@ namespace ConsoleTest
             catch (Exception ex)
             {
                 data.Add(new Tuple<string, double, string>("Zippy", Int16.MaxValue, ex.ToString()));
+            }
+
+            try
+            {
+                json = System.Text.Json.Serialization.JsonSerializer.ToString(c);
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    System.Text.Json.Serialization.JsonSerializer.ToString(c);
+                }
+                data.Add(new Tuple<string, double, string>("System.Text.Json", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("System.Text.Json", Int16.MaxValue, ex.ToString()));
             }
 
             try
