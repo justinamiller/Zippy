@@ -5,9 +5,9 @@ namespace Zippy.Internal
 {
     interface IValue
     {
-        char[] NameChar { get; }
+        string Name { get; }
         Utility.TypeSerializerUtils.TypeCode Code { get; }
-        object GetValue(object instance);
+        object GetValue(object instance, ref bool isError);
         WriteObjectDelegate WriteObject { get; }
         Type ValueType { get; }
     }

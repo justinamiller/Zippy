@@ -183,9 +183,6 @@ namespace Zippy.Utility
                 buffer[i] = bufferWriter[i];
             }
             return buffer;
-            // Array.Resize(ref bufferWriter, bufferIndex);
-            //  return bufferWriter;
-            //_textWriter.Write(bufferWriter, 0, bufferIndex);
         }
 
         /// <summary>
@@ -320,6 +317,55 @@ namespace Zippy.Utility
                 sb.Append(indent);
                 count--;
             }
+        }
+
+        private const int LowerCaseOffset = 'a' - 'A';
+        public static string ToCamelCase(this string value)
+        {
+            if (value.IsNullOrEmpty())
+                return value;
+
+            var len = value.Length;
+            var newValue = new char[len];
+            var firstPart = true;
+
+            for (var i = 0; i < len; ++i)
+            {
+                var c0 = value[i];
+                var c1 = i < len - 1 ? value[i + 1] : 'A';
+                var c0isUpper = c0 >= 'A' && c0 <= 'Z';
+                var c1isUpper = c1 >= 'A' && c1 <= 'Z';
+
+                if (firstPart && c0isUpper && (c1isUpper || i == 0))
+                    c0 = (char)(c0 + LowerCaseOffset);
+                else
+                    firstPart = false;
+
+                newValue[i] = c0;
+            }
+
+            return new string(newValue);
+        }
+
+        public static string ToLowercaseUnderscore(this string value)
+        {
+            if (value.IsNullOrEmpty()) return value;
+            value = value.ToCamelCase();
+
+            var sb = StringBuilderPool.Get();
+            foreach (char t in value)
+            {
+                if (char.IsDigit(t) || (char.IsLetter(t) && char.IsLower(t)) || t == '_')
+                {
+                    sb.Append(t);
+                }
+                else
+                {
+                    sb.Append("_");
+                    sb.Append(char.ToLower(t));
+                }
+            }
+            return StringBuilderPool.GetStringAndRelease(sb);
         }
     }
 }

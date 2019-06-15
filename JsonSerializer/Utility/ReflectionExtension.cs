@@ -646,8 +646,8 @@ namespace Zippy.Utility
             }
 
 
-            var jilDirectiveAttributes = memberInfo.GetCustomAttributes<SwiftDirectiveAttribute>();
-            if (jilDirectiveAttributes.Count() > 0) return !jilDirectiveAttributes.Any(d => d.Ignore);
+            var swiftDirectiveAttribute = memberInfo.GetCustomAttributes<SwiftDirectiveAttribute>();
+            if (swiftDirectiveAttribute.Count() > 0) return !swiftDirectiveAttribute.Any(d => d.Ignore);
 
             var ignoreDataMemberAttributes = memberInfo.GetCustomAttributes<IgnoreDataMemberAttribute>();
             return ignoreDataMemberAttributes.Count() == 0;
@@ -655,8 +655,8 @@ namespace Zippy.Utility
 
         public static string GetSerializationName(this MemberInfo member)
         {
-            var jilDirectiveAttr = member.GetCustomAttribute<SwiftDirectiveAttribute>();
-            if (jilDirectiveAttr != null && jilDirectiveAttr.Name != null) return jilDirectiveAttr.Name;
+            var swiftDirectiveAttr = member.GetCustomAttribute<SwiftDirectiveAttribute>();
+            if (swiftDirectiveAttr != null && swiftDirectiveAttr.Name != null) return swiftDirectiveAttr.Name;
 
             var dataMemberAttr = member.GetCustomAttribute<DataMemberAttribute>();
             if (dataMemberAttr != null && dataMemberAttr.Name != null) return dataMemberAttr.Name;

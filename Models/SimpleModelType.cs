@@ -6,7 +6,7 @@ namespace Models
 {
     public class SimpleModelType
     {
-        private string _test;
+        private readonly string _test;
         public string test = "";
 
         public string Test1

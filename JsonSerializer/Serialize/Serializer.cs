@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -54,18 +55,21 @@ namespace Zippy.Serialize
             this._propertyInUse = false;
         }
 
+
+        private void WritePropertyNameFast(string value)
+        {
+            if (this._propertyInUse)
+            {
+                this._writer.Write(',');
+            }
+            else
+            {
+                this._propertyInUse = true;
+            }
+            _writer.Write(value);
+        }
+
         private void WritePropertyName(string value)
-        {
-            WritePropertyName(StringExtension.GetEncodeString(value));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteNull()
-        {
-            _writer.Write(JsonTypeSerializer.Null, 0, 4);
-        }
-
-        private void WritePropertyName(char[] value)
         {
             if (this._propertyInUse)
             {
@@ -76,9 +80,30 @@ namespace Zippy.Serialize
                 this._propertyInUse = true;
             }
 
-            _writer.Write(value);
+            value = FormatPropertyName(value);
+            _writer.Write(StringExtension.GetEncodeString(value));
             _writer.Write(':');
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteNull()
+        {
+            _writer.Write(JsonTypeSerializer.Null, 0, 4);
+        }
+
+        //private void WritePropertyName(char[] value)
+        //{
+        //    if (this._propertyInUse)
+        //    {
+        //        this._writer.Write(',');
+        //    }
+        //    else
+        //    {
+        //        this._propertyInUse = true;
+        //    }
+        //    _writer.Write(value);
+        //    _writer.Write(':');
+        //}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeNameValueCollection(System.Collections.Specialized.NameValueCollection value)
@@ -109,6 +134,7 @@ namespace Zippy.Serialize
             TypeSerializerUtils.TypeCode valueType = TypeSerializerUtils.TypeCode.Empty;
             WriteObjectDelegate writeObject = null;
             Type type = null;
+            Type lastType = null;
             bool flag1 = true;
             bool isTyped = false;
             WriteStartArray();
@@ -126,8 +152,19 @@ namespace Zippy.Serialize
                         //first record.
                         valueType = GetEnumerableValueTypeCode(anEnumerable);
                         writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
-
                         isTyped = valueType != TypeSerializerUtils.TypeCode.NotSetObject;
+
+                        if (!isTyped)
+                        {
+                            //check if generic type and is typed.
+                            type = anEnumerable.GetType();
+                            if (type.IsGenericType)
+                            {
+                                type = type.GetGenericArguments()[0];
+                                isTyped = type != typeof(object);
+                            }
+                        }
+
                         flag1 = false;
                     }
 
@@ -141,8 +178,12 @@ namespace Zippy.Serialize
                         {
                             //is not generic
                             type = value.GetType();
-                            valueType = GetTypeCode(type);
-                            writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
+                            if (type != lastType)
+                            {
+                                lastType = type;
+                                valueType = GetTypeCode(type);
+                                writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueType);
+                            }
                         }
 
                         if (!WriteObjectValue(value, writeObject, type, valueType))
@@ -177,11 +218,17 @@ namespace Zippy.Serialize
             Type valueType = null;
             var currentType = GetArrayValueTypeCode(type);
             bool isTyped = currentType != TypeSerializerUtils.TypeCode.NotSetObject;
+            valueType = type.GetElementType();
+            if (!isTyped)
+            {
+                //check one more time.
+                isTyped = valueType != typeof(object);
+            }
+
             if (isTyped)
             {
                 valueTypeCode = currentType;
                 writeObject = JsonTypeSerializer.GetValueTypeToStringMethod(valueTypeCode);
-                valueType = type.GetElementType();
             }
 
             int len = array.Length;
@@ -479,17 +526,23 @@ namespace Zippy.Serialize
             int len = items.Length;
             try
             {
+                bool isError = false;
                 for (var i = 0; i < len; i++)
                 {
                     IValue item = items[i];
-                    var value = item.GetValue(instance);
-                    if (value != null || !JSON.Options.ShouldExcludeNulls)
-                    {
-                        WritePropertyName(item.NameChar);
+                    isError = false;
+                    var value = item.GetValue(instance, ref isError);
 
-                        if (!WriteObjectValue(value, item.WriteObject, item.ValueType, item.Code))
+                    if (!isError || JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ReportValueAsNull)
+                    {
+                        if (value != null || !JSON.Options.ShouldExcludeNulls)
                         {
-                            return false;
+                            WritePropertyNameFast(item.Name);
+
+                            if (!WriteObjectValue(value, item.WriteObject, item.ValueType, item.Code))
+                            {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -598,17 +651,20 @@ namespace Zippy.Serialize
                     WriteStartObject();
                     try
                     {
-                        var columnType = new Dictionary<System.Data.DataColumn, Tuple<char[], TypeSerializerUtils.TypeCode, WriteObjectDelegate, Type>>();
+                        var columnType = new Dictionary<System.Data.DataColumn, Tuple<string, TypeSerializerUtils.TypeCode, WriteObjectDelegate, Type>>();
                         foreach (System.Data.DataColumn column in cols)
                         {
                             var typeCode = TypeSerializerUtils.GetTypeCode(column.DataType);
-                            columnType.Add(column, new Tuple<char[], TypeSerializerUtils.TypeCode, WriteObjectDelegate, Type>(StringExtension.GetEncodeString(column.ColumnName), typeCode, JsonTypeSerializer.GetValueTypeToStringMethod(typeCode), column.DataType));
+
+                            var columnName = TypeSerializerUtils.BuildPropertyName(column.ColumnName);
+
+                            columnType.Add(column, new Tuple<string, TypeSerializerUtils.TypeCode, WriteObjectDelegate, Type>(columnName, typeCode, JsonTypeSerializer.GetValueTypeToStringMethod(typeCode), column.DataType));
                         }
 
                         foreach (var column in columnType)
                         {
                             //build column name
-                            WritePropertyName(column.Value.Item1);
+                            WritePropertyNameFast(column.Value.Item1);
                             //build column data
                             var value = row[column.Key];
 

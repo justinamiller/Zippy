@@ -25,6 +25,9 @@ namespace Zippy
         }
         public bool PrettyPrint { get; set; }
         public bool ShouldExcludeNulls { get; set; }
+        public SerializationErrorHandling SerializationErrorHandling { get; set; }
+
+        public TextCase TextCase { get; set; }
 
         /// <summary>
         /// ensure format takes account for elastic search

@@ -184,9 +184,10 @@ namespace Zippy.Serialize
 
             char[] offset = null;
             DateTime utcDate = dateTime;
-            if (dateTime.Kind != DateTimeKind.Utc)
+            var kind = dateTime.Kind;
+            if (kind != DateTimeKind.Utc)
             {
-                if (dateTime.Kind == DateTimeKind.Unspecified)
+                if (kind == DateTimeKind.Unspecified)
                 {
                     offset = new char[5] { '-', '0', '0', '0', '0' };
                 }
@@ -198,8 +199,8 @@ namespace Zippy.Serialize
                 //need to convert to utc time
                 utcDate = dateTime.ToUniversalTime();
             }
-
             writer.Write(@"\/Date(");
+       //     writer.Write(_datePrefix, 0, 7);
             var value = (utcDate.Ticks - DatetimeMinTimeTicks) / 10000;
             writer.Write(value.ToString(CultureInfo.InvariantCulture));
             if (offset != null)
@@ -207,7 +208,11 @@ namespace Zippy.Serialize
                 writer.Write(offset);
             }
             writer.Write(@")\/");
+          //  writer.Write(_dateSuffix,0,3);
         }
+
+        private static readonly char[] _datePrefix= new char[7] { '\\', '/', 'D', 'a', 't', 'e', '(' };
+        private static readonly char[] _dateSuffix = new char[3] { ')', '\\','/' };
 
         public void WriteNullableDateTime(TextWriter writer, object dateTime)
         {
@@ -259,7 +264,7 @@ namespace Zippy.Serialize
         public void WriteGuid(TextWriter writer, object oValue)
         {
             writer.Write(QuoteChar);
-            writer.Write(((Guid)oValue).ToString("D"));
+            writer.Write(((Guid)oValue).ToString("D", CultureInfo.InvariantCulture));
             writer.Write(QuoteChar);
         }
 
