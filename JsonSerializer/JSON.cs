@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Zippy.Serialize;
+using Zippy.Serialize.Writers;
 using Zippy.Utility;
 
 namespace Zippy
@@ -23,12 +25,10 @@ namespace Zippy
                 return null;
             }
 
-          //  var writer = StringWriterThreadStatic.Allocate();
-           var writer = new Serialize.Writers.BufferTextWriter();
+            var writer = StringWriterThreadStatic.Allocate();
             new Serializer().SerializeObjectInternal(Object, writer);
-            //var json = StringWriterThreadStatic.ReturnAndFree(writer);
-            var json = "";
-
+            var json = StringWriterThreadStatic.ReturnAndFree(writer);
+  
             if (Options.PrettyPrint)
             {
                 return StringExtension.PrettyPrint(json);
