@@ -15,6 +15,8 @@ namespace Zippy.Serialize.Writers
 
         public override void Write(string value)
         {
+        
+
             //int length = value.Length;
             //char[] chars = new char[length];
             //if (length > 0)

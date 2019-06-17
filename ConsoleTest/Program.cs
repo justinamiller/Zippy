@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,13 +20,14 @@ namespace ConsoleTest
 
     class Program
     {
-
         static void Main(string[] args)
         {
             System.Threading.Thread.Sleep(250);
 
-            //  var c = new SimpleClass(); //new TestObject();
 
+
+            //  var c = new Models.ComplexModelObject();
+            //Zippy.JSON.SerializeObjectToString1(c);
             //var c = new Models.ComplexModelObject();
             //for (var i = 0; i < 10000; i++)
             //{
