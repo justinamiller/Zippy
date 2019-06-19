@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using System.Text;
+using Zippy;
 
 namespace Models
 {
@@ -25,6 +27,11 @@ namespace Models
         public System.Collections.IList Collect = new System.Collections.ArrayList();
 
         public Guid Id = Guid.NewGuid();
+
+        [SwiftDirective(true)]
+        [IgnoreDataMember]
+        public string IGNOREME { get; } = "SHOULD NOT BE SHOWN";
+
 
         public TType Type { get; set; } = TType.Expert;
 

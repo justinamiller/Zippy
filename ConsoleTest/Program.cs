@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,22 +21,33 @@ namespace ConsoleTest
 
     class Program
     {
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Test(Models.ComplexModelObject c)
+        {
+            Zippy.JSON.SerializeObjectToString(c);
+        }
+
         static void Main(string[] args)
         {
             System.Threading.Thread.Sleep(250);
+            ////var c = new Models.ComplexModelObject();
+            ////Zippy.JSON.SerializeObjectToString1(c);
+            ///
 
 
+            var c = new Models.ComplexModelObject();
+            Zippy.JSON.SerializeObjectToString(c);
+            c = new Models.ComplexModelObject();
+            Test(c);
+            return;
 
-            //  var c = new Models.ComplexModelObject();
-            //Zippy.JSON.SerializeObjectToString1(c);
-            //var c = new Models.ComplexModelObject();
-            //for (var i = 0; i < 10000; i++)
-            //{
-            //    Zippy.JSON.SerializeObjectToString(c);
-            //}
-            //Console.WriteLine("DONE");
-            //Console.ReadLine();
-            //return;
+            for (var i = 0; i < 10000; i++)
+            {
+                Zippy.JSON.SerializeObjectToString(c);
+            }
+            Console.WriteLine("DONE");
+            Console.ReadLine();
+            return;
 
             for (var i = 0; i < 10; i++)
             {

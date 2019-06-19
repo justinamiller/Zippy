@@ -192,7 +192,7 @@ namespace Zippy.Utility
             return name;
         }
 
-        public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable)
+        public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable, Type type)
         {
             if (anEnumerable is System.Collections.ArrayList)
             {
@@ -200,11 +200,11 @@ namespace Zippy.Utility
             }
             else if (anEnumerable is System.Collections.IList)
             {
-                return GetIListValueTypeCode(anEnumerable.GetType());
+                return GetIListValueTypeCode(type);
             }
             else if (anEnumerable is Array)
             {
-                return GetArrayValueTypeCode(anEnumerable.GetType());
+                return GetArrayValueTypeCode(type);
             }
             return TypeCode.NotSetObject;
         }

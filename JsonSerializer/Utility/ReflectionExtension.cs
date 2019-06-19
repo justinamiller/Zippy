@@ -324,7 +324,7 @@ namespace Zippy.Utility
             targetMembers.AddRange(GetFields(type, bindingAttr));
             targetMembers.AddRange(GetProperties(type, bindingAttr));
 
-            List<MemberInfo> filterMembers = new List<MemberInfo>(targetMembers.Count);
+            List<MemberInfo> filterMembers = new List<MemberInfo>();
 
             foreach (var member in targetMembers)
             {
@@ -414,6 +414,7 @@ namespace Zippy.Utility
                 return false;
             }
         }
+
 
         /// <summary>
         /// Determines whether the property is an indexed property.
@@ -640,26 +641,91 @@ namespace Zippy.Utility
 
         public static bool ShouldUseMember(this MemberInfo memberInfo)
         {
-            if (IsIndexedProperty(memberInfo))
+            var propInfo = memberInfo as PropertyInfo;
+            if(propInfo != null)
+            {
+                return propInfo.ShouldUseMember();
+            }
+            var fieldInfo= memberInfo as FieldInfo;
+            if (fieldInfo != null)
+            {
+                return fieldInfo.ShouldUseMember();
+            }
+            return false;
+        }
+
+        public static bool ShouldUseMember(this PropertyInfo propertyInfo)
+        {
+            if (IsIndexedProperty(propertyInfo))
             {
                 return false;
             }
 
+            var attributes = propertyInfo.GetCustomAttributes(typeof(Attribute), true);
+            if (attributes.Count() > 0)
+            {
+                foreach (var attr in attributes)
+                {
+                    if (attr is IgnoreDataMemberAttribute)
+                    {
+                        return false;
+                    }
+                    else if ((attr as SwiftDirectiveAttribute)?.Ignore ?? false)
+                    {
+                        return false;
+                    }
+                }
+            }
 
-            var swiftDirectiveAttribute = memberInfo.GetCustomAttributes<SwiftDirectiveAttribute>();
-            if (swiftDirectiveAttribute.Count() > 0) return !swiftDirectiveAttribute.Any(d => d.Ignore);
+            return true;
+        }
 
-            var ignoreDataMemberAttributes = memberInfo.GetCustomAttributes<IgnoreDataMemberAttribute>();
-            return ignoreDataMemberAttributes.Count() == 0;
+        public static bool ShouldUseMember(this FieldInfo fieldInfo)
+        {
+            var attributes = fieldInfo.GetCustomAttributes(typeof(Attribute), true);
+            if (attributes.Count() > 0)
+            {
+                foreach (var attr in attributes)
+                {
+                    if (attr is IgnoreDataMemberAttribute)
+                    {
+                        return false;
+                    }
+                    else if ((attr as SwiftDirectiveAttribute)?.Ignore ?? false)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         public static string GetSerializationName(this MemberInfo member)
         {
-            var swiftDirectiveAttr = member.GetCustomAttribute<SwiftDirectiveAttribute>();
-            if (swiftDirectiveAttr != null && swiftDirectiveAttr.Name != null) return swiftDirectiveAttr.Name;
-
-            var dataMemberAttr = member.GetCustomAttribute<DataMemberAttribute>();
-            if (dataMemberAttr != null && dataMemberAttr.Name != null) return dataMemberAttr.Name;
+            var attributes = member.GetCustomAttributes(typeof(Attribute), true);
+            if (attributes.Count() > 0)
+            {
+                foreach (var attr in attributes)
+                {
+                    if (attr is SwiftDirectiveAttribute)
+                    {
+                        SwiftDirectiveAttribute temp = (SwiftDirectiveAttribute)attr;
+                        if (temp.Name.IsNullOrEmpty())
+                        {
+                            return temp.Name;
+                        }
+                    }
+                    else if (attr is DataMemberAttribute)
+                    {
+                        DataMemberAttribute temp = (DataMemberAttribute)attr;
+                        if (temp.Name.IsNullOrEmpty())
+                        {
+                            return temp.Name;
+                        }
+                    }
+                }
+            }
 
             return member.Name;
         }

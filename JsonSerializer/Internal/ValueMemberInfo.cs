@@ -13,7 +13,6 @@ namespace Zippy.Internal
 
         public TypeSerializerUtils.TypeCode Code { get; }
 
-        public WriteObjectDelegate WriteObject { get; }
 
         public string Name { get; }
 
@@ -36,7 +35,6 @@ namespace Zippy.Internal
             if (ValueType != null)
             {
                 this.Code = Utility.TypeSerializerUtils.GetTypeCode(ValueType);
-                WriteObject = JsonTypeSerializer.GetValueTypeToStringMethod(Code);
 
                 var name = memberInfo.GetSerializationName();
                 this.Name = TypeSerializerUtils.BuildPropertyName(name);

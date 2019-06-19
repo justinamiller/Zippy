@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using Zippy.Internal;
 using Zippy.Utility;
+using System.Text;
+using System.IO;
 
 namespace Zippy.Serialize
 {
+
     class LambdaJsonSerializerStrategy : IJsonSerializerStrategy
     {
         public IDictionary<Type, ValueMemberInfo[]> GetCache;

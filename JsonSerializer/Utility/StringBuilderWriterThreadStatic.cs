@@ -14,16 +14,13 @@ namespace Zippy.Utility
             var ret = s_Cache;
             if (ret == null)
             {
-                return new StringBuilderWriter(256);//StringWriter(new StringBuilder(512),CultureInfo.InvariantCulture);
+                return new StringBuilderWriter(256);
             }
             else
             {
-                //  var sb = ret.GetStringBuilder();
-                //sb.Length = 0;
                 ret.Clear();
+                s_Cache = null;  //don't re-issue cached instance until it's freed
             }
-
-            s_Cache = null;  //don't re-issue cached instance until it's freed
             return ret;
         }
 
