@@ -34,13 +34,13 @@ namespace Zippy.Utility
             return dateTime.ToUniversalTime();
         }
 
-        readonly static IList<char[]> _time = new List<char[]>();
+        private readonly static char[][] _time = new char[60][];
 
         static DateTimeExtension()
         {
             for (var i = 0; i < 60; i++)
             {
-                _time.Add(i.ToString().ToCharArray());
+                _time[i] = i.ToString().ToCharArray();
             }
         }
 
@@ -94,6 +94,108 @@ namespace Zippy.Utility
             }
 
             return items;
+        }
+
+        public static char[] ToTimeSpanChars(this TimeSpan value)
+        {
+            // 00:00:00.0848510
+            //10675199.02:48:05.4775807
+            char[] buffer = new char[26];
+            int index = 0;
+                long ticks = value.Ticks;
+                int day = (int)(ticks / TimeSpan.TicksPerDay);
+            long time = ticks % TimeSpan.TicksPerDay;
+
+
+            int hours = (int)(time / TimeSpan.TicksPerHour % 24);
+            int minutes = (int)(time / TimeSpan.TicksPerMinute % 60);
+            int seconds = (int)(time / TimeSpan.TicksPerSecond % 60);
+            int fraction = (int)(time % TimeSpan.TicksPerSecond);
+
+            if (ticks < 0)
+            {
+                buffer[index++] = '-';
+            }
+
+            if (day > 0)
+            {
+                if (9 >= day)
+                {
+                    buffer[index++] = '0';
+                    buffer[index++] = MathUtils.charNumbers[day];
+                }
+                else if(59>=day)
+                {
+                    var temp = _time[day];
+                    buffer[index++] = temp[0];
+                    buffer[index++] = temp[1];
+                }
+                buffer[index++] = '.';
+            }
+
+            if (9 >= hours)
+            {
+                buffer[index++] = '0';
+                buffer[index++] = MathUtils.charNumbers[hours];
+            }
+            else
+            {
+                var temp = _time[hours];
+                buffer[index++] = temp[0];
+                buffer[index++] = temp[1];
+            }
+            buffer[index++] = ':';
+
+            if (9 >= minutes)
+            {
+                buffer[index++] = '0';
+                buffer[index++] = MathUtils.charNumbers[minutes];
+            }
+            else
+            {
+                var temp = _time[minutes];
+                buffer[index++] = temp[0];
+                buffer[index++] = temp[1];
+            }
+            buffer[index++] = ':';
+
+            if (9 >= seconds)
+            {
+                buffer[index++] = '0';
+                buffer[index++] = MathUtils.charNumbers[seconds];
+            }
+            else
+            {
+                var temp = _time[seconds];
+                buffer[index++] = temp[0];
+                buffer[index++] = temp[1];
+            }
+
+            if (fraction > 0)
+            {
+                buffer[index++] = '.';
+
+
+                int effectiveDigits = 7 - MathUtils.IntLength((ulong)fraction);
+
+                for (var i = 0; i < effectiveDigits; i++)
+                {
+                    buffer[index++] = '0';
+                }
+                var temp = MathUtils.WriteNumberToBuffer((uint)fraction, false);
+                int tempLen = temp.Length;
+                Array.Copy(temp, 0, buffer, index, tempLen);
+                index += tempLen;
+            }
+
+            if (index != 26)
+            {
+                var temp = new char[index];
+                Array.Copy(buffer, 0, temp, 0, index);
+                return temp;
+            }
+
+            return buffer;
         }
     }
 }

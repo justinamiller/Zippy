@@ -28,7 +28,7 @@ namespace Zippy
             var writer = StringWriterThreadStatic.Allocate();
             new Serializer().SerializeObjectInternal(Object, writer);
             var json = StringWriterThreadStatic.ReturnAndFree(writer);
-  
+
             if (Options.PrettyPrint)
             {
                 return StringExtension.PrettyPrint(json);

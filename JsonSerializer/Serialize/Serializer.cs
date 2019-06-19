@@ -22,7 +22,6 @@ namespace Zippy.Serialize
         // The following logic performs circular reference detection
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private int _currentDepth = 0;
-    //    private TextWriter _writer;
         private JsonWriter _jsonWriter;
 
         public Serializer()
@@ -468,11 +467,13 @@ namespace Zippy.Serialize
                 _jsonWriter.WriteNull();
                 return true;
             }
-            if (_jsonWriter.WriteValueTypeToStringMethod(valueTypeCode, value))
+
+            if (valueTypeCode >= TypeSerializerUtils.TypeCode.NotSetObject)
             {
-                return true;
+                return SerializeNonPrimitiveValue(value, type, valueTypeCode);
             }
-            return SerializeNonPrimitiveValue(value, type, valueTypeCode);
+
+            return _jsonWriter.WriteValueTypeToStringMethod(valueTypeCode, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

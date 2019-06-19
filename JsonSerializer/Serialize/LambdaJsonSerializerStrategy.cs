@@ -37,7 +37,9 @@ namespace Zippy.Serialize
 
             if (dataIndex != len)
             {
-                Array.Resize(ref data, dataIndex);
+                var temp = new ValueMemberInfo[dataIndex];
+                Array.Copy(temp, 0, data, 0, dataIndex);
+                return temp;
             }
 
             return data;

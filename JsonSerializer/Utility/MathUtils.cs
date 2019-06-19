@@ -9,6 +9,16 @@ namespace Zippy.Utility
             '0','1','2','3','4','5','6','7','8','9'
    };
 
+        public static int GetIntLength(this ulong n)
+        {
+            int digits = 0;
+            do {
+                ++digits;
+                n /= 10;
+            }
+            while (n != 0);
+            return digits;
+        }
 
         public static int IntLength(ulong i)
         {
@@ -120,6 +130,68 @@ namespace Zippy.Utility
             }
 
             return text + ".0";
+        }
+
+        public static char[] WriteNumberToBuffer(uint value, bool negative)
+        {
+          int  totalLength = MathUtils.IntLength(value);
+            if (negative)
+            {
+                totalLength++;
+            }
+            char[] buffer = new char[totalLength];
+
+            if (negative)
+            {
+                totalLength++;
+                buffer[0] = '-';
+            }
+
+            int index = totalLength;
+
+            do
+            {
+                uint quotient = value / 10;
+                uint digit = value - (quotient * 10);
+                buffer[--index] = MathUtils.charNumbers[digit];
+                value = quotient;
+            } while (value != 0);
+
+            return buffer;
+        }
+
+        public static char[] WriteNumberToBuffer(ulong value, bool negative)
+        {
+            if (value <= uint.MaxValue)
+            {
+                // avoid the 64 bit division if possible
+                return WriteNumberToBuffer((uint)value, negative);
+            }
+
+           int  totalLength = MathUtils.IntLength(value);
+            if (negative)
+            {
+                totalLength++;
+            }
+            char[] buffer = new char[totalLength];
+
+            if (negative)
+            {
+                totalLength++;
+                buffer[0] = '-';
+            }
+
+            int index = totalLength;
+
+            do
+            {
+                ulong quotient = value / 10;
+                ulong digit = value - (quotient * 10);
+                buffer[--index] = MathUtils.charNumbers[digit];
+                value = quotient;
+            } while (value != 0);
+
+            return buffer;
         }
     }
 }

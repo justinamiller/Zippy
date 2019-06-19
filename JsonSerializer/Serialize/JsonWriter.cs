@@ -96,15 +96,10 @@ namespace Zippy.Serialize
 
         public bool WriteValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode, object value)
         {
-            if (typeCode >= TypeSerializerUtils.TypeCode.NotSetObject)
-            {
-                return false;
-            }
-
             switch (typeCode)
             {
                 case TypeSerializerUtils.TypeCode.String:
-                    WriteString(value);
+                    WriteString((string)value);
                     break;
                 case TypeSerializerUtils.TypeCode.CharNullable:
                 case TypeSerializerUtils.TypeCode.Char:
@@ -113,6 +108,20 @@ namespace Zippy.Serialize
                 case TypeSerializerUtils.TypeCode.BooleanNullable:
                 case TypeSerializerUtils.TypeCode.Boolean:
                     WriteBool(value);
+                    break;
+                case TypeSerializerUtils.TypeCode.Int32Nullable:
+                case TypeSerializerUtils.TypeCode.Int32:
+                    WriteInt32(value);
+                    break;
+                case TypeSerializerUtils.TypeCode.DateTime:
+                    WriteDateTime(value);
+                    break;
+                case TypeSerializerUtils.TypeCode.Guid:
+                    WriteGuid(value);
+                    break;
+                case TypeSerializerUtils.TypeCode.DoubleNullable:
+                case TypeSerializerUtils.TypeCode.Double:
+                    WriteDouble(value);
                     break;
                 case TypeSerializerUtils.TypeCode.SByteNullable:
                 case TypeSerializerUtils.TypeCode.SByte:
@@ -125,10 +134,6 @@ namespace Zippy.Serialize
                 case TypeSerializerUtils.TypeCode.UInt16Nullable:
                 case TypeSerializerUtils.TypeCode.UInt16:
                     WriteUInt16(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Int32Nullable:
-                case TypeSerializerUtils.TypeCode.Int32:
-                    WriteInt32(value);
                     break;
                 case TypeSerializerUtils.TypeCode.ByteNullable:
                 case TypeSerializerUtils.TypeCode.Byte:
@@ -150,15 +155,8 @@ namespace Zippy.Serialize
                 case TypeSerializerUtils.TypeCode.Single:
                     WriteFloat(value);
                     break;
-                case TypeSerializerUtils.TypeCode.DoubleNullable:
-                case TypeSerializerUtils.TypeCode.Double:
-                    WriteDouble(value);
-                    break;
                 case TypeSerializerUtils.TypeCode.DateTimeNullable:
                     WriteNullableDateTime(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DateTime:
-                    WriteDateTime(value);
                     break;
                 case TypeSerializerUtils.TypeCode.DateTimeOffsetNullable:
                     WriteNullableDateTimeOffset(value);
@@ -172,9 +170,6 @@ namespace Zippy.Serialize
                     break;
                 case TypeSerializerUtils.TypeCode.GuidNullable:
                     WriteNullableGuid(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Guid:
-                    WriteGuid(value);
                     break;
                 case TypeSerializerUtils.TypeCode.TimeSpanNullable:
                     WriteNullableTimeSpan(value);
@@ -228,13 +223,6 @@ namespace Zippy.Serialize
             _writer.Write(QuoteChar);
             _writer.Write(value);
             _writer.Write(QuoteChar);
-        }
-
-
-        public void WriteString( object value)
-        {
-            //  WriteString1 value);
-            WriteString( (string)value);
         }
 
         public void WriteString( string value)
@@ -300,7 +288,7 @@ namespace Zippy.Serialize
                     offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString();
                 }
 
-                //need to convert to utc time
+               // need to convert to utc time
                 utcDate = dateTime.ToUniversalTime();
             }
             writer.Write(@"\/Date(");
@@ -315,8 +303,8 @@ namespace Zippy.Serialize
           //  _writer.Write(_dateSuffix,0,3);
         }
 
-        private static readonly char[] _datePrefix= new char[7] { '\\', '/', 'D', 'a', 't', 'e', '(' };
-        private static readonly char[] _dateSuffix = new char[3] { ')', '\\','/' };
+        //private static readonly char[] _datePrefix= new char[7] { '\\', '/', 'D', 'a', 't', 'e', '(' };
+        //private static readonly char[] _dateSuffix = new char[3] { ')', '\\','/' };
 
         public void WriteNullableDateTime( object dateTime)
         {
@@ -353,7 +341,9 @@ namespace Zippy.Serialize
         public void WriteTimeSpan( object oTimeSpan)
         {
             _writer.Write(QuoteChar);
-            _writer.Write(((TimeSpan)oTimeSpan).ToString());
+            // _writer.Write(((TimeSpan)oTimeSpan).ToString());
+            _writer.Write(((TimeSpan)oTimeSpan).ToTimeSpanChars());
+
             _writer.Write(QuoteChar);
         }
 
@@ -512,9 +502,9 @@ namespace Zippy.Serialize
             }
             else
             {
-                writer.Write(value.ToString());
-                // bool negative = value < 0;
-                //WriteIntegerValue negative ? (uint)-value : (uint)value, negative);
+             //  writer.Write(value.ToString());
+                bool negative = value < 0;
+                WriteIntegerValue(writer, negative ? (uint)-value : (uint)value, negative);
             }
         }
 
@@ -526,9 +516,8 @@ namespace Zippy.Serialize
             }
             else
             {
-                int length = 0;
-                var buffer = WriteNumberToBuffer(value, negative, ref length);
-                writer.Write(buffer, 0, length);
+                var buffer = MathUtils.WriteNumberToBuffer(value, negative);
+                writer.Write(buffer);
             }
         }
 
@@ -540,9 +529,9 @@ namespace Zippy.Serialize
             }
             else
             {
-                writer.Write(value.ToString());
-                // bool negative = value < 0;
-                //WriteIntegerValue negative ? (ulong)-value : (ulong)value, negative);
+                //writer.Write(value.ToString());
+                bool negative = value < 0;
+                WriteIntegerValue(writer,negative ? (ulong)-value : (ulong)value, negative);
             }
         }
 
@@ -554,9 +543,9 @@ namespace Zippy.Serialize
             }
             else
             {
-                writer.Write(value.ToString());
-                // bool negative = value < 0;
-                //WriteIntegerValue negative ? (ulong)-value : (ulong)value, negative);
+                //    writer.Write(value.ToString());
+
+                WriteIntegerValue(writer, (ulong)value, false);
             }
         }
 
@@ -568,65 +557,9 @@ namespace Zippy.Serialize
             }
             else
             {
-                int length = 0;
-                var buffer = WriteNumberToBuffer(value, negative, ref length);
-                writer.Write(buffer, 0, length);
+                var buffer = MathUtils.WriteNumberToBuffer(value, negative);
+                writer.Write(buffer);
             }
-        }
-
-        private static char[] WriteNumberToBuffer(uint value, bool negative, ref int totalLength)
-        {
-            char[] buffer = new char[35];
-            totalLength = MathUtils.IntLength(value);
-
-            if (negative)
-            {
-                totalLength++;
-                buffer[0] = '-';
-            }
-
-            int index = totalLength;
-
-            do
-            {
-                uint quotient = value / 10;
-                uint digit = value - (quotient * 10);
-                buffer[--index] = MathUtils.charNumbers[digit];
-                value = quotient;
-            } while (value != 0);
-
-            return buffer;
-        }
-
-        private static char[] WriteNumberToBuffer(ulong value, bool negative, ref int totalLength)
-        {
-            if (value <= uint.MaxValue)
-            {
-                // avoid the 64 bit division if possible
-                return WriteNumberToBuffer((uint)value, negative, ref totalLength);
-            }
-
-            totalLength = MathUtils.IntLength(value);
-
-            char[] buffer = new char[totalLength + 1];
-
-            if (negative)
-            {
-                totalLength++;
-                buffer[0] = '-';
-            }
-
-            int index = totalLength;
-
-            do
-            {
-                ulong quotient = value / 10;
-                ulong digit = value - (quotient * 10);
-                buffer[--index] = MathUtils.charNumbers[digit];
-                value = quotient;
-            } while (value != 0);
-
-            return buffer;
         }
     }
 }

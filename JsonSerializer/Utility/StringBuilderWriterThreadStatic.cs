@@ -18,7 +18,6 @@ namespace Zippy.Utility
             }
             else
             {
-                ret.Clear();
                 s_Cache = null;  //don't re-issue cached instance until it's freed
             }
             return ret;
@@ -32,6 +31,7 @@ namespace Zippy.Utility
         public static string ReturnAndFree(StringBuilderWriter writer)
         {
             var ret = writer.ToString();
+            writer.Clear();
             s_Cache = writer;
             return ret;
         }

@@ -64,11 +64,11 @@ namespace Zippy.Utility
                 array = new T[newSize];
                 return;
             }
-
-            if (array2.Length != newSize)
+            int len = array2.Length;
+            if (len != newSize)
             {
                 T[] array3 = new T[newSize];
-                Buffer.BlockCopy(array2, 0, array3, 0, (array2.Length > newSize) ? newSize : array2.Length);
+                Buffer.BlockCopy(array2, 0, array3, 0, (len > newSize) ? newSize : len);
                 array = array3;
             }
         }
