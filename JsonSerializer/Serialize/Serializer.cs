@@ -351,6 +351,10 @@ namespace Zippy.Serialize
                     {
                         lastKeyType = keyType;
                         keyTypeCode = TypeSerializerUtils.GetTypeCode(keyType);
+                        if (keyTypeCode != TypeSerializerUtils.TypeCode.String)
+                        {
+                            return false;
+                        }
                     }
 
                     if (ranOnce)
