@@ -361,9 +361,9 @@ namespace Zippy.Serialize
                     {
                         _jsonWriter.WriteComma();
                     }
+                    string name = Convert.ToString(key, JsonWriter.CurrentCulture);
+                    _jsonWriter.WritePropertyName(name);
 
-                    WriteObjectValue(key, keyType, keyTypeCode);
-                    _jsonWriter.WritePropertySeperator();
 
                     if (dictionaryValue == null)
                     {
