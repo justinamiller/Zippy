@@ -96,6 +96,29 @@ namespace Zippy.Utility
             return items;
         }
 
+        public static long ToUniversalTicks(this DateTime dateTime, TimeSpan offset)
+        {
+            // special case min and max value
+            // they never have a timezone appended to avoid issues
+            if (dateTime.Kind == DateTimeKind.Utc || dateTime == DateTime.MaxValue || dateTime == DateTime.MinValue)
+            {
+                return dateTime.Ticks;
+            }
+
+            long ticks = dateTime.Ticks - offset.Ticks;
+            if (ticks > 3155378975999999999L)
+            {
+                return 3155378975999999999L;
+            }
+
+            if (ticks < 0L)
+            {
+                return 0L;
+            }
+
+            return ticks;
+        }
+
         public static char[] ToTimeSpanChars(this TimeSpan value)
         {
             // 00:00:00.0848510

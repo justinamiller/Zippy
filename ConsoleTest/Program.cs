@@ -24,7 +24,8 @@ namespace ConsoleTest
         [MethodImpl(MethodImplOptions.NoInlining)]
         static void Test(Models.ComplexModelObject c)
         {
-            Zippy.JSON.SerializeObjectToString(c);
+            //Zippy.JSON.SerializeObjectToString(c);
+            Zippy.JSON.SerializeObjectToStringNullWriter(c);
         }
 
         static void Main(string[] args)
@@ -35,11 +36,11 @@ namespace ConsoleTest
             ///
 
 
-            //var c = new Models.ComplexModelObject();
-            //Zippy.JSON.SerializeObjectToString(c);
-            //c = new Models.ComplexModelObject();
-            //Test(c);
-            //return;
+            var c = new Models.ComplexModelObject();
+            Zippy.JSON.SerializeObjectToString(c);
+            c = new Models.ComplexModelObject();
+            Test(c);
+            return;
 
             //for (var i = 0; i < 10000; i++)
             //{

@@ -28,7 +28,7 @@ namespace Zippy.Serialize
         {
             _writer = writer;
         }
-        
+
         public bool IsValid()
         {
             return _arrayIndex == 0 && _objectIndex == 0;
@@ -80,7 +80,7 @@ namespace Zippy.Serialize
             {
                 this._propertyInUse = true;
             }
-           _writer.Write(value);
+            _writer.Write(value);
         }
 
         public void WritePropertyName(string value)
@@ -223,14 +223,14 @@ namespace Zippy.Serialize
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="value"></param>
-        public void WriteRawString( char[] value)
+        public void WriteRawString(char[] value)
         {
             _writer.Write(QuoteChar);
             _writer.Write(value);
             _writer.Write(QuoteChar);
         }
 
-        public void WriteString( string value)
+        public void WriteString(string value)
         {
             if (value == null)
             {
@@ -249,19 +249,55 @@ namespace Zippy.Serialize
             }
         }
 
-        public void WriteException( object value)
+        public void WriteException(object value)
         {
-            WriteString( ((Exception)value).Message);
+            WriteString(((Exception)value).Message);
         }
 
-        public void WriteDateTime( object oDateTime)
+        public void WriteDateTime(object oDateTime)
         {
             _writer.Write(QuoteChar);
+            //WriteJsonDate(_writer, DateTime.Now);
+          //  WriteJsonDate2(_writer, DateTime.Now);
+
             WriteJsonDate(_writer,(DateTime)oDateTime);
+
             _writer.Write(QuoteChar);
         }
 
-        private  static void WriteJsonDate(TextWriter writer, DateTime dateTime)
+
+
+        private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
+        {
+            switch (JSON.Options.DateHandler)
+            {
+                case DateHandler.ISO8601:
+                    writer.Write(dateTime.ToString("o", CurrentCulture));
+                    return;
+                case DateHandler.ISO8601DateOnly:
+                    writer.Write(dateTime.ToString("yyyy-MM-dd", CurrentCulture));
+                    return;
+                case DateHandler.ISO8601DateTime:
+                    writer.Write(dateTime.ToString("yyyy-MM-dd HH:mm:ss", CurrentCulture));
+                    return;
+                case DateHandler.RFC1123:
+                    writer.Write(dateTime.ToUniversalTime().ToString("R", CurrentCulture));
+                    return;
+            }
+
+            var offset = LocalTimeZone.GetUtcOffset(dateTime);
+            var ticks = dateTime.ToUniversalTicks(offset);
+            long value = unchecked((ticks - DatetimeMinTimeTicks) / 10000);
+
+            writer.Write(@"\/Date(");
+            //     _writer.Write(_datePrefix, 0, 7);
+            writer.Write(MathUtils.WriteNumberToBuffer((uint)value, false));
+            writer.Write(offset.ToTimeOffsetString());
+            writer.Write(@")\/");
+            //  _writer.Write(_dateSuffix,0,3);
+        }
+
+        private static void WriteJsonDateOld(TextWriter writer, DateTime dateTime)
         {
             switch (JSON.Options.DateHandler)
             {
@@ -293,57 +329,54 @@ namespace Zippy.Serialize
                     offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString();
                 }
 
-               // need to convert to utc time
+                // need to convert to utc time
                 utcDate = dateTime.ToUniversalTime();
             }
             writer.Write(@"\/Date(");
-       //     _writer.Write(_datePrefix, 0, 7);
+            //     _writer.Write(_datePrefix, 0, 7);
             var value = (utcDate.Ticks - DatetimeMinTimeTicks) / 10000;
             writer.Write(value.ToString(CurrentCulture));
-            if (offset != null)
-            {
-                writer.Write(offset);
-            }
+            writer.Write(offset);
             writer.Write(@")\/");
-          //  _writer.Write(_dateSuffix,0,3);
+            //  _writer.Write(_dateSuffix,0,3);
         }
 
         //private static readonly char[] _datePrefix= new char[7] { '\\', '/', 'D', 'a', 't', 'e', '(' };
         //private static readonly char[] _dateSuffix = new char[3] { ')', '\\','/' };
 
-        public void WriteNullableDateTime( object dateTime)
+        public void WriteNullableDateTime(object dateTime)
         {
             if (dateTime == null)
                 WriteNull();
             else
-                WriteDateTime( dateTime);
+                WriteDateTime(dateTime);
         }
 
-        public void WriteDateTimeOffset( object oDateTimeOffset)
+        public void WriteDateTimeOffset(object oDateTimeOffset)
         {
             _writer.Write(QuoteChar);
             _writer.Write(((DateTimeOffset)oDateTimeOffset).ToString("o", CurrentCulture));
             _writer.Write(QuoteChar);
         }
 
-        public void WriteNullableDateTimeOffset( object dateTimeOffset)
+        public void WriteNullableDateTimeOffset(object dateTimeOffset)
         {
             if (dateTimeOffset == null)
                 WriteNull();
             else
-                WriteDateTimeOffset( dateTimeOffset);
+                WriteDateTimeOffset(dateTimeOffset);
         }
 
-        public void WriteUri( object uri)
+        public void WriteUri(object uri)
         {
             if (uri == null)
                 WriteNull();
             else
-                WriteString( ((Uri)uri).OriginalString);
+                WriteString(((Uri)uri).OriginalString);
         }
 
 
-        public void WriteTimeSpan( object oTimeSpan)
+        public void WriteTimeSpan(object oTimeSpan)
         {
             _writer.Write(QuoteChar);
             // _writer.Write(((TimeSpan)oTimeSpan).ToString());
@@ -352,7 +385,7 @@ namespace Zippy.Serialize
             _writer.Write(QuoteChar);
         }
 
-        public void WriteNullableTimeSpan( object oTimeSpan)
+        public void WriteNullableTimeSpan(object oTimeSpan)
         {
             if (oTimeSpan == null)
                 WriteNull();
@@ -360,32 +393,32 @@ namespace Zippy.Serialize
                 WriteTimeSpan(oTimeSpan);
         }
 
-        public void WriteGuid( object oValue)
+        public void WriteGuid(object oValue)
         {
             _writer.Write(QuoteChar);
             _writer.Write(((Guid)oValue).ToString("D", CurrentCulture));
             _writer.Write(QuoteChar);
         }
 
-        public void WriteNullableGuid( object oValue)
+        public void WriteNullableGuid(object oValue)
         {
             if (oValue == null) return;
             WriteGuid(oValue);
         }
 
-        public void WriteBytes( object oByteValue)
+        public void WriteBytes(object oByteValue)
         {
             if (oByteValue == null) return;
             WriteRawString(Convert.ToBase64String((byte[])oByteValue));
         }
 
         internal readonly static char[] Null = new char[4] { 'n', 'u', 'l', 'l' };
-        public void WriteNull( )
+        public void WriteNull()
         {
             _writer.Write(Null, 0, 4);
         }
 
-        public void WriteChar( object charValue)
+        public void WriteChar(object charValue)
         {
             if (charValue == null)
                 WriteNull();
@@ -393,15 +426,15 @@ namespace Zippy.Serialize
                 WriteString(((char)charValue).ToString());
         }
 
-        public void WriteByte( object byteValue)
+        public void WriteByte(object byteValue)
         {
             if (byteValue == null)
                 WriteNull();
             else
-                WriteIntegerValue (_writer, (byte)byteValue);
+                WriteIntegerValue(_writer, (byte)byteValue);
         }
 
-        public void WriteSByte( object sbyteValue)
+        public void WriteSByte(object sbyteValue)
         {
             if (sbyteValue == null)
                 WriteNull();
@@ -409,7 +442,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (sbyte)sbyteValue);
         }
 
-        public void WriteInt16( object intValue)
+        public void WriteInt16(object intValue)
         {
             if (intValue == null)
                 WriteNull();
@@ -417,7 +450,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (short)intValue);
         }
 
-        public void WriteUInt16( object intValue)
+        public void WriteUInt16(object intValue)
         {
             if (intValue == null)
                 WriteNull();
@@ -425,7 +458,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (ushort)intValue);
         }
 
-        public void WriteInt32( object intValue)
+        public void WriteInt32(object intValue)
         {
             if (intValue == null)
             {
@@ -437,7 +470,7 @@ namespace Zippy.Serialize
             }
         }
 
-        public void WriteUInt32( object uintValue)
+        public void WriteUInt32(object uintValue)
         {
             if (uintValue == null)
                 WriteNull();
@@ -445,7 +478,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (uint)uintValue);
         }
 
-        public void WriteInt64( object integerValue)
+        public void WriteInt64(object integerValue)
         {
             if (integerValue == null)
                 WriteNull();
@@ -453,7 +486,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (long)integerValue);
         }
 
-        public void WriteUInt64( object ulongValue)
+        public void WriteUInt64(object ulongValue)
         {
             if (ulongValue == null)
             {
@@ -463,7 +496,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (ulong)ulongValue);
         }
 
-        public void WriteBool( object boolValue)
+        public void WriteBool(object boolValue)
         {
             if (boolValue == null)
                 WriteNull();
@@ -471,7 +504,7 @@ namespace Zippy.Serialize
                 _writer.Write(((bool)boolValue) ? "true" : "false");
         }
 
-        public void WriteFloat( object floatValue)
+        public void WriteFloat(object floatValue)
         {
             if (floatValue == null)
                 WriteNull();
@@ -481,7 +514,7 @@ namespace Zippy.Serialize
             }
         }
 
-        public void WriteDouble( object doubleValue)
+        public void WriteDouble(object doubleValue)
         {
             if (doubleValue == null)
                 WriteNull();
@@ -491,7 +524,7 @@ namespace Zippy.Serialize
             }
         }
 
-        public void WriteDecimal( object decimalValue)
+        public void WriteDecimal(object decimalValue)
         {
             if (decimalValue == null)
                 WriteNull();
@@ -507,7 +540,7 @@ namespace Zippy.Serialize
             }
             else
             {
-             //  writer.Write(value.ToString());
+                //  writer.Write(value.ToString());
                 bool negative = value < 0;
                 WriteIntegerValue(writer, negative ? (uint)-value : (uint)value, negative);
             }
@@ -536,7 +569,7 @@ namespace Zippy.Serialize
             {
                 //writer.Write(value.ToString());
                 bool negative = value < 0;
-                WriteIntegerValue(writer,negative ? (ulong)-value : (ulong)value, negative);
+                WriteIntegerValue(writer, negative ? (ulong)-value : (ulong)value, negative);
             }
         }
 
