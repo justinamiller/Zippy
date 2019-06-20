@@ -35,11 +35,11 @@ namespace ConsoleTest
             ///
 
 
-            var c = new Models.ComplexModelObject();
-            Zippy.JSON.SerializeObjectToString(c);
-            c = new Models.ComplexModelObject();
-            Test(c);
-            return;
+            //var c = new Models.ComplexModelObject();
+            //Zippy.JSON.SerializeObjectToString(c);
+            //c = new Models.ComplexModelObject();
+            //Test(c);
+            //return;
 
             //for (var i = 0; i < 10000; i++)
             //{
@@ -227,13 +227,47 @@ namespace ConsoleTest
             for (var i = 0; i < testCount; i++)
             {
                 Zippy.JSON.SerializeObject(c, sb2);
+                    sw.Stop();
                sb2.GetStringBuilder().Length = 0;
+                    sw.Start();
             }
             data.Add(new Tuple<string, double, string>("Zippy-StringWriter", sw.Elapsed.TotalMilliseconds, json));
             }
             catch(Exception ex)
             {
                 data.Add(new Tuple<string, double, string>("Zippy-StringWriter", Int16.MaxValue,ex.ToString()));
+            }
+
+            try
+            {
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    Zippy.JSON.SerializeObjectToStringNullWriter(c);
+                }
+                data.Add(new Tuple<string, double, string>("Zippy-NullWriter", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("Zippy-NullWriter", Int16.MaxValue, ex.ToString()));
+            }
+
+            try
+            {
+                var buffer = new Zippy.Serialize.Writers.BufferTextWriter();
+                sw.Restart();
+                for (var i = 0; i < testCount; i++)
+                {
+                    Zippy.JSON.SerializeObject(c, buffer);
+                    sw.Stop();
+                    buffer = new Zippy.Serialize.Writers.BufferTextWriter();
+                    sw.Start();
+                }
+                data.Add(new Tuple<string, double, string>("Zippy-BufferText", sw.Elapsed.TotalMilliseconds, json));
+            }
+            catch (Exception ex)
+            {
+                data.Add(new Tuple<string, double, string>("Zippy-BufferText", Int16.MaxValue, ex.ToString()));
             }
 
             foreach (var item in data.OrderBy(v => v.Item2))

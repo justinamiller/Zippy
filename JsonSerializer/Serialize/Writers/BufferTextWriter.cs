@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Zippy.Serialize.Writers
 {
-    sealed class BufferTextWriter : TextWriter
+    public sealed class BufferTextWriter : TextWriter
     {
         private char[] _buffer = new char[1000];
         int _bufferIndex = 0;
@@ -33,21 +33,29 @@ namespace Zippy.Serialize.Writers
             //        }
             //    }
             //}
-            //unsafe
-            //{
-            //    fixed (char* src = value)
-            //    {
-                    
-            //    }
-            //}
-          
+            unsafe
+            {
+              //  char c;
+                int strLength = value.Length;
+                fixed (char* pString = value)
+                {
+                    char* pChar = pString;
+                    for (int i = 0; i < strLength; i++)
+                    {
+                       // c = *pChar;
+                        _buffer[++_bufferIndex] = *pChar;
+                        pChar++;
+                    }
+                }
+            }
 
 
 
-                var buffer = value.ToCharArray();
-            int count = buffer.Length;
-            Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
-            _bufferIndex += count;
+
+            //var buffer = value.ToCharArray();
+            //int count = buffer.Length;
+            //Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
+            //_bufferIndex += count;
             //foreach (var v in value)
             //{
             //    _buffer[++_bufferIndex] = v;
