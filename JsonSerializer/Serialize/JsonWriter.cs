@@ -257,11 +257,8 @@ namespace Zippy.Serialize
         public void WriteDateTime(object oDateTime)
         {
             _writer.Write(QuoteChar);
-            //WriteJsonDate(_writer, DateTime.Now);
-          //  WriteJsonDate2(_writer, DateTime.Now);
-
-            WriteJsonDate(_writer,(DateTime)oDateTime);
-
+           WriteJsonDate(_writer,(DateTime)oDateTime);
+       //    WriteJsonDateOld(_writer, (DateTime)oDateTime);
             _writer.Write(QuoteChar);
         }
 
@@ -284,14 +281,14 @@ namespace Zippy.Serialize
                     writer.Write(dateTime.ToUniversalTime().ToString("R", CurrentCulture));
                     return;
             }
-
             var offset = LocalTimeZone.GetUtcOffset(dateTime);
             var ticks = dateTime.ToUniversalTicks(offset);
             long value = unchecked((ticks - DatetimeMinTimeTicks) / 10000);
 
             writer.Write(@"\/Date(");
             //     _writer.Write(_datePrefix, 0, 7);
-            writer.Write(MathUtils.WriteNumberToBuffer((uint)value, false));
+      //      writer.Write(MathUtils.WriteNumberToBuffer((uint)value, false));
+           writer.Write(value.ToString(CurrentCulture));
             writer.Write(offset.ToTimeOffsetString());
             writer.Write(@")\/");
             //  _writer.Write(_dateSuffix,0,3);
@@ -315,20 +312,11 @@ namespace Zippy.Serialize
                     return;
             }
 
-            char[] offset = null;
+            char[] offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString(); 
             DateTime utcDate = dateTime;
             var kind = dateTime.Kind;
             if (kind != DateTimeKind.Utc)
             {
-                if (kind == DateTimeKind.Unspecified)
-                {
-                    offset = new char[5] { '-', '0', '0', '0', '0' };
-                }
-                else
-                {
-                    offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString();
-                }
-
                 // need to convert to utc time
                 utcDate = dateTime.ToUniversalTime();
             }

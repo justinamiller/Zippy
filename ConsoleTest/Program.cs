@@ -28,6 +28,16 @@ namespace ConsoleTest
             Zippy.JSON.SerializeObjectToStringNullWriter(c);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Test1(Models.ComplexModelObject c)
+        {
+            //Zippy.JSON.SerializeObjectToString(c);
+            for(var i=0; i < 100; i++)
+            {
+                Zippy.JSON.SerializeObjectToStringNullWriter(c);
+            }
+        }
+
         static void Main(string[] args)
         {
             System.Threading.Thread.Sleep(250);
@@ -40,6 +50,7 @@ namespace ConsoleTest
             Zippy.JSON.SerializeObjectToString(c);
             c = new Models.ComplexModelObject();
             Test(c);
+            Test1(c);
             return;
 
             //for (var i = 0; i < 10000; i++)
