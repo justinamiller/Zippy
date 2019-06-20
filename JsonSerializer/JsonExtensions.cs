@@ -14,12 +14,7 @@ namespace Zippy
         [SuppressMessage("brain-overload", "S1541")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static string ToJson(this object instance)
-        {
-            if (instance == null || DBNull.Value.Equals(instance))
-            {
-                return null;
-            }
-
+        { 
             return JSON.SerializeObjectToString(instance);
         }
 

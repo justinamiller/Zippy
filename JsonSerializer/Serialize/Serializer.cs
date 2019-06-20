@@ -17,7 +17,7 @@ namespace Zippy.Serialize
     /// <remarks>guide from http://www.json.org/ </remarks>
     sealed class Serializer
     {
-        private static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
+        private readonly static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
         // The following logic performs circular reference detection
         private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
@@ -193,7 +193,7 @@ namespace Zippy.Serialize
             bool flag1 = true;
             Type lastType = null;
 
-            var currentType = TypeSerializerUtils.GetEnumerableValueTypeCode(list, objectType);
+            var currentType = GetEnumerableValueTypeCode(list, objectType);
             bool isTyped = currentType != TypeSerializerUtils.TypeCode.NotSetObject;
 
             if (isTyped)
@@ -291,7 +291,7 @@ namespace Zippy.Serialize
                         if (lastTypeCode != typeCode)
                         {
                             lastTypeCode = typeCode;
-                            valueTypeCode = Utility.TypeSerializerUtils.GetTypeCode(typeCode);
+                            valueTypeCode = GetTypeCode(typeCode);
                         }
                         if (!WriteObjectValue(value, typeCode, valueTypeCode))
                         {
@@ -322,9 +322,15 @@ namespace Zippy.Serialize
         {
             _jsonWriter = new JsonWriter(writer);
             Type type = json.GetType();
-            var typeCode = TypeSerializerUtils.GetTypeCode(type);
+            var typeCode = GetTypeCode(type);
 
             if (!WriteObjectValue(json, type, typeCode))
+            {
+                throw new Exception("Unable to Serialize");
+            }
+
+            //check to ensure everything was done correctly.
+            if (_currentDepth > 0 || !_jsonWriter.IsValid())
             {
                 throw new Exception("Unable to Serialize");
             }
@@ -428,10 +434,11 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeValueMemberInfo(object instance, IValue[] items)
         {
-            _jsonWriter.WriteStartObject();
+
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
 
             int len = items.Length;
+            _jsonWriter.WriteStartObject();
             try
             {
                 bool isError = false;

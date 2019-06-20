@@ -15,7 +15,7 @@ namespace Zippy.Serialize.Writers
 
         public override void Write(string value)
         {
-        
+
 
             //int length = value.Length;
             //char[] chars = new char[length];
@@ -33,10 +33,18 @@ namespace Zippy.Serialize.Writers
             //        }
             //    }
             //}
+            //unsafe
+            //{
+            //    fixed (char* src = value)
+            //    {
+                    
+            //    }
+            //}
+          
 
 
 
-            var buffer = value.ToCharArray();
+                var buffer = value.ToCharArray();
             int count = buffer.Length;
             Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
             _bufferIndex += count;

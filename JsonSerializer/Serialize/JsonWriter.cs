@@ -21,10 +21,17 @@ namespace Zippy.Serialize
         internal static readonly CultureInfo CurrentCulture = CultureInfo.InvariantCulture;
         private bool _propertyInUse;
         private readonly TextWriter _writer;
+        private int _arrayIndex = 0;
+        private int _objectIndex = 0;
 
         public JsonWriter(TextWriter writer)
         {
             _writer = writer;
+        }
+        
+        public bool IsValid()
+        {
+            return _arrayIndex == 0 && _objectIndex == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,6 +39,7 @@ namespace Zippy.Serialize
         {
             _writer.Write(OpenObjectChar);
             this._propertyInUse = false;
+            _objectIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -39,24 +47,21 @@ namespace Zippy.Serialize
         {
             this._propertyInUse = true;
             _writer.Write(CloseObjectChar);
+            _objectIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteEndArray()
         {
             _writer.Write(CloseArrayChar);
+            _arrayIndex--;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteStartArray()
         {
             _writer.Write(OpenArrayChar);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WritePropertySeperator()
-        {
-            _writer.Write(':');
+            _arrayIndex++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
