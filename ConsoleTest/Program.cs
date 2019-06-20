@@ -41,13 +41,13 @@ namespace ConsoleTest
             Test(c);
             return;
 
-            for (var i = 0; i < 10000; i++)
-            {
-                Zippy.JSON.SerializeObjectToString(c);
-            }
-            Console.WriteLine("DONE");
-            Console.ReadLine();
-            return;
+            //for (var i = 0; i < 10000; i++)
+            //{
+            //    Zippy.JSON.SerializeObjectToString(c);
+            //}
+            //Console.WriteLine("DONE");
+            //Console.ReadLine();
+            //return;
 
             for (var i = 0; i < 10; i++)
             {
