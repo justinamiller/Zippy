@@ -79,7 +79,7 @@ namespace Zippy.Serialize
                         if (!isTyped)
                         {
                             //check if generic type and is typed.
-                            type = anEnumerable.GetType();
+                            type = objectType;
                             if (type.IsGenericType)
                             {
                                 type = type.GetGenericArguments()[0];
@@ -133,12 +133,10 @@ namespace Zippy.Serialize
             TypeSerializerUtils.TypeCode valueTypeCode = TypeSerializerUtils.TypeCode.Empty;
             Type lastType = null;
             bool flag1 = true;
-            _jsonWriter.WriteStartArray();
 
-            Type valueType = null;
             var currentType = GetArrayValueTypeCode(type);
             bool isTyped = currentType != TypeSerializerUtils.TypeCode.NotSetObject;
-            valueType = type.GetElementType();
+            var valueType = type.GetElementType();
             if (!isTyped)
             {
                 //check one more time.
@@ -151,6 +149,8 @@ namespace Zippy.Serialize
             }
 
             int len = array.Length;
+
+            _jsonWriter.WriteStartArray();
             try
             {
                 // note that an error in the IEnumerable won't be caught
@@ -172,7 +172,7 @@ namespace Zippy.Serialize
                         }
                     }
 
-                    if (!WriteObjectValue(value,  valueType, valueTypeCode))
+                    if (!WriteObjectValue(value, valueType, valueTypeCode))
                     {
                         return false;
                     }
@@ -180,7 +180,7 @@ namespace Zippy.Serialize
             }
             finally
             {
-                _jsonWriter.WriteEndArray(); 
+                _jsonWriter.WriteEndArray();
             }
 
             return true;
@@ -324,7 +324,7 @@ namespace Zippy.Serialize
             Type type = json.GetType();
             var typeCode = TypeSerializerUtils.GetTypeCode(type);
 
-            if(!WriteObjectValue(json, type, typeCode))
+            if (!WriteObjectValue(json, type, typeCode))
             {
                 throw new Exception("Unable to Serialize");
             }
@@ -339,7 +339,7 @@ namespace Zippy.Serialize
             Type lastValueType = null;
 
             var ranOnce = false;
-           _jsonWriter.WriteStartObject();
+            _jsonWriter.WriteStartObject();
             try
             {
                 foreach (var key in values.Keys)
@@ -636,11 +636,11 @@ namespace Zippy.Serialize
                         }
                     case TypeSerializerUtils.TypeCode.IList:
                         {
-                            return SerializeList((IList)value,type);
+                            return SerializeList((IList)value, type);
                         }
                     case TypeSerializerUtils.TypeCode.Enumerable:
                         {
-                            return this.SerializeEnumerable((IEnumerable)value,type);
+                            return this.SerializeEnumerable((IEnumerable)value, type);
                         }
                     case TypeSerializerUtils.TypeCode.Dictionary:
                         {
