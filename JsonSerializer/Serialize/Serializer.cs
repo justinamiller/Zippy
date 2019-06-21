@@ -53,10 +53,9 @@ namespace Zippy.Serialize
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SerializeEnumerable(IEnumerable anEnumerable, Type objectType)
+        private bool SerializeEnumerable(IEnumerable anEnumerable, Type type)
         {
             TypeSerializerUtils.TypeCode valueType = TypeSerializerUtils.TypeCode.Empty;
-            Type type = null;
             Type lastType = null;
             bool flag1 = true;
             bool isTyped = false;
@@ -79,7 +78,6 @@ namespace Zippy.Serialize
                         if (!isTyped)
                         {
                             //check if generic type and is typed.
-                            type = objectType;
                             if (type.IsGenericType)
                             {
                                 type = type.GetGenericArguments()[0];

@@ -46,12 +46,12 @@ namespace ConsoleTest
             ///
 
 
-            var c = new Models.ComplexModelObject();
-            Zippy.JSON.SerializeObjectToString(c);
-            c = new Models.ComplexModelObject();
-            Test(c);
-            Test1(c);
-            return;
+            //var c = new Models.ComplexModelObject();
+            //Zippy.JSON.SerializeObjectToString(c);
+            //c = new Models.ComplexModelObject();
+            //Test(c);
+            //Test1(c);
+            //return;
 
             //for (var i = 0; i < 10000; i++)
             //{
@@ -75,7 +75,7 @@ namespace ConsoleTest
 
         static void TestJson()
         {
-            int testCount = 10000;
+            int testCount = 20000;
           //  var data = new Dictionary<string, double>();
             var data = new List<Tuple<string, double, string>>();
            // var c = new Models.SimpleModelType(); 

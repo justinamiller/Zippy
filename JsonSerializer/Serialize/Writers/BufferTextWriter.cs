@@ -33,20 +33,26 @@ namespace Zippy.Serialize.Writers
             //        }
             //    }
             //}
-            unsafe
+           unsafe
             {
-              //  char c;
                 int strLength = value.Length;
                 fixed (char* pString = value)
                 {
                     char* pChar = pString;
                     for (int i = 0; i < strLength; i++)
                     {
-                       // c = *pChar;
-                        _buffer[++_bufferIndex] = *pChar;
-                        pChar++;
+                        _buffer[++_bufferIndex] = *pChar++;
                     }
                 }
+
+                //fixed (char* pString = value)
+                //{
+                //    char* pChar = pString;
+                //    while (*pChar != '\0')
+                //    {
+                //        _buffer[++_bufferIndex] = *pChar++;
+                //    }
+                //}
             }
 
 
@@ -69,15 +75,15 @@ namespace Zippy.Serialize.Writers
 
         public override void Write(char[] buffer, int index, int count)
         {
-            Array.Copy(buffer, index, _buffer, _bufferIndex, count);
-            _bufferIndex += count;
+        //    Array.Copy(buffer, index, _buffer, _bufferIndex, count);
+        //    _bufferIndex += count;
         }
 
         public override void Write(char[] buffer)
         {
-            int count = buffer.Length;
-            Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
-            _bufferIndex += count;
+        //    int count = buffer.Length;
+      //      Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
+        //    _bufferIndex += count;
         }
 
         public override string ToString()
