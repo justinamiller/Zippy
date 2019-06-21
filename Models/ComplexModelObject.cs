@@ -9,6 +9,7 @@ namespace Models
 {
    public class ComplexModelObject
     {
+
         public enum TType
         {
             None = 0,

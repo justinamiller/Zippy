@@ -8,7 +8,7 @@ namespace Zippy.Utility
 {
     sealed class TypeSerializerUtils
     {
-        internal enum TypeCode
+        public enum TypeCode
         {
             Empty = 0,
             //Object = 1,
@@ -142,29 +142,31 @@ namespace Zippy.Utility
 #endif
 };
 
+  
         public static TypeCode GetTypeCode(Type type)
         {
-            var typeCode = TypeCodeMap[type];
+           var typeCode = TypeCodeMap[type];
             if (typeCode != null)
             {
                 return (TypeCode)typeCode;
             }
-            var baseType = type.BaseType;
-            if (baseType == typeof(Enum))
-            {
-                return GetTypeCode(Enum.GetUnderlyingType(type));
-            }
-            else if (baseType==typeof(Array))
-            {
-                return TypeCode.Array;
-            }
-            else if (type.IsGenericType)
+            if (type.IsGenericType)
             {
                 typeCode = TypeCodeMap[type.GetGenericTypeDefinition()];
                 if (typeCode != null)
                 {
                     return (TypeCode)typeCode;
                 }
+            }
+
+            var baseType = type.BaseType;
+            if (baseType == typeof(Enum))
+            {
+                return GetTypeCode(Enum.GetUnderlyingType(type));
+            }
+            if (baseType == typeof(Array))
+            {
+                return TypeCode.Array;
             }
 
             return TypeCode.NotSetObject;

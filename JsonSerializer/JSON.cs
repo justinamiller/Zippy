@@ -39,14 +39,6 @@ namespace Zippy
             }
         }
 
-        private static TextWriter _nullWriter = new NullTextWriter();
-        public static string SerializeObjectToStringNullWriter(object Object)
-        {
-            new Serializer().SerializeObjectInternal(Object, _nullWriter);
-
-            return string.Empty;
-        }
-
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static TextWriter SerializeObject(object Object, TextWriter writer)
         {

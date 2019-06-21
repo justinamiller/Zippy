@@ -20,7 +20,8 @@ namespace Zippy.Serialize
         private readonly static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
         // The following logic performs circular reference detection
-        private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
+        private readonly IList<object> _cirobj= new List<object>();
+
         private int _currentDepth = 0;
         private JsonWriter _jsonWriter;
 
@@ -336,10 +337,8 @@ namespace Zippy.Serialize
 
         private bool SerializeNonGenericDictionary(IDictionary values)
         {
-            TypeSerializerUtils.TypeCode keyTypeCode = TypeSerializerUtils.TypeCode.Empty;
             TypeSerializerUtils.TypeCode valueTypeCode = TypeSerializerUtils.TypeCode.Empty;
 
-            Type lastKeyType = null;
             Type lastValueType = null;
 
             var ranOnce = false;
@@ -348,27 +347,25 @@ namespace Zippy.Serialize
             {
                 foreach (var key in values.Keys)
                 {
-                    var dictionaryValue = values[key];
-
-                    var keyType = key.GetType();
-                    if (lastKeyType != keyType)
+                    if (!ranOnce)
                     {
-                        lastKeyType = keyType;
-                        keyTypeCode = TypeSerializerUtils.GetTypeCode(keyType);
-                        if (keyTypeCode != TypeSerializerUtils.TypeCode.String)
+                        //check if key is string type if not then will skip serialization.
+                        var keyType = key.GetType();
+                        if (GetTypeCode(keyType) != TypeSerializerUtils.TypeCode.String)
                         {
                             return false;
                         }
                     }
-
-                    if (ranOnce)
+                    else
                     {
+                        //index 1+
                         _jsonWriter.WriteComma();
                     }
+
                     string name = Convert.ToString(key, JsonWriter.CurrentCulture);
                     _jsonWriter.WritePropertyName(name);
 
-
+                    var dictionaryValue = values[key];
                     if (dictionaryValue == null)
                     {
                         _jsonWriter.WriteNull();
@@ -379,7 +376,7 @@ namespace Zippy.Serialize
                         if (lastValueType != valueType)
                         {
                             lastValueType = valueType;
-                            valueTypeCode = Utility.TypeSerializerUtils.GetTypeCode(keyType);
+                            valueTypeCode = GetTypeCode(valueType);
                         }
 
                         if (!WriteObjectValue(dictionaryValue, valueType, valueTypeCode))
@@ -417,7 +414,7 @@ namespace Zippy.Serialize
             }
 
             //System.Collections.Generic.IDictionary
-            var keyCodeType = TypeSerializerUtils.GetTypeCode(args[0]);
+            var keyCodeType = GetTypeCode(args[0]);
             if (keyCodeType != TypeSerializerUtils.TypeCode.String)
             {
                 return false;
@@ -615,10 +612,9 @@ namespace Zippy.Serialize
         private bool SerializeNonPrimitiveValue(object value, Type type, TypeSerializerUtils.TypeCode objectTypeCode)
         {
             //this prevents recursion
-            int i = 0;
-            if (!_cirobj.TryGetValue(value, out i))
+            if (!_cirobj.Contains(value))
             {
-                _cirobj.Add(value, _cirobj.Count + 1);
+                _cirobj.Add(value);
             }
             else if (_currentDepth > 0)
             {

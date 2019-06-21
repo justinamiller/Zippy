@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Zippy.Serialize.Writers;
 
 namespace ConsoleTest
 {
@@ -21,11 +22,13 @@ namespace ConsoleTest
 
     class Program
     {
+        private readonly static TextWriter _nullWriter = new NullTextWriter();
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         static void Test(Models.ComplexModelObject c)
         {
             //Zippy.JSON.SerializeObjectToString(c);
-            Zippy.JSON.SerializeObjectToStringNullWriter(c);
+            Zippy.JSON.SerializeObject(c, _nullWriter);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -34,7 +37,7 @@ namespace ConsoleTest
             //Zippy.JSON.SerializeObjectToString(c);
             for(var i=0; i < 100; i++)
             {
-                Zippy.JSON.SerializeObjectToStringNullWriter(c);
+                Zippy.JSON.SerializeObject(c, _nullWriter);
             }
         }
 
@@ -46,12 +49,13 @@ namespace ConsoleTest
             ///
 
 
-            //var c = new Models.ComplexModelObject();
-            //Zippy.JSON.SerializeObjectToString(c);
-            //c = new Models.ComplexModelObject();
-            //Test(c);
-            //Test1(c);
-            //return;
+            var c = new Models.ComplexModelObject();
+            Zippy.JSON.SerializeObjectToString(c);
+            c = new Models.ComplexModelObject();
+            Test(c);
+             c = new Models.ComplexModelObject();
+            Test1(c);
+            return;
 
             //for (var i = 0; i < 10000; i++)
             //{
@@ -255,7 +259,7 @@ namespace ConsoleTest
                 sw.Restart();
                 for (var i = 0; i < testCount; i++)
                 {
-                    Zippy.JSON.SerializeObjectToStringNullWriter(c);
+                    Zippy.JSON.SerializeObject(c, _nullWriter);
                 }
                 data.Add(new Tuple<string, double, string>("Zippy-NullWriter", sw.Elapsed.TotalMilliseconds, json));
             }
