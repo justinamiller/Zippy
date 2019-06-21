@@ -235,14 +235,25 @@ namespace Zippy.Utility
                     char* ptr = chr;
                     while ((c = *(ptr++)) != '\0')
                     {
-                        if (!(c >= 32 && c <= 126) || c == '"' || c == '\\')
+                        if (c.HasAnyEscapeChar(escapeHtmlChars))
+                        {
                             return true;
-
-                        if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
-                            return true;
+                        }
                     }
                 }
             }
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasAnyEscapeChar(this char c, bool escapeHtmlChars)
+        {
+            if (!(c >= 32 && c <= 126) || c == '"' || c == '\\')
+                return true;
+
+            if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
+                return true;
 
             return false;
         }

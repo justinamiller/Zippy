@@ -79,6 +79,38 @@ namespace Models
 
         public System.Collections.IDictionary OldAges { get; set; } = new System.Collections.Hashtable();
 
+
+        public char CharValue { get; set; } = char.MaxValue;
+
+        public byte ByteValue { get; set; } = byte.MaxValue;
+
+        public sbyte SByteValue { get; set; } = sbyte.MaxValue;
+
+        public short ShortValue { get; set; } = short.MaxValue;
+
+        public ushort UShortValue { get; set; } = ushort.MaxValue;
+
+        public int IntValue { get; set; } = int.MaxValue;
+
+        public uint UIntValue { get; set; } = uint.MaxValue;
+
+        public long LongValue { get; set; } = long.MaxValue;
+
+        public ulong ULongValue { get; set; } = ulong.MaxValue;
+
+        public float FloatValue { get; set; } = float.MaxValue;
+
+        public double DoubleValue { get; set; } = double.MaxValue;
+
+        public decimal DecimalValue { get; set; } = decimal.MaxValue;
+
+        public DateTime DateTimeValue { get; set; } = DateTime.Now;
+
+        public TimeSpan TimeSpanValue { get; set; } =DateTime.Now.TimeOfDay;
+
+        public Guid GuidValue { get; set; } = Guid.NewGuid();
+
+
         public ComplexModelObject()
         {
             this.Name = "Test";

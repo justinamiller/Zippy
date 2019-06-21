@@ -411,7 +411,19 @@ namespace Zippy.Serialize
             if (charValue == null)
                 WriteNull();
             else
-                WriteString(((char)charValue).ToString());
+            {
+                char c = (char)charValue;
+                if (c.HasAnyEscapeChar(JSON.Options.EscapeHtmlChars))
+                {
+                    _writer.Write(StringExtension.GetEncodeString(c.ToString()));
+                }
+                else
+                {
+                    _writer.Write(QuoteChar);
+                    _writer.Write(c);
+                    _writer.Write(QuoteChar);
+                }
+            }
         }
 
         public void WriteByte(object byteValue)

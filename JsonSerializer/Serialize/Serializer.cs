@@ -72,7 +72,7 @@ namespace Zippy.Serialize
                     else
                     {
                         //first record.
-                        valueType = GetEnumerableValueTypeCode(anEnumerable, objectType);
+                        valueType = GetEnumerableValueTypeCode(anEnumerable, type);
                         isTyped = valueType != TypeSerializerUtils.TypeCode.NotSetObject;
 
                         if (!isTyped)
