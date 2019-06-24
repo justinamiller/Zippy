@@ -20,10 +20,11 @@ namespace Zippy.Serialize
         private readonly static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
         // The following logic performs circular reference detection
-        private readonly IList<object> _cirobj= new List<object>();
+        private readonly IList<object> _cirobj = new List<object>();
 
         private int _currentDepth = 0;
         private JsonWriter _jsonWriter;
+
 
         public Serializer()
         {
@@ -131,7 +132,7 @@ namespace Zippy.Serialize
 
             TypeSerializerUtils.TypeCode valueTypeCode = TypeSerializerUtils.TypeCode.Empty;
             Type lastType = null;
-            bool flag1 = true;
+            bool flag1 = false;
 
             var currentType = GetArrayValueTypeCode(type);
             bool isTyped = currentType != TypeSerializerUtils.TypeCode.NotSetObject;
@@ -155,9 +156,13 @@ namespace Zippy.Serialize
                 // note that an error in the IEnumerable won't be caught
                 for (var i = 0; i < len; i++)
                 {
-                    if (!flag1)
+                    if (flag1)
                     {
                         _jsonWriter.WriteComma();
+                    }
+                    else
+                    {
+                        flag1 = true;
                     }
 
                     var value = array.GetValue(i);
@@ -285,6 +290,10 @@ namespace Zippy.Serialize
                         {
                             _jsonWriter.WriteComma();
                         }
+                        else
+                        {
+                            flag = false;
+                        }
 
                         var typeCode = value.GetType();
                         if (lastTypeCode != typeCode)
@@ -296,7 +305,6 @@ namespace Zippy.Serialize
                         {
                             return false;
                         }
-                        flag = false;
                     }
                     else
                     {
@@ -338,14 +346,14 @@ namespace Zippy.Serialize
         private bool SerializeNonGenericDictionary(IDictionary values)
         {
             TypeSerializerUtils.TypeCode valueTypeCode = TypeSerializerUtils.TypeCode.Empty;
-
             Type lastValueType = null;
-
             var ranOnce = false;
+
+            var keys = values.Keys;
             _jsonWriter.WriteStartObject();
             try
             {
-                foreach (var key in values.Keys)
+                foreach (var key in keys)
                 {
                     if (!ranOnce)
                     {
@@ -355,6 +363,7 @@ namespace Zippy.Serialize
                         {
                             return false;
                         }
+                        ranOnce = true;
                     }
                     else
                     {
@@ -384,7 +393,6 @@ namespace Zippy.Serialize
                             return false;
                         }
                     }
-                    ranOnce = true;
                 }
             }
             finally
@@ -404,6 +412,7 @@ namespace Zippy.Serialize
                 _jsonWriter.WriteEndObject();
                 return true;
             }
+
             //check if key is string type
             Type[] args = type.GetGenericArguments();
 
@@ -422,7 +431,7 @@ namespace Zippy.Serialize
 
             //get value type
             type = args[1];
-            var valueCodeType = TypeSerializerUtils.GetTypeCode(type);
+            var valueCodeType = GetTypeCode(type);
             return SerializeGenericDictionaryInternal(values, valueCodeType, type);
         }
 
@@ -488,11 +497,12 @@ namespace Zippy.Serialize
             _jsonWriter.WriteStartObject();
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
             IDictionaryEnumerator e = values.GetEnumerator();
+            DictionaryEntry entry;
             try
             {
                 while (e.MoveNext())
                 {
-                    DictionaryEntry entry = e.Entry;
+                    entry = e.Entry;
 
                     string name = Convert.ToString(entry.Key, JsonWriter.CurrentCulture);
                     _jsonWriter.WritePropertyName(name);
@@ -535,45 +545,54 @@ namespace Zippy.Serialize
         private void SerializeDataTableData(System.Data.DataTable table)
         {
             var rows = table.Rows;
-            if (rows.Count == 0)
+            int count = rows.Count;
+            if (count == 0)
             {
                 return;
             }
+
+            System.Data.DataColumnCollection cols = table.Columns;
+            var columnType = new List<Tuple<string, TypeSerializerUtils.TypeCode, Type, int>>();
+            int columnCount = 0;
+            foreach (System.Data.DataColumn column in cols)
+            {
+                var typeCode = GetTypeCode(column.DataType);
+
+                var columnName = BuildPropertyName(column.ColumnName);
+
+                columnType.Add(new Tuple<string, TypeSerializerUtils.TypeCode, Type, int>(columnName, typeCode, column.DataType, column.Ordinal));
+                columnCount++;
+            }
+
             _jsonWriter.WritePropertyName(table.TableName);
             _jsonWriter.WriteStartArray();
-
             try
             {
-                System.Data.DataColumnCollection cols = table.Columns;
                 bool rowseparator = false;
-                foreach (System.Data.DataRow row in rows)
+
+                for (var i = 0; i < count; i++)
                 {
+                    System.Data.DataRow row = rows[i];
                     if (rowseparator)
                     {
                         _jsonWriter.WriteComma();
                     }
-                    rowseparator = true;
+                    else
+                    {
+                        rowseparator = true;
+                    }
+
                     _jsonWriter.WriteStartObject();
                     try
                     {
-                        var columnType = new Dictionary<System.Data.DataColumn, Tuple<string, TypeSerializerUtils.TypeCode, Type>>();
-                        foreach (System.Data.DataColumn column in cols)
+                        for (var c = 0; c < columnCount; c++)
                         {
-                            var typeCode = TypeSerializerUtils.GetTypeCode(column.DataType);
-
-                            var columnName = TypeSerializerUtils.BuildPropertyName(column.ColumnName);
-
-                            columnType.Add(column, new Tuple<string, TypeSerializerUtils.TypeCode, Type>(columnName, typeCode, column.DataType));
-                        }
-
-                        foreach (var column in columnType)
-                        {
+                            var column = columnType[c];
                             //build column name
-                            _jsonWriter.WritePropertyNameFast(column.Value.Item1);
+                            _jsonWriter.WritePropertyNameFast(column.Item1);
                             //build column data
-                            var value = row[column.Key];
-
-                            if (!WriteObjectValue(value, column.Value.Item3, column.Value.Item2))
+                            var value = row[column.Item4];
+                            if (!WriteObjectValue(value, column.Item3, column.Item2))
                             {
                                 return;
                             }
@@ -624,12 +643,18 @@ namespace Zippy.Serialize
             }
             _currentDepth++;
             //recursion limit or max char length
-            if (_currentDepth >= JSON.Options.RecursionLimit) //|| _builder.Length > _currentJsonSetting.MaxJsonLength)
+            if (_currentDepth >= JSON.Options.RecursionLimit)
             {
                 _currentDepth--;
                 _jsonWriter.WriteNull();
                 return true;
             }
+            //if( _jsonWriter.Length > JSON.Options.MaxJsonLength)
+            //{
+            //    _currentDepth--;
+            //    _jsonWriter.WriteNull();
+            //    return false;
+            //}
 
             try
             {

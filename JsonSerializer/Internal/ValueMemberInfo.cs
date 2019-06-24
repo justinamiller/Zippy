@@ -62,6 +62,8 @@ namespace Zippy.Internal
                         throw ex;
                     }
                     _errored = true;
+
+                    return null;
                 }
             }
 

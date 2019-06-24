@@ -29,6 +29,14 @@ namespace Zippy.Serialize
             _writer = writer;
         }
 
+        //public int Length
+        //{
+        //    get
+        //    {
+        //        return _length;
+        //    }
+        //}
+
         public bool IsValid()
         {
             return _arrayIndex == 0 && _objectIndex == 0;
@@ -387,6 +395,7 @@ namespace Zippy.Serialize
             _writer.Write(((Guid)oValue).ToString("D", CurrentCulture));
             _writer.Write(QuoteChar);
         }
+
 
         public void WriteNullableGuid(object oValue)
         {
