@@ -16,7 +16,7 @@ namespace ConsoleTest
 {
     class Program
     {
-        const int testCount = 20000;
+        const int testCount = 10000;
         private readonly static TextWriter _nullWriter = new NullTextWriter();
 
         [MethodImpl(MethodImplOptions.NoInlining)]
