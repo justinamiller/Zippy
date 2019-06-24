@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Zippy.Utility;
 using static Zippy.Utility.DateTimeExtension;
@@ -265,7 +266,7 @@ namespace Zippy.Serialize
         public void WriteDateTime(object oDateTime)
         {
             _writer.Write(QuoteChar);
-           WriteJsonDate(_writer,(DateTime)oDateTime);
+            WriteJsonDate(_writer,(DateTime)oDateTime);
        //    WriteJsonDateOld(_writer, (DateTime)oDateTime);
             _writer.Write(QuoteChar);
         }
@@ -375,9 +376,7 @@ namespace Zippy.Serialize
         public void WriteTimeSpan(object oTimeSpan)
         {
             _writer.Write(QuoteChar);
-            // _writer.Write(((TimeSpan)oTimeSpan).ToString());
             _writer.Write(((TimeSpan)oTimeSpan).ToTimeSpanChars());
-
             _writer.Write(QuoteChar);
         }
 
@@ -391,8 +390,10 @@ namespace Zippy.Serialize
 
         public void WriteGuid(object oValue)
         {
+            var guid = new FastGuidStruct((Guid)oValue);
             _writer.Write(QuoteChar);
-            _writer.Write(((Guid)oValue).ToString("D", CurrentCulture));
+            _writer.Write(guid.GetBuffer(),0,36);
+            //_writer.Write(((Guid)oValue).ToString("D", CurrentCulture));
             _writer.Write(QuoteChar);
         }
 
@@ -519,7 +520,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(((float)floatValue).ToString("r", CurrentCulture));
+                _writer.Write(((float)floatValue).ToString("0.0####################", CurrentCulture));
             }
         }
 
@@ -529,7 +530,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(((double)doubleValue).ToString(CurrentCulture));
+                _writer.Write(((double)doubleValue).ToString("0.0####################", CurrentCulture));
             }
         }
 
@@ -538,7 +539,7 @@ namespace Zippy.Serialize
             if (decimalValue == null)
                 WriteNull();
             else
-                _writer.Write(((decimal)decimalValue).ToString(CurrentCulture));
+                _writer.Write(((decimal)decimalValue).ToString("0.0####################", CurrentCulture));
         }
 
         private void WriteIntegerValue(TextWriter writer, int value)
@@ -549,7 +550,6 @@ namespace Zippy.Serialize
             }
             else
             {
-                //  writer.Write(value.ToString());
                 bool negative = value < 0;
                 WriteIntegerValue(writer, negative ? (uint)-value : (uint)value, negative);
             }
@@ -576,7 +576,6 @@ namespace Zippy.Serialize
             }
             else
             {
-                //writer.Write(value.ToString());
                 bool negative = value < 0;
                 WriteIntegerValue(writer, negative ? (ulong)-value : (ulong)value, negative);
             }
@@ -590,8 +589,6 @@ namespace Zippy.Serialize
             }
             else
             {
-                //    writer.Write(value.ToString());
-
                 WriteIntegerValue(writer, (ulong)value, false);
             }
         }

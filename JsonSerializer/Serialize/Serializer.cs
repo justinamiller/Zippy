@@ -20,7 +20,7 @@ namespace Zippy.Serialize
         private readonly static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
         // The following logic performs circular reference detection
-        private readonly IList<object> _cirobj = new List<object>();
+        private readonly ReferenceCheck _cirobj = new ReferenceCheck();
 
         private int _currentDepth = 0;
         private JsonWriter _jsonWriter;
@@ -530,9 +530,11 @@ namespace Zippy.Serialize
             {
                 foreach (System.Data.DataTable table in ds.Tables)
                 {
-                    SerializeDataTableData(table);
-                }
-                // end dataset
+                    if (!SerializeDataTableData(table))
+                    {
+                        return false;
+                    }
+                }        
             }
             finally
             {
@@ -542,13 +544,13 @@ namespace Zippy.Serialize
             return true;
         }
 
-        private void SerializeDataTableData(System.Data.DataTable table)
+        private bool SerializeDataTableData(System.Data.DataTable table)
         {
             var rows = table.Rows;
             int count = rows.Count;
             if (count == 0)
             {
-                return;
+                return true;
             }
 
             System.Data.DataColumnCollection cols = table.Columns;
@@ -564,12 +566,17 @@ namespace Zippy.Serialize
                 columnCount++;
             }
 
-            _jsonWriter.WritePropertyName(table.TableName);
+            var tableName = table.TableName;
+            if (tableName.IsNullOrWhiteSpace())
+            {
+                tableName = "_empty_";
+            }
+
+            bool rowseparator = false;
+            _jsonWriter.WritePropertyName(tableName);
             _jsonWriter.WriteStartArray();
             try
             {
-                bool rowseparator = false;
-
                 for (var i = 0; i < count; i++)
                 {
                     System.Data.DataRow row = rows[i];
@@ -594,9 +601,8 @@ namespace Zippy.Serialize
                             var value = row[column.Item4];
                             if (!WriteObjectValue(value, column.Item3, column.Item2))
                             {
-                                return;
+                                return false;
                             }
-
                         }
                     }
                     finally
@@ -609,6 +615,8 @@ namespace Zippy.Serialize
             {
                 _jsonWriter.WriteEndArray();
             }
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -617,7 +625,10 @@ namespace Zippy.Serialize
             _jsonWriter.WriteStartObject();
             try
             {
-                SerializeDataTableData(dt);
+                if (!SerializeDataTableData(dt))
+                {
+                    return false;
+                }
             }
             finally
             {
@@ -628,14 +639,13 @@ namespace Zippy.Serialize
             return true;
         }
 
+
+
+
         private bool SerializeNonPrimitiveValue(object value, Type type, TypeSerializerUtils.TypeCode objectTypeCode)
         {
             //this prevents recursion
-            if (!_cirobj.Contains(value))
-            {
-                _cirobj.Add(value);
-            }
-            else if (_currentDepth > 0)
+            if (_cirobj.IsReferenced(value) && _currentDepth > 0)
             {
                 //_circular = true;
                 _jsonWriter.WriteNull();

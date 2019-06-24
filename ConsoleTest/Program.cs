@@ -14,14 +14,9 @@ using Zippy.Serialize.Writers;
 
 namespace ConsoleTest
 {
-
-
-
-    
-
-
     class Program
     {
+        const int testCount = 20000;
         private readonly static TextWriter _nullWriter = new NullTextWriter();
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -35,7 +30,7 @@ namespace ConsoleTest
         static void Test1(Models.ComplexModelObject c)
         {
             //Zippy.JSON.SerializeObjectToString(c);
-            for(var i=0; i < 100; i++)
+            for(var i=0; i < testCount; i++)
             {
                 Zippy.JSON.SerializeObject(c, _nullWriter);
             }
@@ -53,7 +48,7 @@ namespace ConsoleTest
             Zippy.JSON.SerializeObjectToString(c);
             c = new Models.ComplexModelObject();
             Test(c);
-             c = new Models.ComplexModelObject();
+            c = new Models.ComplexModelObject();
             Test1(c);
             return;
 
@@ -79,11 +74,10 @@ namespace ConsoleTest
 
         static void TestJson()
         {
-            int testCount = 20000;
           //  var data = new Dictionary<string, double>();
             var data = new List<Tuple<string, double, string>>();
            // var c = new Models.SimpleModelType(); 
-            //var c = new Models.ComplexModelObject();
+          //  var c = new Models.ComplexModelObject();
             var c = Models.ModelWithCommonTypes.Create(23);
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string json = null;
@@ -102,25 +96,6 @@ namespace ConsoleTest
             {
                 data.Add(new Tuple<string, double, string>("Utf8Json", Int16.MaxValue, ex.ToString()));
             }
-
-            //try
-            //{
-            //    var ms = new System.IO.MemoryStream();
-            //    ProtoBuf.Serializer.Serialize(ms, c);
-            //    ms.Position = 0;
-            //    sw.Restart();
-            //    for (var i = 0; i < testCount; i++)
-            //    {
-            //        ProtoBuf.Serializer.Serialize(ms, c);
-            //        ms.Position = 0;
-            //    }
-            //    data.Add(new Tuple<string, double, string>("ProtoBuf", sw.Elapsed.TotalMilliseconds, json));
-            //}
-            //catch (Exception ex)
-            //{
-            //    data.Add(new Tuple<string, double, string>("ProtoBuf", Int16.MaxValue, ex.ToString()));
-            //}
-
 
             try
             {
