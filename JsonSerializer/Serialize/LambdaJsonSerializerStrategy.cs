@@ -10,51 +10,22 @@ namespace Zippy.Serialize
 
     sealed class LambdaJsonSerializerStrategy : IJsonSerializerStrategy
     {
-        public IDictionary<Type, ValueMemberInfo[]> GetCache;
+        public FastLookup<Type, ValueMemberInfo[]> GetCache = new FastLookup<Type, ValueMemberInfo[]>();
 
         public LambdaJsonSerializerStrategy()
         {
-            this.GetCache = new Dictionary<Type, ValueMemberInfo[]>();
-        }
-
-        private static ValueMemberInfo[] GetterValueFactory(Type type)
-        {
-            var allMembers = ReflectionExtension.GetFieldsAndProperties(type);
-
-            int len = allMembers.Count;
-            var data = new ValueMemberInfo[len];
-            int dataIndex = 0;
-            for (int i = 0; i < len; i++)
-            {
-                //get item
-                var valueInfo = new ValueMemberInfo(allMembers[i]);
-                if(!valueInfo.Name.IsNullOrEmpty())
-                {
-                    //must have property name.
-                    data[dataIndex++] = valueInfo;
-                }
-            }
-
-            if (dataIndex != len)
-            {
-                var temp = new ValueMemberInfo[dataIndex];
-                Array.Copy(temp, 0, data, 0, dataIndex);
-                return temp;
-            }
-
-            return data;
         }
 
         private bool GetValue(Type type, out ValueMemberInfo[] data)
         {
-            if (!this.GetCache.TryGetValue(type, out data))
+            if (!this.GetCache.GetValue(type, out data))
             {
                 //reflection on type
-                data = GetterValueFactory(type);
+                data = TypeSerializerUtils.GetterValueFactory(type);
                 if (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal) == -1)
                 {
                     //cache type
-                    this.GetCache[type] = data;
+                    this.GetCache.Add(type, data);
                 }
             }
 

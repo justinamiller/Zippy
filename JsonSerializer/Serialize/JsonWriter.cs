@@ -202,7 +202,7 @@ namespace Zippy.Serialize
                     WriteException(value);
                     break;
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException(typeCode.ToString());
                     //if (value is IConvertible convertible)
                     //{
                     //    ResolveConvertibleValue(convertible, out typeCode, out value);

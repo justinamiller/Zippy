@@ -48,7 +48,7 @@ namespace ConsoleTest
             Zippy.JSON.SerializeObjectToString(c);
             c = new Models.ComplexModelObject();
             Test(c);
-             c = new Models.ComplexModelObject();
+            c = new Models.ComplexModelObject();
             Test1(c);
             return;
 
@@ -76,9 +76,9 @@ namespace ConsoleTest
         {
           //  var data = new Dictionary<string, double>();
             var data = new List<Tuple<string, double, string>>();
-           // var c = new Models.SimpleModelType(); 
-          //  var c = new Models.ComplexModelObject();
-            var c = Models.ModelWithCommonTypes.Create(23);
+          // var c = new Models.SimpleModelType(); 
+           var c = new Models.ComplexModelObject();
+            //var c = Models.ModelWithCommonTypes.Create(23);
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string json = null;
 
