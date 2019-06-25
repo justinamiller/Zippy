@@ -96,6 +96,57 @@ namespace Zippy.Utility
             return items;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char[] ToTimeOffsetString(this long ticks)
+        {
+            var h = (int)(ticks / 36000000000L % 24L);
+            if (h < 0)
+            {
+                h = -h;
+            }
+            var m = (int)(ticks / 600000000L % 60L);
+            if (m < 0)
+            {
+                m = -m;
+            }
+
+            char[] items = new char[5];
+            int index = 0;
+
+            items[index++] = ticks < 0 ? '-' : '+';
+
+            if (9 >= h)
+            {
+                items[index++] = '0';
+                items[index++] = MathUtils.charNumbers[h];
+            }
+            else
+            {
+                var time = _time[h];
+                items[index++] = time[0];
+                items[index++] = time[1];
+            }
+
+            if (m == 0)
+            {
+                items[index++] = '0';
+                items[index++] = '0';
+            }
+            else if (9 >= m)
+            {
+                items[index++] = '0';
+                items[index++] = MathUtils.charNumbers[m];
+            }
+            else
+            {
+                var time = _time[m];
+                items[index++] = time[0];
+                items[index++] = time[1];
+            }
+
+            return items;
+        }
+
         public static long ToUniversalTicks(this DateTime dateTime, TimeSpan offset)
         {
             // special case min and max value
@@ -125,8 +176,8 @@ namespace Zippy.Utility
             //10675199.02:48:05.4775807
             char[] buffer = new char[26];
             int index = 0;
-                long ticks = value.Ticks;
-                int day = (int)(ticks / TimeSpan.TicksPerDay);
+            long ticks = value.Ticks;
+            int day = (int)(ticks / TimeSpan.TicksPerDay);
             long time = ticks % TimeSpan.TicksPerDay;
 
 
@@ -147,7 +198,7 @@ namespace Zippy.Utility
                     buffer[index++] = '0';
                     buffer[index++] = MathUtils.charNumbers[day];
                 }
-                else if(59>=day)
+                else if (59 >= day)
                 {
                     var temp = _time[day];
                     buffer[index++] = temp[0];

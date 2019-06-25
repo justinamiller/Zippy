@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Zippy.Utility;
 using static Zippy.Utility.DateTimeExtension;
 
@@ -28,6 +27,14 @@ namespace Zippy.Serialize
         {
             _writer = writer;
         }
+
+        //public int Length
+        //{
+        //    get
+        //    {
+        //        return _length;
+        //    }
+        //}
 
         public bool IsValid()
         {
@@ -257,7 +264,7 @@ namespace Zippy.Serialize
         public void WriteDateTime(object oDateTime)
         {
             _writer.Write(QuoteChar);
-           WriteJsonDate(_writer,(DateTime)oDateTime);
+            WriteJsonDate(_writer,(DateTime)oDateTime);
        //    WriteJsonDateOld(_writer, (DateTime)oDateTime);
             _writer.Write(QuoteChar);
         }
@@ -289,45 +296,46 @@ namespace Zippy.Serialize
             //     _writer.Write(_datePrefix, 0, 7);
       //      writer.Write(MathUtils.WriteNumberToBuffer((uint)value, false));
            writer.Write(value.ToString(CurrentCulture));
-            writer.Write(offset.ToTimeOffsetString());
+            writer.Write(offset.Ticks.ToTimeOffsetString());
+       //     writer.Write(offset.ToTimeOffsetString());
             writer.Write(@")\/");
             //  _writer.Write(_dateSuffix,0,3);
         }
 
-        private static void WriteJsonDateOld(TextWriter writer, DateTime dateTime)
-        {
-            switch (JSON.Options.DateHandler)
-            {
-                case DateHandler.ISO8601:
-                    writer.Write(dateTime.ToString("o", CurrentCulture));
-                    return;
-                case DateHandler.ISO8601DateOnly:
-                    writer.Write(dateTime.ToString("yyyy-MM-dd", CurrentCulture));
-                    return;
-                case DateHandler.ISO8601DateTime:
-                    writer.Write(dateTime.ToString("yyyy-MM-dd HH:mm:ss", CurrentCulture));
-                    return;
-                case DateHandler.RFC1123:
-                    writer.Write(dateTime.ToUniversalTime().ToString("R", CurrentCulture));
-                    return;
-            }
+        //private static void WriteJsonDateOld(TextWriter writer, DateTime dateTime)
+        //{
+        //    switch (JSON.Options.DateHandler)
+        //    {
+        //        case DateHandler.ISO8601:
+        //            writer.Write(dateTime.ToString("o", CurrentCulture));
+        //            return;
+        //        case DateHandler.ISO8601DateOnly:
+        //            writer.Write(dateTime.ToString("yyyy-MM-dd", CurrentCulture));
+        //            return;
+        //        case DateHandler.ISO8601DateTime:
+        //            writer.Write(dateTime.ToString("yyyy-MM-dd HH:mm:ss", CurrentCulture));
+        //            return;
+        //        case DateHandler.RFC1123:
+        //            writer.Write(dateTime.ToUniversalTime().ToString("R", CurrentCulture));
+        //            return;
+        //    }
 
-            char[] offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString(); 
-            DateTime utcDate = dateTime;
-            var kind = dateTime.Kind;
-            if (kind != DateTimeKind.Utc)
-            {
-                // need to convert to utc time
-                utcDate = dateTime.ToUniversalTime();
-            }
-            writer.Write(@"\/Date(");
-            //     _writer.Write(_datePrefix, 0, 7);
-            var value = (utcDate.Ticks - DatetimeMinTimeTicks) / 10000;
-            writer.Write(value.ToString(CurrentCulture));
-            writer.Write(offset);
-            writer.Write(@")\/");
-            //  _writer.Write(_dateSuffix,0,3);
-        }
+        //    char[] offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString(); 
+        //    DateTime utcDate = dateTime;
+        //    var kind = dateTime.Kind;
+        //    if (kind != DateTimeKind.Utc)
+        //    {
+        //        // need to convert to utc time
+        //        utcDate = dateTime.ToUniversalTime();
+        //    }
+        //    writer.Write(@"\/Date(");
+        //    //     _writer.Write(_datePrefix, 0, 7);
+        //    var value = (utcDate.Ticks - DatetimeMinTimeTicks) / 10000;
+        //    writer.Write(value.ToString(CurrentCulture));
+        //    writer.Write(offset);
+        //    writer.Write(@")\/");
+        //    //  _writer.Write(_dateSuffix,0,3);
+        //}
 
         //private static readonly char[] _datePrefix= new char[7] { '\\', '/', 'D', 'a', 't', 'e', '(' };
         //private static readonly char[] _dateSuffix = new char[3] { ')', '\\','/' };
@@ -367,9 +375,7 @@ namespace Zippy.Serialize
         public void WriteTimeSpan(object oTimeSpan)
         {
             _writer.Write(QuoteChar);
-            // _writer.Write(((TimeSpan)oTimeSpan).ToString());
             _writer.Write(((TimeSpan)oTimeSpan).ToTimeSpanChars());
-
             _writer.Write(QuoteChar);
         }
 
@@ -383,10 +389,13 @@ namespace Zippy.Serialize
 
         public void WriteGuid(object oValue)
         {
+            var guid = new FastGuidStruct((Guid)oValue);
             _writer.Write(QuoteChar);
-            _writer.Write(((Guid)oValue).ToString("D", CurrentCulture));
+            _writer.Write(guid.GetBuffer(),0,36);
+            //_writer.Write(((Guid)oValue).ToString("D", CurrentCulture));
             _writer.Write(QuoteChar);
         }
+
 
         public void WriteNullableGuid(object oValue)
         {
@@ -510,7 +519,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(((float)floatValue).ToString("r", CurrentCulture));
+                _writer.Write(((float)floatValue).ToString("0.0####################", CurrentCulture));
             }
         }
 
@@ -520,7 +529,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(((double)doubleValue).ToString(CurrentCulture));
+                _writer.Write(((double)doubleValue).ToString("0.0####################", CurrentCulture));
             }
         }
 
@@ -529,7 +538,7 @@ namespace Zippy.Serialize
             if (decimalValue == null)
                 WriteNull();
             else
-                _writer.Write(((decimal)decimalValue).ToString(CurrentCulture));
+                _writer.Write(((decimal)decimalValue).ToString("0.0####################", CurrentCulture));
         }
 
         private void WriteIntegerValue(TextWriter writer, int value)
@@ -540,7 +549,6 @@ namespace Zippy.Serialize
             }
             else
             {
-                //  writer.Write(value.ToString());
                 bool negative = value < 0;
                 WriteIntegerValue(writer, negative ? (uint)-value : (uint)value, negative);
             }
@@ -567,7 +575,6 @@ namespace Zippy.Serialize
             }
             else
             {
-                //writer.Write(value.ToString());
                 bool negative = value < 0;
                 WriteIntegerValue(writer, negative ? (ulong)-value : (ulong)value, negative);
             }
@@ -581,8 +588,6 @@ namespace Zippy.Serialize
             }
             else
             {
-                //    writer.Write(value.ToString());
-
                 WriteIntegerValue(writer, (ulong)value, false);
             }
         }

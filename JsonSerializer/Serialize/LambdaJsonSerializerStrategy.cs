@@ -8,7 +8,7 @@ using System.IO;
 namespace Zippy.Serialize
 {
 
-    class LambdaJsonSerializerStrategy : IJsonSerializerStrategy
+    sealed class LambdaJsonSerializerStrategy : IJsonSerializerStrategy
     {
         public IDictionary<Type, ValueMemberInfo[]> GetCache;
 
@@ -47,11 +47,7 @@ namespace Zippy.Serialize
 
         private bool GetValue(Type type, out ValueMemberInfo[] data)
         {
-            if (this.GetCache.TryGetValue(type, out data))
-            {
-                //cache type
-            }
-            else
+            if (!this.GetCache.TryGetValue(type, out data))
             {
                 //reflection on type
                 data = GetterValueFactory(type);

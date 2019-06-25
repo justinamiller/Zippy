@@ -142,9 +142,98 @@ namespace Zippy.Utility
 #endif
 };
 
-  
+
+        private static TypeData _td = new TypeData()
+            {
+                { typeof(char), TypeCode.Char },
+                { typeof(char?), TypeCode.CharNullable },
+                { typeof(bool), TypeCode.Boolean },
+                { typeof(bool?), TypeCode.BooleanNullable },
+                { typeof(sbyte), TypeCode.SByte },
+                { typeof(sbyte?), TypeCode.SByteNullable },
+                { typeof(short), TypeCode.Int16 },
+                { typeof(short?), TypeCode.Int16Nullable },
+                { typeof(ushort), TypeCode.UInt16 },
+                { typeof(ushort?), TypeCode.UInt16Nullable },
+                { typeof(int), TypeCode.Int32 },
+                { typeof(int?), TypeCode.Int32Nullable },
+                { typeof(byte), TypeCode.Byte },
+                { typeof(byte?), TypeCode.ByteNullable },
+                { typeof(uint), TypeCode.UInt32 },
+                { typeof(uint?), TypeCode.UInt32Nullable },
+                { typeof(long), TypeCode.Int64 },
+                { typeof(long?), TypeCode.Int64Nullable },
+                { typeof(ulong), TypeCode.UInt64 },
+                { typeof(ulong?), TypeCode.UInt64Nullable },
+                { typeof(float), TypeCode.Single },
+                { typeof(float?), TypeCode.SingleNullable },
+                { typeof(double), TypeCode.Double },
+                { typeof(double?), TypeCode.DoubleNullable },
+                { typeof(DateTime), TypeCode.DateTime },
+                { typeof(DateTime?), TypeCode.DateTimeNullable },
+                { typeof(DateTimeOffset), TypeCode.DateTimeOffset },
+                { typeof(DateTimeOffset?), TypeCode.DateTimeOffsetNullable },
+                { typeof(decimal), TypeCode.Decimal },
+                { typeof(decimal?), TypeCode.DecimalNullable },
+                { typeof(Guid), TypeCode.Guid },
+                { typeof(Guid?), TypeCode.GuidNullable },
+                { typeof(TimeSpan), TypeCode.TimeSpan },
+                { typeof(TimeSpan?), TypeCode.TimeSpanNullable },
+                { typeof(Uri), TypeCode.Uri },
+                { typeof(string), TypeCode.String },
+                { typeof(byte[]), TypeCode.Bytes },
+                { typeof(DBNull), TypeCode.DBNull },
+            {typeof(Exception), TypeCode.Exception },
+               {typeof(List<>), TypeCode.Enumerable},
+            {typeof(LinkedList<>),TypeCode.Enumerable},
+            {typeof(Queue<>), TypeCode.Enumerable},
+            {typeof(Stack<>), TypeCode.Enumerable},
+            {typeof(HashSet<>), TypeCode.Enumerable},
+            {typeof(System.Collections.ObjectModel.ReadOnlyCollection<>), TypeCode.Enumerable},
+        {typeof(System.Collections.IList), TypeCode.IList },
+            {typeof(IList<>), TypeCode.Enumerable},
+            {typeof(ICollection<>), TypeCode.Enumerable},
+            {typeof(IEnumerable<>), TypeCode.Enumerable},
+            {typeof(Dictionary<,>), TypeCode.GenericDictionary},
+            {typeof(IDictionary<,>), TypeCode.GenericDictionary},
+            {typeof(SortedDictionary<,>), TypeCode.Dictionary},
+            {typeof(SortedList<,>), TypeCode.Dictionary},
+            {typeof(System.Linq.ILookup<,>), TypeCode.Enumerable},
+            {typeof(System.Linq.IGrouping<,>), TypeCode.Enumerable},
+            #if NETSTANDARD
+            {typeof(System.Collections.ObjectModel.ObservableCollection<>), TypeCode.Enumerable},
+            {typeof(System.Collections.ObjectModel.ReadOnlyObservableCollection<>),TypeCode.Enumerable},
+            {typeof(IReadOnlyList<>), TypeCode.Enumerable},
+            {typeof(IReadOnlyCollection<>),TypeCode.Enumerable},
+            {typeof(ISet<>), TypeCode.Enumerable},
+            {typeof(System.Collections.Concurrent.ConcurrentBag<>), TypeCode.Enumerable},
+            {typeof(System.Collections.Concurrent.ConcurrentQueue<>),TypeCode.Enumerable},
+            {typeof(System.Collections.Concurrent.ConcurrentStack<>), TypeCode.Enumerable},
+            {typeof(System.Collections.ObjectModel.ReadOnlyDictionary<,>), TypeCode.Dictionary},
+            {typeof(IReadOnlyDictionary<,>),TypeCode.Dictionary},
+            {typeof(System.Collections.Concurrent.ConcurrentDictionary<,>), TypeCode.Dictionary},
+            {typeof(System.Data.DataTable), TypeCode.DataTable},
+            {typeof(System.Data.DataSet), TypeCode.DataSet},
+             {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
+            {typeof(System.Collections.IDictionary), TypeCode.Dictionary}
+              //          ,{typeof(object), TypeCode.Object}
+//  {typeof(Lazy<>), typeof(LazyFormatter<>)},
+//{typeof(Task<>), typeof(TaskValueFormatter<>)},
+#endif
+};
+        static TypeSerializerUtils()
+        {
+       foreach(System.Collections.DictionaryEntry item in TypeCodeMap)
+            {
+                _td.Add((Type)item.Key, (TypeCode)item.Value);
+            }
+        }
+
+
         public static TypeCode GetTypeCode(Type type)
         {
+            var tc = _td.Get(type);
+
            var typeCode = TypeCodeMap[type];
             if (typeCode != null)
             {

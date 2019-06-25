@@ -65,6 +65,6 @@ namespace Zippy
             }
         }
 
-        public DateHandler DateHandler { get; set; }
+        public DateHandler DateHandler { get; set; } = DateHandler.TimestampOffset;
     }
 }

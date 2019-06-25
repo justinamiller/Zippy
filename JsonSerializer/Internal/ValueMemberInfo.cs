@@ -13,11 +13,9 @@ namespace Zippy.Internal
 
         public TypeSerializerUtils.TypeCode Code { get; }
 
-
         public string Name { get; }
 
         private bool _errored = false;
-
 
         public ValueMemberInfo(MemberInfo memberInfo)
         {
@@ -62,6 +60,8 @@ namespace Zippy.Internal
                         throw ex;
                     }
                     _errored = true;
+
+                    return null;
                 }
             }
 

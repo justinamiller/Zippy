@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Text;
@@ -65,9 +66,8 @@ namespace Models
 
         public sbyte SB { get; set; }
 
-        //    public IDictionary<string, string> Data = new Dictionary<string, string>();
-        // public DataTable DT = new DataTable();
-        //  public DataSet DS = new DataSet();
+       //public DataTable DT { get; } = new DataTable();
+     //  public DataSet DS { get; } = new DataSet();
 
         public Result[] Results { get; set; } = Array.Empty<Result>();
 
@@ -99,11 +99,11 @@ namespace Models
 
         public ulong ULongValue { get; set; } = ulong.MaxValue;
 
-        public float FloatValue { get; set; } = float.MaxValue;
+        public float FloatValue { get; set; } = 234234234.2342F;
 
-        public double DoubleValue { get; set; } = double.MaxValue;
+        public double DoubleValue { get; set; } = 234234234.2342;
 
-        public decimal DecimalValue { get; set; } = decimal.MaxValue;
+        public decimal DecimalValue { get; set; } = 234234234.2342M;
 
         public DateTime DateTimeValue { get; set; } = DateTime.Now;
 
@@ -125,11 +125,16 @@ namespace Models
             Collect.Add("Test");
             OldAges.Add("test", "data");
             ChildrenAges.Add("bill", 13);
-            // Data.Add("Item1", "is ready");
-            //    DT.Columns.Add("Column1", typeof(string));
-            //   var r=DT.NewRow();
-            //   r[0] = "Test";
-            // DT.Rows.Add(r);
+            //DT.Columns.Add("Column1", typeof(string));
+            //DT.Columns.Add("Column2", typeof(int));
+
+            //for (var i = 0; i < 10; i++)
+            //{
+            //    var r = DT.NewRow();
+            //    r[0] = "Test_" + i.ToString();
+            //    r[1] = i;
+            //    DT.Rows.Add(r);
+            //}
 
             MixObjects.Add("Test");
             MixObjects.Add(1);

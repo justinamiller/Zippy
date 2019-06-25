@@ -4,6 +4,8 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Buffers.Text;
+using System.Runtime.InteropServices;
 
 namespace Zippy.Utility
 {
