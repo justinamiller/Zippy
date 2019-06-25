@@ -97,7 +97,7 @@ namespace Zippy.Utility
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static char[] ToTimeOffsetString(this long ticks)
+        public static char[] ToTimeOffsetChars(this long ticks)
         {
             var h = (int)(ticks / 36000000000L % 24L);
             if (h < 0)
@@ -147,7 +147,8 @@ namespace Zippy.Utility
             return items;
         }
 
-        public static long ToUniversalTicks(this DateTime dateTime, TimeSpan offset)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long ToUniversalTicks(this DateTime dateTime, long offset)
         {
             // special case min and max value
             // they never have a timezone appended to avoid issues
@@ -156,7 +157,7 @@ namespace Zippy.Utility
                 return dateTime.Ticks;
             }
 
-            long ticks = dateTime.Ticks - offset.Ticks;
+            long ticks = dateTime.Ticks - offset;
             if (ticks > 3155378975999999999L)
             {
                 return 3155378975999999999L;
@@ -248,7 +249,6 @@ namespace Zippy.Utility
             if (fraction > 0)
             {
                 buffer[index++] = '.';
-
 
                 int effectiveDigits = 7 - MathUtils.IntLength((ulong)fraction);
 

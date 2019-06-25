@@ -8,8 +8,8 @@ namespace Zippy.Utility
 {
     sealed class FastLookup<TKey, TValue> : IEnumerable
     {
-        TKey[] _types = Array.Empty<TKey>();
-        TValue[] _codes = Array.Empty<TValue>();
+        TKey[] _key = Array.Empty<TKey>();
+        TValue[] _value = Array.Empty<TValue>();
         int _index = 0;
 
         public int Length
@@ -20,24 +20,40 @@ namespace Zippy.Utility
             }
         }
 
+        public IReadOnlyCollection<TKey> Keys
+        {
+            get
+            {
+                return Array.AsReadOnly(_key);
+            }
+        }
+
+        public IReadOnlyCollection<TValue> Values
+        {
+            get
+            {
+                return Array.AsReadOnly(_value);
+            }
+        }
+
         public FastLookup()
         {
         }
 
         public void Clear()
         {
-            _types = Array.Empty<TKey>();
-            _codes = Array.Empty<TValue>();
+            _key = Array.Empty<TKey>();
+            _value = Array.Empty<TValue>();
             _index = 0;
         }
 
-        public void Add(TKey type, TValue code)
+        public void Add(TKey key, TValue value)
         {
-            Array.Resize(ref _types, _index + 1);
-            Array.Resize(ref _codes, _index + 1);
+            Array.Resize(ref _key, _index + 1);
+            Array.Resize(ref _value, _index + 1);
 
-            _types[_index] = type;
-            _codes[_index] = code;
+            _key[_index] = key;
+            _value[_index] = value;
             _index++;
         }
 
@@ -45,9 +61,9 @@ namespace Zippy.Utility
         {
             for (var i = 0; i < _index; i++)
             {
-                if (RuntimeHelpers.Equals(_types[i], key))
+                if (RuntimeHelpers.Equals(_key[i], key))
                 {
-                    value = _codes[i];
+                    value = _value[i];
                     return true;
                 }
             }
@@ -56,9 +72,59 @@ namespace Zippy.Utility
             return false;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+       public  IEnumerator GetEnumerator()
         {
-            throw new NotSupportedException();
+            return new FastLookupEnumerator(_key, _value);
         }
+
+        //private enumerator class
+        private class FastLookupEnumerator : IEnumerator
+        {
+            readonly TKey[] _key;
+            readonly TValue[] _value;
+            int _position = -1;
+
+            //constructor
+            public FastLookupEnumerator(TKey[] key, TValue[] value)
+            {
+                _key = key;
+                _value = value;
+            }
+
+            public IEnumerator GetEnumerator()
+            {
+                return this;
+            }
+
+
+            //IEnumerator
+            public bool MoveNext()
+            {
+                _position++;
+                return (_position < _key.Length);
+            }
+
+            //IEnumerator
+            public void Reset()
+            {
+                _position = -1;
+            }
+
+            //IEnumerator
+            public object Current
+            {
+                get
+                {
+                    try
+                    {
+                        return new DictionaryEntry(_key[_position], _value[_position]);
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+        }  //end nested class
     }
 }

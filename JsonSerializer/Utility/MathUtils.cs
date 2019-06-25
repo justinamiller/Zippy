@@ -134,7 +134,7 @@ namespace Zippy.Utility
 
         public static char[] WriteNumberToBuffer(uint value, bool negative)
         {
-          int  totalLength = MathUtils.IntLength(value);
+            int  totalLength = MathUtils.IntLength(value);
             if (negative)
             {
                 totalLength++;

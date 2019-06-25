@@ -263,43 +263,41 @@ namespace Zippy.Serialize
 
         public void WriteDateTime(object oDateTime)
         {
-            _writer.Write(QuoteChar);
-            WriteJsonDate(_writer,(DateTime)oDateTime);
-       //    WriteJsonDateOld(_writer, (DateTime)oDateTime);
-            _writer.Write(QuoteChar);
-        }
+            var dateTime = (DateTime)oDateTime;
 
+            if (JSON.Options.DateHandler == DateHandler.TimestampOffset)
+            {
+                _writer.Write(QuoteChar);
+                var offset = LocalTimeZone.GetUtcOffset(dateTime).Ticks;
+                var ticks = dateTime.ToUniversalTicks(offset);
+                long value = unchecked((ticks - DatetimeMinTimeTicks) / 10000);
 
+                _writer.Write(@"\/Date(");
+                //     _writer.Write(_datePrefix, 0, 7);
+                //_writer.Write(MathUtils.WriteNumberToBuffer((uint)value, false));
+                _writer.Write(value.ToString(CurrentCulture));
+                _writer.Write(offset.ToTimeOffsetChars());
+                _writer.Write(@")\/");
+                //  _writer.Write(_dateSuffix,0,3);
+                _writer.Write(QuoteChar);
+                return;
+            }
 
-        private static void WriteJsonDate(TextWriter writer, DateTime dateTime)
-        {
             switch (JSON.Options.DateHandler)
             {
                 case DateHandler.ISO8601:
-                    writer.Write(dateTime.ToString("o", CurrentCulture));
+                    _writer.Write(dateTime.ToString("o", CurrentCulture));
                     return;
                 case DateHandler.ISO8601DateOnly:
-                    writer.Write(dateTime.ToString("yyyy-MM-dd", CurrentCulture));
+                    _writer.Write(dateTime.ToString("yyyy-MM-dd", CurrentCulture));
                     return;
                 case DateHandler.ISO8601DateTime:
-                    writer.Write(dateTime.ToString("yyyy-MM-dd HH:mm:ss", CurrentCulture));
+                    _writer.Write(dateTime.ToString("yyyy-MM-dd HH:mm:ss", CurrentCulture));
                     return;
                 case DateHandler.RFC1123:
-                    writer.Write(dateTime.ToUniversalTime().ToString("R", CurrentCulture));
+                    _writer.Write(dateTime.ToUniversalTime().ToString("R", CurrentCulture));
                     return;
             }
-            var offset = LocalTimeZone.GetUtcOffset(dateTime);
-            var ticks = dateTime.ToUniversalTicks(offset);
-            long value = unchecked((ticks - DatetimeMinTimeTicks) / 10000);
-
-            writer.Write(@"\/Date(");
-            //     _writer.Write(_datePrefix, 0, 7);
-      //      writer.Write(MathUtils.WriteNumberToBuffer((uint)value, false));
-           writer.Write(value.ToString(CurrentCulture));
-            writer.Write(offset.Ticks.ToTimeOffsetString());
-       //     writer.Write(offset.ToTimeOffsetString());
-            writer.Write(@")\/");
-            //  _writer.Write(_dateSuffix,0,3);
         }
 
         //private static void WriteJsonDateOld(TextWriter writer, DateTime dateTime)
@@ -391,7 +389,7 @@ namespace Zippy.Serialize
         {
             var guid = new FastGuidStruct((Guid)oValue);
             _writer.Write(QuoteChar);
-            _writer.Write(guid.GetBuffer(),0,36);
+            _writer.Write(guid.GetBuffer(), 0, 36);
             //_writer.Write(((Guid)oValue).ToString("D", CurrentCulture));
             _writer.Write(QuoteChar);
         }
