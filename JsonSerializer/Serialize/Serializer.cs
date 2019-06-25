@@ -403,7 +403,7 @@ namespace Zippy.Serialize
                         _jsonWriter.WriteComma();
                     }
 
-                    string name = Convert.ToString(key, JsonWriter.CurrentCulture);
+                    string name = key.ToString();
                     _jsonWriter.WritePropertyName(name);
 
                     var dictionaryValue = enumerator.Value;
@@ -537,7 +537,7 @@ namespace Zippy.Serialize
                 {
                     entry = e.Entry;
 
-                    string name = Convert.ToString(entry.Key, JsonWriter.CurrentCulture);
+                    string name = entry.Key.ToString();
                     _jsonWriter.WritePropertyName(name);
                     var value = entry.Value;
 
