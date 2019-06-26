@@ -101,9 +101,7 @@ namespace Zippy.Serialize
                 this._propertyInUse = true;
             }
 
-            value = TypeSerializerUtils.FormatPropertyName(value);
-            _writer.Write(StringExtension.GetEncodeString(value));
-            _writer.Write(':');
+            _writer.Write(TypeSerializerUtils.BuildPropertyName(value));
         }
 
         public bool WriteValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode, object value)

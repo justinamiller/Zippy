@@ -180,10 +180,7 @@ namespace Zippy.Utility
 
             //flush
             var buffer = new char[bufferIndex];
-            for (var i = 0; i < bufferIndex; i++)
-            {
-                buffer[i] = bufferWriter[i];
-            }
+            Array.Copy(bufferWriter, 0, buffer, 0, bufferIndex);
             return buffer;
         }
 

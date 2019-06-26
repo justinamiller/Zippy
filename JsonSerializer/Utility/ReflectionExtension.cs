@@ -156,27 +156,6 @@ namespace Zippy.Utility
             }
         }
 
-
-        public static Func<TKey, TValue> CreateGet<TKey, TValue>(MemberInfo item)
-        {
-            try
-            {
-                if (item is PropertyInfo)
-                {
-                    return CreateGet<TKey, TValue>((PropertyInfo)item);
-                }
-                else if (item is FieldInfo)
-                {
-                    return CreateGet<TKey, TValue>((FieldInfo)item);
-                }
-            }
-            catch (Exception)
-            {
-                //do nothing
-            }
-            return null;
-        }
-
         public static Func<TKey, TValue> CreateGet<TKey, TValue>(FieldInfo fieldInfo)
         {
             if (fieldInfo == null)
@@ -209,6 +188,19 @@ namespace Zippy.Utility
             }
         }
 
+
+        public static Func<TKey, TValue> CreateGet<TKey, TValue>(MemberInfo item)
+        {
+            if (item is PropertyInfo)
+            {
+                return CreateGet<TKey, TValue>((PropertyInfo)item);
+            }
+            else if (item is FieldInfo)
+            {
+                return CreateGet<TKey, TValue>((FieldInfo)item);
+            }
+            return null;
+        }
 
         public static ReflectionExtension.GetDelegate GetGetMethod(FieldInfo fieldInfo)
         {
@@ -642,11 +634,11 @@ namespace Zippy.Utility
         public static bool ShouldUseMember(this MemberInfo memberInfo)
         {
             var propInfo = memberInfo as PropertyInfo;
-            if(propInfo != null)
+            if (propInfo != null)
             {
                 return propInfo.ShouldUseMember();
             }
-            var fieldInfo= memberInfo as FieldInfo;
+            var fieldInfo = memberInfo as FieldInfo;
             if (fieldInfo != null)
             {
                 return fieldInfo.ShouldUseMember();

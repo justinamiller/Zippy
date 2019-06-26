@@ -46,10 +46,10 @@ namespace ConsoleTest
 
             var c = new Models.ComplexModelObject();
             Zippy.JSON.SerializeObjectToString(c);
-            //c = new Models.ComplexModelObject();
-            //Test(c);
-            //c = new Models.ComplexModelObject();
-            //Test1(c);
+            c = new Models.ComplexModelObject();
+            Test(c);
+            c = new Models.ComplexModelObject();
+            Test1(c);
             return;
 
             //for (var i = 0; i < 10000; i++)

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Zippy.Internal;
 
 namespace Zippy.Utility
@@ -296,9 +297,43 @@ namespace Zippy.Utility
         public static string BuildPropertyName(string name)
         {
             name = FormatPropertyName(name);
-            name = ArrayUtil.ToString(StringExtension.GetEncodeString(name, true));
-            name = string.Concat(name, ":");
-            return name;
+
+           if (!name.HasAnyEscapeChars(JSON.Options.EscapeHtmlChars))
+            {
+                int len = name.Length;
+                var buffer = new char[len + 3];
+                int index = 0;
+                buffer[index++] = '"';
+                unsafe
+                {
+                    fixed (char* ptr2 = name)
+                    {
+                        char* ptr = ptr2;
+                        for (var i = 0; i < len; i++)
+                        {
+                            char cc = *ptr;
+                            buffer[index++] = cc;
+                            ptr++;
+                        }
+                    }
+                }
+                buffer[index++] = '"';
+                buffer[index++] = ':';
+
+                return new string(buffer, 0, len + 3);
+            }
+            else
+            {
+                //force encode.
+                var buffer = StringExtension.GetEncodeString(name, true);
+                int length = buffer.Length;
+
+                var newArray = new char[length + 1];
+                Array.Copy(buffer, 0, newArray, 0, length);
+                newArray[length] = ':';
+
+                return new string(newArray, 0, length + 1);
+            }
         }
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable, Type type)

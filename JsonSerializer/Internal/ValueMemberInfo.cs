@@ -19,24 +19,26 @@ namespace Zippy.Internal
 
         public ValueMemberInfo(MemberInfo memberInfo)
         {
+            Type type = null;
             // this.MemberInfo = memberInfo;
             var propertyInfo = memberInfo as PropertyInfo;
             if (propertyInfo != null)
             {
-                ValueType = propertyInfo.PropertyType;
+                type = propertyInfo.PropertyType;
+                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(propertyInfo);
             }
             else if (memberInfo is FieldInfo)
             {
-                ValueType = ((FieldInfo)memberInfo).FieldType;
+                FieldInfo fieldInfo = (FieldInfo)memberInfo;
+                type = fieldInfo.FieldType;
+                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(fieldInfo);
             }
 
-            if (ValueType != null)
+            if (type != null)
             {
-                this.Code = Utility.TypeSerializerUtils.GetTypeCode(ValueType);
-
-                var name = memberInfo.GetSerializationName();
-                this.Name = TypeSerializerUtils.BuildPropertyName(name);
-                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(memberInfo);
+                this.ValueType = type;
+                this.Code = Utility.TypeSerializerUtils.GetTypeCode(type);
+                this.Name = TypeSerializerUtils.BuildPropertyName(memberInfo.GetSerializationName());
             }
             else
             {
