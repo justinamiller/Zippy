@@ -76,6 +76,29 @@ Frequency=2648441 Hz, Resolution=377.5806 ns, Timer=TSC
 |        Zippy_ModelWithCommonType | 3.795 us | 0.0741 us | 0.0964 us |    2 |   ** |
 | ServiceStack_ModelWithCommonType | 5.284 us | 0.1013 us | 0.1317 us |    3 |  *** |
 |   NewtonSoft_ModelWithCommonType | 5.783 us | 0.0764 us | 0.0715 us |    4 | **** |
+
+|                           Method |     Mean |     Error |    StdDev | Rank | Rank |
+|--------------------------------- |---------:|----------:|----------:|-----:|-----:|
+|          Jil_ModelWithCommonType | 3.046 us | 0.0349 us | 0.0310 us |    1 |    * |
+|        Zippy_ModelWithCommonType | 3.987 us | 0.0799 us | 0.0748 us |    2 |   ** |
+| ServiceStack_ModelWithCommonType | 5.619 us | 0.0856 us | 0.0758 us |    3 |  *** |
+|   NewtonSoft_ModelWithCommonType | 5.901 us | 0.1109 us | 0.1233 us |    4 | **** |
+
+|                          Method |     Mean |     Error |     StdDev |   Median | Rank | Rank |
+|-------------------------------- |---------:|----------:|-----------:|---------:|-----:|-----:|
+|        Zippy_ComplexModelObject | 19.27 us | 0.3812 us |  1.0435 us | 18.98 us |    1 |    * |
+| ServiceStack_ComplexModelObject | 24.19 us | 0.2111 us |  0.1871 us | 24.12 us |    2 |   ** |
+|   NewtonSoft_ComplexModelObject | 27.31 us | 0.1628 us |  0.1360 us | 27.33 us |    3 |  *** |
+|          Jil_ComplexModelObject | 53.64 us | 5.3471 us | 15.4277 us | 47.76 us |    4 | **** |
+
+|                       Method |     Mean |     Error |    StdDev | Rank | Rank |
+|----------------------------- |---------:|----------:|----------:|-----:|-----:|
+|          Jil_SimpleModelType | 1.389 us | 0.0171 us | 0.0160 us |    1 |    * |
+|        Zippy_SimpleModelType | 1.661 us | 0.0321 us | 0.0417 us |    2 |   ** |
+| ServiceStack_SimpleModelType | 1.821 us | 0.0245 us | 0.0217 us |    3 |  *** |
+|   NewtonSoft_SimpleModelType | 2.416 us | 0.0436 us | 0.0386 us |    4 | **** |
+
+
  
    
    
