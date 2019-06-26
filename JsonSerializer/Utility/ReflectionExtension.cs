@@ -134,16 +134,13 @@ namespace Zippy.Utility
                 if (getMethod == null)
                     return null;
 
-                if (getMethod.IsStatic)
+                Expression readParameter = null;
+                if (!getMethod.IsStatic)
                 {
-                    resultExpression = Expression.MakeMemberAccess(null, propertyInfo);//  EnsureCastExpression(Expression.MakeMemberAccess(null, propertyInfo), typeof(TValue));
+                    readParameter = EnsureCastExpression(parameterExpression, propertyInfo.DeclaringType);
                 }
-                else
-                {
-                    Expression readParameter = EnsureCastExpression(parameterExpression, propertyInfo.DeclaringType);
 
-                    resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
-                }
+                resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
 
                 resultExpression = EnsureCastExpression(resultExpression, typeof(object));
                 LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<TKey, TValue>), resultExpression, parameterExpression);
@@ -160,27 +157,25 @@ namespace Zippy.Utility
         {
             if (fieldInfo == null)
                 return null;
+            if (fieldInfo.FieldType.IsByRef)
+                return null;//https://github.com/dotnet/corefx/issues/26053
 
+            Expression sourceExpression = null;
             try
             {
                 ParameterExpression sourceParameter = Expression.Parameter(typeof(TKey), "source");
 
-                Expression fieldExpression;
-                if (fieldInfo.IsStatic)
+                if (!fieldInfo.IsStatic)
                 {
-                    fieldExpression = Expression.Field(null, fieldInfo);
+                    sourceExpression = EnsureCastExpression(sourceParameter, fieldInfo.DeclaringType);
                 }
-                else
-                {
-                    Expression sourceExpression = EnsureCastExpression(sourceParameter, fieldInfo.DeclaringType);
 
-                    fieldExpression = Expression.Field(sourceExpression, fieldInfo);
-                }
+                Expression fieldExpression = Expression.Field(sourceExpression, fieldInfo);
 
                 fieldExpression = EnsureCastExpression(fieldExpression, typeof(TValue));
 
-
-                return Expression.Lambda<Func<TKey, TValue>>(fieldExpression, sourceParameter).Compile();
+                LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<TKey, TValue>), fieldExpression, sourceParameter);
+                return (Func<TKey, TValue>)lambdaExpression.Compile();
             }
             catch (Exception)
             {

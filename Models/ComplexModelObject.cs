@@ -111,7 +111,6 @@ namespace Models
 
         public Guid GuidValue { get; set; } = Guid.NewGuid();
 
-
         public ComplexModelObject()
         {
             this.Name = "Test";

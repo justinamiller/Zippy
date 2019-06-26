@@ -246,8 +246,9 @@ namespace Zippy.Utility
             {typeof(System.Data.DataTable), TypeCode.DataTable},
             {typeof(System.Data.DataSet), TypeCode.DataSet},
              {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
-            {typeof(System.Collections.IDictionary), TypeCode.Dictionary}
-              //          ,{typeof(object), TypeCode.Object}
+            {typeof(System.Collections.IDictionary), TypeCode.Dictionary},
+            {typeof(object), TypeCode.NotSetObject},
+              {typeof(Array), TypeCode.Array}
 //  {typeof(Lazy<>), typeof(LazyFormatter<>)},
 //{typeof(Task<>), typeof(TaskValueFormatter<>)},
 #endif
@@ -256,8 +257,7 @@ namespace Zippy.Utility
 
         public static TypeCode GetTypeCode(Type type)
         {
-            TypeCode typeCode = TypeCode.Empty;
-     
+            TypeCode typeCode;
             if (TypeCodeMap.GetValue(type, out typeCode))
             {
                 return typeCode;
@@ -266,8 +266,11 @@ namespace Zippy.Utility
             {
                 return typeCode;
             }
-
             var baseType = type.BaseType;
+            if (baseType == typeof(object))
+            {
+                return TypeCode.NotSetObject;
+            }
             if (baseType == typeof(Enum))
             {
                 return GetTypeCode(Enum.GetUnderlyingType(type));

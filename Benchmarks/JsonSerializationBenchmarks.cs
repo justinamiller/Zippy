@@ -27,23 +27,6 @@ namespace Benchmarks
             ServiceStack.Text.JsConfig.IncludePublicFields = true;
         }
 
-        //[Benchmark]
-        //public void Zippy_ComplexModelObject()
-        //{
-        //    string result = Zippy.JSON.SerializeObjectToString(_ComplexModelObject);
-        //}
-
-        //[Benchmark]
-        //public void Zippy_SimpleModelType()
-        //{
-        //    string result = Zippy.JSON.SerializeObjectToString(_SimpleModelType);
-        //}
-
-        [Benchmark]
-        public void Zippy_ModelWithCommonType()
-        {
-            string result = Zippy.JSON.SerializeObjectToString(_ModelWithCommonTypes);
-        }
 
         //[Benchmark]
         //public void NewtonSoft_ComplexModelObject()
@@ -52,34 +35,10 @@ namespace Benchmarks
         //}
 
         //[Benchmark]
-        //public void NewtonSoft_SimpleModelType()
-        //{
-        //    string result = Newtonsoft.Json.JsonConvert.SerializeObject(_SimpleModelType); 
-        //}
-
-        [Benchmark]
-        public void NewtonSoft_ModelWithCommonType()
-        {
-            string result = Newtonsoft.Json.JsonConvert.SerializeObject(_ModelWithCommonTypes);
-        }
-
-        //[Benchmark]
         //public void Jil_ComplexModelObject()
         //{
         //    string result = Jil.JSON.Serialize<object>(_ComplexModelObject);
         //}
-
-        //[Benchmark]
-        //public void Jil_SimpleModelType()
-        //{
-        //    string result = Jil.JSON.Serialize<object>(_SimpleModelType);
-        //}
-
-        [Benchmark]
-        public void Jil_ModelWithCommonType()
-        {
-            string result = Jil.JSON.Serialize<object>(_ModelWithCommonTypes);
-        }
 
         //[Benchmark]
         //public void ServiceStack_ComplexModelObject()
@@ -88,15 +47,64 @@ namespace Benchmarks
         //}
 
         //[Benchmark]
-        //public void ServiceStack_SimpleModelType()
+        //public void Zippy_ComplexModelObject()
         //{
-        //    string result = ServiceStack.Text.JsonSerializer.SerializeToString(_SimpleModelType);
+        //    string result = Zippy.JSON.SerializeObjectToString(_ComplexModelObject);
         //}
 
+
+
         [Benchmark]
-        public void ServiceStack_ModelWithCommonType()
+        public void NewtonSoft_SimpleModelType()
         {
-            string result = ServiceStack.Text.JsonSerializer.SerializeToString(_ModelWithCommonTypes);
+            string result = Newtonsoft.Json.JsonConvert.SerializeObject(_SimpleModelType);
         }
+
+        [Benchmark]
+        public void Jil_SimpleModelType()
+        {
+            string result = Jil.JSON.Serialize<object>(_SimpleModelType);
+        }
+
+        [Benchmark]
+        public void ServiceStack_SimpleModelType()
+        {
+            string result = ServiceStack.Text.JsonSerializer.SerializeToString(_SimpleModelType);
+        }
+
+        [Benchmark]
+        public void Zippy_SimpleModelType()
+        {
+            string result = Zippy.JSON.SerializeObjectToString(_SimpleModelType);
+        }
+
+
+
+
+
+
+        //[Benchmark]
+        //public void ServiceStack_ModelWithCommonType()
+        //{
+        //    string result = ServiceStack.Text.JsonSerializer.SerializeToString(_ModelWithCommonTypes);
+        //}
+
+        //[Benchmark]
+        //public void Jil_ModelWithCommonType()
+        //{
+        //    string result = Jil.JSON.Serialize<object>(_ModelWithCommonTypes);
+        //}
+
+        //[Benchmark]
+        //public void Zippy_ModelWithCommonType()
+        //{
+        //    string result = Zippy.JSON.SerializeObjectToString(_ModelWithCommonTypes);
+        //}
+
+        //[Benchmark]
+        //public void NewtonSoft_ModelWithCommonType()
+        //{
+        //    string result = Newtonsoft.Json.JsonConvert.SerializeObject(_ModelWithCommonTypes);
+        //}
     }
 }
