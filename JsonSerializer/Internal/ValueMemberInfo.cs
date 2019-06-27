@@ -5,7 +5,7 @@ using Zippy.Utility;
 
 namespace Zippy.Internal
 {
-    sealed class ValueMemberInfo : IValue
+    sealed class ValueMemberInfo : IValueMemberInfo
     {
         private readonly Func<object, object> _getter;
 
@@ -51,6 +51,7 @@ namespace Zippy.Internal
         {
             if (!_errored && instance != null)
             {
+                isError = false;
                 try
                 {
                     return _getter(instance);

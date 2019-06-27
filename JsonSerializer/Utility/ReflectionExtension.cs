@@ -16,6 +16,16 @@ namespace Zippy.Utility
         {
             List<MemberInfo> fieldInfos = new List<MemberInfo>(type.GetFields(bindingFlags));
 
+            // GetInterfaces on an interface doesn't return properties from its interfaces
+            if (type.IsInterface)
+            {
+                foreach (Type i in type.GetInterfaces())
+                {
+                    fieldInfos.AddRange(i.GetFields(bindingFlags));
+                }
+            }
+
+
             GetChildPrivateFields(fieldInfos, type, bindingFlags);
 
             return fieldInfos;

@@ -3,7 +3,7 @@ using Zippy.Serialize;
 
 namespace Zippy.Internal
 {
-    interface IValue
+    interface IValueMemberInfo
     {
         string Name { get; }
         Utility.TypeSerializerUtils.TypeCode Code { get; }

@@ -9,6 +9,7 @@ using Zippy.Internal;
 using Zippy.Utility;
 using static Zippy.Utility.TypeSerializerUtils;
 using System.Linq;
+using System.Collections.Specialized;
 
 namespace Zippy.Serialize
 {
@@ -236,7 +237,6 @@ namespace Zippy.Serialize
                 // note that an error in the IEnumerable won't be caught
                 for (var i = 0; i < len; i++)
                 {
-                    var value = list[i];
                     if (!flag1)
                     {
                         _jsonWriter.WriteComma();
@@ -247,6 +247,7 @@ namespace Zippy.Serialize
                         flag1 = false;
                     }
 
+                    var value = list[i];
                     if (value == null)
                     {
                         _jsonWriter.WriteNull();
@@ -469,20 +470,20 @@ namespace Zippy.Serialize
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SerializeValueMemberInfo(object instance, IValue[] items)
+        private bool SerializeValueMemberInfo(object instance, IValueMemberInfo[] items)
         {
-
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
 
             int len = items.Length;
+            IValueMemberInfo item;
             _jsonWriter.WriteStartObject();
             try
             {
                 bool isError = false;
                 for (var i = 0; i < len; i++)
                 {
-                    IValue item = items[i];
-                    isError = false;
+                    item = items[i];
+
                     var value = item.GetValue(instance, ref isError);
 
                     if (!isError || JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ReportValueAsNull)
@@ -506,6 +507,7 @@ namespace Zippy.Serialize
 
             return true;
         }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool WriteObjectValue(object value, Type type, TypeSerializerUtils.TypeCode valueTypeCode)
@@ -725,7 +727,7 @@ namespace Zippy.Serialize
                         }
                     case TypeSerializerUtils.TypeCode.NameValueCollection:
                         {
-                            return this.SerializeNameValueCollection((System.Collections.Specialized.NameValueCollection)value);
+                            return this.SerializeNameValueCollection((NameValueCollection)value);
                         }
                     case TypeSerializerUtils.TypeCode.DataSet:
                         {
@@ -737,7 +739,7 @@ namespace Zippy.Serialize
                         }
                     case TypeSerializerUtils.TypeCode.NotSetObject:
                         {
-                            IValue[] obj = null;
+                            IValueMemberInfo[] obj = null;
                             if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, type, out obj))
                             {
                                 return this.SerializeValueMemberInfo(value, obj);

@@ -215,14 +215,14 @@ namespace Zippy.Utility
                 { typeof(byte[]), TypeCode.Bytes },
                 { typeof(DBNull), TypeCode.DBNull },
             {typeof(Exception), TypeCode.Exception },
-               {typeof(List<>), TypeCode.Enumerable},
+               {typeof(List<>), TypeCode.IList},
             {typeof(LinkedList<>),TypeCode.Enumerable},
             {typeof(Queue<>), TypeCode.Enumerable},
             {typeof(Stack<>), TypeCode.Enumerable},
             {typeof(HashSet<>), TypeCode.Enumerable},
             {typeof(System.Collections.ObjectModel.ReadOnlyCollection<>), TypeCode.Enumerable},
         {typeof(System.Collections.IList), TypeCode.IList },
-            {typeof(IList<>), TypeCode.Enumerable},
+            {typeof(IList<>), TypeCode.IList},
             {typeof(ICollection<>), TypeCode.Enumerable},
             {typeof(IEnumerable<>), TypeCode.Enumerable},
             {typeof(Dictionary<,>), TypeCode.GenericDictionary},
@@ -367,24 +367,6 @@ namespace Zippy.Utility
             {
                 return (GetTypeCode(type.GetGenericArguments()[0]));
             }
-
-            return TypeCode.NotSetObject;
-        }
-
-        public static TypeCode GetEnumerableValueTypeCode(Type type)
-        {
-            if (type.IsArray)
-            {
-                return GetTypeCode(type.GetElementType());
-            }
-            //else if (anEnumerable is System.Collections.ArrayList)
-            //{
-            //    return TypeCode.NotSetObject;
-            //}
-            //else if (type is System.Collections.IList)
-            //{
-            //    return GetIListValueTypeCode((System.Collections.IList)anEnumerable);
-            //}
 
             return TypeCode.NotSetObject;
         }

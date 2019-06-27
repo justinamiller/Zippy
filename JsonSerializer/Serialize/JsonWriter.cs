@@ -81,7 +81,7 @@ namespace Zippy.Serialize
         {
             if (this._propertyInUse)
             {
-                _writer.Write(',');
+                WriteComma();
             }
             else
             {
@@ -94,7 +94,7 @@ namespace Zippy.Serialize
         {
             if (this._propertyInUse)
             {
-                _writer.Write(',');
+                WriteComma();
             }
             else
             {
