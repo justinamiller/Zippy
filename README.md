@@ -91,6 +91,14 @@ Frequency=2648441 Hz, Resolution=377.5806 ns, Timer=TSC
 |   NewtonSoft_ComplexModelObject | 27.31 us | 0.1628 us |  0.1360 us | 27.33 us |    3 |  *** |
 |          Jil_ComplexModelObject | 53.64 us | 5.3471 us | 15.4277 us | 47.76 us |    4 | **** |
 
+'change on cache extended values on collection types.
+|                          Method |     Mean |     Error |     StdDev |   Median | Rank | Rank |
+|-------------------------------- |---------:|----------:|-----------:|---------:|-----:|-----:|
+|        Zippy_ComplexModelObject | 15.38 us | 0.4619 us |  0.5133 us | 15.24 us |    1 |    * |
+| ServiceStack_ComplexModelObject | 23.33 us | 0.2512 us |  0.2097 us | 23.34 us |    2 |   ** |
+|   NewtonSoft_ComplexModelObject | 27.51 us | 0.9497 us |  1.1663 us | 27.07 us |    3 |  *** |
+|          Jil_ComplexModelObject | 52.38 us | 4.8704 us | 13.8164 us | 47.20 us |    4 | **** |
+
 |                       Method |     Mean |     Error |    StdDev | Rank | Rank |
 |----------------------------- |---------:|----------:|----------:|-----:|-----:|
 |          Jil_SimpleModelType | 1.389 us | 0.0171 us | 0.0160 us |    1 |    * |
