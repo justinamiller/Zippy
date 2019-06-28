@@ -38,16 +38,17 @@ namespace ConsoleTest
 
         static void Main(string[] args)
         {
+         //   AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             System.Threading.Thread.Sleep(250);
             ////var c = new Models.ComplexModelObject();
             ////Zippy.JSON.SerializeObjectToString1(c);
             ///
             var c = new Models.ComplexModelObject();
             Zippy.JSON.SerializeObjectToString(c);
-            //c = new Models.ComplexModelObject();
-            //Test(c);
-            //c = new Models.ComplexModelObject();
-            //Test1(c);
+            c = new Models.ComplexModelObject();
+            Test(c);
+            c = new Models.ComplexModelObject();
+            Test1(c);
             return;
 
             //for (var i = 0; i < 10000; i++)
@@ -69,6 +70,11 @@ namespace ConsoleTest
             Console.ReadLine();
         }
 
+        private static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
+            Console.WriteLine(e.Exception.ToString());
+            Console.ReadLine();
+        }
 
         static void TestJson()
         {

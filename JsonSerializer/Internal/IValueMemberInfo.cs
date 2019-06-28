@@ -8,6 +8,9 @@ namespace Zippy.Internal
         string Name { get; }
         Utility.TypeSerializerUtils.TypeCode Code { get; }
         object GetValue(object instance, ref bool isError);
-        Type ValueType { get; }
+        Type ObjectType { get; }
+        bool IsType { get; }
+
+        IValueMemberInfo ExtendedValueInfo { get; }
     }
 }

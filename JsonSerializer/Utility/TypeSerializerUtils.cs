@@ -341,19 +341,44 @@ namespace Zippy.Utility
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable, Type type)
         {
+            var valueType = GetEnumerableValueType(anEnumerable, type);
+            if (valueType != typeof(object))
+            {
+                return GetTypeCode(valueType);
+            }
+            return TypeCode.NotSetObject;
+        }
+
+        public static Type GetEnumerableValueType(System.Collections.IEnumerable anEnumerable, Type type)
+        {
             if (anEnumerable is System.Collections.ArrayList)
             {
-                return TypeCode.NotSetObject;
+                return typeof(object);
             }
             else if (anEnumerable is System.Collections.IList)
             {
-                return GetIListValueTypeCode(type);
+                if (type.IsGenericType)
+                {
+                    return type.GetGenericArguments()[0];
+                }
+
+                return typeof(object);
             }
             else if (anEnumerable is Array)
             {
-                return GetArrayValueTypeCode(type);
+                return type.GetElementType();
             }
-            return TypeCode.NotSetObject;
+
+            return typeof(object);
+        }
+
+        public static bool HasExtendedValueInformation(TypeCode typeCode)
+        {
+            return typeCode == TypeCode.GenericDictionary 
+                || typeCode == TypeCode.IList 
+                || typeCode == TypeCode.Array 
+                || typeCode == TypeCode.Dictionary 
+                || typeCode == TypeCode.Enumerable;
         }
 
         public static TypeCode GetArrayValueTypeCode(Type type)
