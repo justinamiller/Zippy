@@ -145,15 +145,8 @@ namespace Zippy.Serialize
             }
 
             Type lastType = null;
-            bool flag1 = false;
 
             var valueMember = valueMemberInfo.ExtendedValueInfo;
-            if (valueMember == null)
-            {
-                var valueType = valueMemberInfo.ObjectType.GetElementType();
-                valueMember = new ValueMemberInfo(valueType);
-            }
-
             bool isTyped = valueMember.IsType;
 
             _jsonWriter.WriteStartArray();
@@ -162,13 +155,9 @@ namespace Zippy.Serialize
                 // note that an error in the IEnumerable won't be caught
                 for (var i = 0; i < len; i++)
                 {
-                    if (flag1)
+                    if (i>0)
                     {
                         _jsonWriter.WriteComma();
-                    }
-                    else
-                    {
-                        flag1 = true;
                     }
 
                     var value = array.GetValue(i);
@@ -207,16 +196,9 @@ namespace Zippy.Serialize
                 return true;
             }
 
-            bool flag1 = true;
             Type lastType = null;
-            IValueMemberInfo valueMember = valueMemberInfo.ExtendedValueInfo;
-            if (valueMember == null)
-            {
-                var currentType = GetEnumerableValueType(list, valueMemberInfo.ObjectType);
-                valueMember = new ValueMemberInfo(currentType);
-            }
+            var valueMember = valueMemberInfo.ExtendedValueInfo;
             var isTyped = valueMember.IsType;
-
 
             _jsonWriter.WriteStartArray();
             try
@@ -224,14 +206,9 @@ namespace Zippy.Serialize
                 // note that an error in the IEnumerable won't be caught
                 for (var i = 0; i < len; i++)
                 {
-                    if (!flag1)
+                    if (i>0)
                     {
                         _jsonWriter.WriteComma();
-                    }
-                    else
-                    {
-                        //first record.
-                        flag1 = false;
                     }
 
                     var value = list[i];
@@ -432,25 +409,7 @@ namespace Zippy.Serialize
                 return true;
             }
 
-            ////check if key is string type
-            //Type[] args = valueMemberInfo.ObjectType.GetGenericArguments();
-
-            //if (args.Length == 0)
-            //{
-            //    //System.Collections.IDictionary
-            //    return SerializeNonGenericDictionary(values);
-            //}
-
-            ////System.Collections.Generic.IDictionary
-            //var keyCodeType = GetTypeCode(args[0]);
-            //if (keyCodeType != TypeSerializerUtils.TypeCode.String)
-            //{
-            //    return false;
-            //}
-
-            ////get value type
-            //var valueMember = valueMemberInfo.ExtendedValueInfo ?? new ValueMemberInfo(args[1]);
-            return SerializeGenericDictionaryInternal(values, valueMemberInfo.ExtendedValueInfo);
+               return SerializeGenericDictionaryInternal(values, valueMemberInfo.ExtendedValueInfo);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

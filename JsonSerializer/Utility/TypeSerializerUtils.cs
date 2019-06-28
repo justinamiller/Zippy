@@ -301,7 +301,8 @@ namespace Zippy.Utility
         {
             name = FormatPropertyName(name);
 
-           if (!name.HasAnyEscapeChars(JSON.Options.EscapeHtmlChars))
+            bool escapeHtmlChars = JSON.Options.EscapeHtmlChars;
+           if (!name.HasAnyEscapeChars(escapeHtmlChars))
             {
                 int len = name.Length;
                 var buffer = new char[len + 3];
@@ -328,7 +329,7 @@ namespace Zippy.Utility
             else
             {
                 //force encode.
-                var buffer = StringExtension.GetEncodeString(name, true);
+                var buffer = StringExtension.GetEncodeString(name, escapeHtmlChars, true);
                 int length = buffer.Length;
 
                 var newArray = new char[length + 1];
