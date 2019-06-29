@@ -16,6 +16,16 @@ namespace Zippy.Utility
         {
             List<MemberInfo> fieldInfos = new List<MemberInfo>(type.GetFields(bindingFlags));
 
+            // GetInterfaces on an interface doesn't return properties from its interfaces
+            if (type.IsInterface)
+            {
+                foreach (Type i in type.GetInterfaces())
+                {
+                    fieldInfos.AddRange(i.GetFields(bindingFlags));
+                }
+            }
+
+
             GetChildPrivateFields(fieldInfos, type, bindingFlags);
 
             return fieldInfos;
@@ -134,16 +144,13 @@ namespace Zippy.Utility
                 if (getMethod == null)
                     return null;
 
-                if (getMethod.IsStatic)
+                Expression readParameter = null;
+                if (!getMethod.IsStatic)
                 {
-                    resultExpression = Expression.MakeMemberAccess(null, propertyInfo);//  EnsureCastExpression(Expression.MakeMemberAccess(null, propertyInfo), typeof(TValue));
+                    readParameter = EnsureCastExpression(parameterExpression, propertyInfo.DeclaringType);
                 }
-                else
-                {
-                    Expression readParameter = EnsureCastExpression(parameterExpression, propertyInfo.DeclaringType);
 
-                    resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
-                }
+                resultExpression = Expression.MakeMemberAccess(readParameter, propertyInfo);
 
                 resultExpression = EnsureCastExpression(resultExpression, typeof(object));
                 LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<TKey, TValue>), resultExpression, parameterExpression);
@@ -156,52 +163,29 @@ namespace Zippy.Utility
             }
         }
 
-
-        public static Func<TKey, TValue> CreateGet<TKey, TValue>(MemberInfo item)
-        {
-            try
-            {
-                if (item is PropertyInfo)
-                {
-                    return CreateGet<TKey, TValue>((PropertyInfo)item);
-                }
-                else if (item is FieldInfo)
-                {
-                    return CreateGet<TKey, TValue>((FieldInfo)item);
-                }
-            }
-            catch (Exception)
-            {
-                //do nothing
-            }
-            return null;
-        }
-
         public static Func<TKey, TValue> CreateGet<TKey, TValue>(FieldInfo fieldInfo)
         {
             if (fieldInfo == null)
                 return null;
+            if (fieldInfo.FieldType.IsByRef)
+                return null;//https://github.com/dotnet/corefx/issues/26053
 
+            Expression sourceExpression = null;
             try
             {
                 ParameterExpression sourceParameter = Expression.Parameter(typeof(TKey), "source");
 
-                Expression fieldExpression;
-                if (fieldInfo.IsStatic)
+                if (!fieldInfo.IsStatic)
                 {
-                    fieldExpression = Expression.Field(null, fieldInfo);
+                    sourceExpression = EnsureCastExpression(sourceParameter, fieldInfo.DeclaringType);
                 }
-                else
-                {
-                    Expression sourceExpression = EnsureCastExpression(sourceParameter, fieldInfo.DeclaringType);
 
-                    fieldExpression = Expression.Field(sourceExpression, fieldInfo);
-                }
+                Expression fieldExpression = Expression.Field(sourceExpression, fieldInfo);
 
                 fieldExpression = EnsureCastExpression(fieldExpression, typeof(TValue));
 
-
-                return Expression.Lambda<Func<TKey, TValue>>(fieldExpression, sourceParameter).Compile();
+                LambdaExpression lambdaExpression = Expression.Lambda(typeof(Func<TKey, TValue>), fieldExpression, sourceParameter);
+                return (Func<TKey, TValue>)lambdaExpression.Compile();
             }
             catch (Exception)
             {
@@ -209,6 +193,19 @@ namespace Zippy.Utility
             }
         }
 
+
+        public static Func<TKey, TValue> CreateGet<TKey, TValue>(MemberInfo item)
+        {
+            if (item is PropertyInfo)
+            {
+                return CreateGet<TKey, TValue>((PropertyInfo)item);
+            }
+            else if (item is FieldInfo)
+            {
+                return CreateGet<TKey, TValue>((FieldInfo)item);
+            }
+            return null;
+        }
 
         public static ReflectionExtension.GetDelegate GetGetMethod(FieldInfo fieldInfo)
         {
@@ -642,11 +639,11 @@ namespace Zippy.Utility
         public static bool ShouldUseMember(this MemberInfo memberInfo)
         {
             var propInfo = memberInfo as PropertyInfo;
-            if(propInfo != null)
+            if (propInfo != null)
             {
                 return propInfo.ShouldUseMember();
             }
-            var fieldInfo= memberInfo as FieldInfo;
+            var fieldInfo = memberInfo as FieldInfo;
             if (fieldInfo != null)
             {
                 return fieldInfo.ShouldUseMember();

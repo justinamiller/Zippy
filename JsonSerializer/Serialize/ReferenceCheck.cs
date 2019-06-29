@@ -19,6 +19,34 @@ namespace Zippy.Serialize
 
         public bool IsReferenced(object item)
         {
+            if (Exists(item))
+            {
+                return true;
+            }
+
+            //new object need to add it.
+            AddReference(item);
+
+            return false;
+        }
+
+        private void AddReference(object item)
+        {
+            //ensure capacity
+            if (_size >= _length)
+            {
+                //need to grow.
+                _length += DefaultSize;
+                var temp = new object[_length];
+                Array.Copy(_references, 0, temp, 0, _references.Length);
+                _references = temp;
+            }
+
+            _references[_size++] = item;
+        }
+
+        private bool Exists(object item)
+        {
             if (item == null)
             {
                 //handling for null value.
@@ -29,36 +57,16 @@ namespace Zippy.Serialize
                 _hasNull = true;
                 return false;
             }
-            else
+
+            //non null value
+            for (int i = 0; i < _size; i++)
             {
-                //non null value
-                for (int i = 0; i < _size; i++)
+                if (_references[i] == item)
                 {
-                    if (ObjectEquals(_references[i], item))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
-
-            //ensure capacity
-            if (_size>=_length)
-            {
-                _length += DefaultSize;
-                Array.Resize(ref _references, _length);
-            }
-
-            _references[_size++]=item;
             return false;
-        }
-
-        private static bool ObjectEquals(object x, object y)
-        {
-            if (x != null)
-            {
-                return y != null && x == y;
-            }
-            return y == null;
         }
     }
 }

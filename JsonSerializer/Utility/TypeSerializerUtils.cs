@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Zippy.Internal;
 
 namespace Zippy.Utility
@@ -214,14 +215,14 @@ namespace Zippy.Utility
                 { typeof(byte[]), TypeCode.Bytes },
                 { typeof(DBNull), TypeCode.DBNull },
             {typeof(Exception), TypeCode.Exception },
-               {typeof(List<>), TypeCode.Enumerable},
+               {typeof(List<>), TypeCode.IList},
             {typeof(LinkedList<>),TypeCode.Enumerable},
             {typeof(Queue<>), TypeCode.Enumerable},
             {typeof(Stack<>), TypeCode.Enumerable},
             {typeof(HashSet<>), TypeCode.Enumerable},
             {typeof(System.Collections.ObjectModel.ReadOnlyCollection<>), TypeCode.Enumerable},
         {typeof(System.Collections.IList), TypeCode.IList },
-            {typeof(IList<>), TypeCode.Enumerable},
+            {typeof(IList<>), TypeCode.IList},
             {typeof(ICollection<>), TypeCode.Enumerable},
             {typeof(IEnumerable<>), TypeCode.Enumerable},
             {typeof(Dictionary<,>), TypeCode.GenericDictionary},
@@ -245,8 +246,9 @@ namespace Zippy.Utility
             {typeof(System.Data.DataTable), TypeCode.DataTable},
             {typeof(System.Data.DataSet), TypeCode.DataSet},
              {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
-            {typeof(System.Collections.IDictionary), TypeCode.Dictionary}
-              //          ,{typeof(object), TypeCode.Object}
+            {typeof(System.Collections.IDictionary), TypeCode.Dictionary},
+            {typeof(object), TypeCode.NotSetObject},
+              {typeof(Array), TypeCode.Array}
 //  {typeof(Lazy<>), typeof(LazyFormatter<>)},
 //{typeof(Task<>), typeof(TaskValueFormatter<>)},
 #endif
@@ -255,8 +257,7 @@ namespace Zippy.Utility
 
         public static TypeCode GetTypeCode(Type type)
         {
-            TypeCode typeCode = TypeCode.Empty;
-     
+            TypeCode typeCode;
             if (TypeCodeMap.GetValue(type, out typeCode))
             {
                 return typeCode;
@@ -265,8 +266,11 @@ namespace Zippy.Utility
             {
                 return typeCode;
             }
-
             var baseType = type.BaseType;
+            if (baseType == typeof(object))
+            {
+                return TypeCode.NotSetObject;
+            }
             if (baseType == typeof(Enum))
             {
                 return GetTypeCode(Enum.GetUnderlyingType(type));
@@ -296,26 +300,86 @@ namespace Zippy.Utility
         public static string BuildPropertyName(string name)
         {
             name = FormatPropertyName(name);
-            name = ArrayUtil.ToString(StringExtension.GetEncodeString(name, true));
-            name = string.Concat(name, ":");
-            return name;
+
+            bool escapeHtmlChars = JSON.Options.EscapeHtmlChars;
+           if (!name.HasAnyEscapeChars(escapeHtmlChars))
+            {
+                int len = name.Length;
+                var buffer = new char[len + 3];
+                int index = 0;
+                buffer[index++] = '"';
+                unsafe
+                {
+                    fixed (char* ptr2 = name)
+                    {
+                        char* ptr = ptr2;
+                        for (var i = 0; i < len; i++)
+                        {
+                            char cc = *ptr;
+                            buffer[index++] = cc;
+                            ptr++;
+                        }
+                    }
+                }
+                buffer[index++] = '"';
+                buffer[index++] = ':';
+
+                return new string(buffer, 0, len + 3);
+            }
+            else
+            {
+                //force encode.
+                var buffer = StringExtension.GetEncodeString(name, escapeHtmlChars, true);
+                int length = buffer.Length;
+
+                var newArray = new char[length + 1];
+                Array.Copy(buffer, 0, newArray, 0, length);
+                newArray[length] = ':';
+
+                return new string(newArray, 0, length + 1);
+            }
         }
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable, Type type)
         {
+            var valueType = GetEnumerableValueType(anEnumerable, type);
+            if (valueType != typeof(object))
+            {
+                return GetTypeCode(valueType);
+            }
+            return TypeCode.NotSetObject;
+        }
+
+        public static Type GetEnumerableValueType(System.Collections.IEnumerable anEnumerable, Type type)
+        {
             if (anEnumerable is System.Collections.ArrayList)
             {
-                return TypeCode.NotSetObject;
+                return typeof(object);
             }
             else if (anEnumerable is System.Collections.IList)
             {
-                return GetIListValueTypeCode(type);
+                if (type.IsGenericType)
+                {
+                    return type.GetGenericArguments()[0];
+                }
+
+                return typeof(object);
             }
             else if (anEnumerable is Array)
             {
-                return GetArrayValueTypeCode(type);
+                return type.GetElementType();
             }
-            return TypeCode.NotSetObject;
+
+            return typeof(object);
+        }
+
+        public static bool HasExtendedValueInformation(TypeCode typeCode)
+        {
+            return typeCode == TypeCode.GenericDictionary 
+                || typeCode == TypeCode.IList 
+                || typeCode == TypeCode.Array 
+                || typeCode == TypeCode.Dictionary 
+                || typeCode == TypeCode.Enumerable;
         }
 
         public static TypeCode GetArrayValueTypeCode(Type type)
@@ -329,24 +393,6 @@ namespace Zippy.Utility
             {
                 return (GetTypeCode(type.GetGenericArguments()[0]));
             }
-
-            return TypeCode.NotSetObject;
-        }
-
-        public static TypeCode GetEnumerableValueTypeCode(Type type)
-        {
-            if (type.IsArray)
-            {
-                return GetTypeCode(type.GetElementType());
-            }
-            //else if (anEnumerable is System.Collections.ArrayList)
-            //{
-            //    return TypeCode.NotSetObject;
-            //}
-            //else if (type is System.Collections.IList)
-            //{
-            //    return GetIListValueTypeCode((System.Collections.IList)anEnumerable);
-            //}
 
             return TypeCode.NotSetObject;
         }

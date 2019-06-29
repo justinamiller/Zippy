@@ -32,7 +32,7 @@ namespace Zippy.Serialize
             return (data != null);
         }
 
-        public bool TrySerializeNonPrimitiveObject(object input, Type type, out IValue[] output)
+        public bool TrySerializeNonPrimitiveObject(object input, Type type, out IValueMemberInfo[] output)
         {
             output = null;
             ValueMemberInfo[] data;

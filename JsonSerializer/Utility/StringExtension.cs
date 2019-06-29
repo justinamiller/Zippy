@@ -75,7 +75,7 @@ namespace Zippy.Utility
         /// <param name="quote">apply quotes</param>
         [SuppressMessage("brain-overload", "S1541")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static unsafe char[] GetEncodeString(string str, bool quote = true)
+        public static unsafe char[] GetEncodeString(string str, bool escapeHtmlChars, bool quote = true)
         {
             int len = (str.Length * 2) + 2;
             char[] bufferWriter = new char[len];
@@ -153,7 +153,54 @@ namespace Zippy.Utility
                                 bufferIndex++;
                                 break;
                             default:
-                                if (31 >= c)
+                                if (escapeHtmlChars)
+                                {
+                                    switch (c)
+                                    {
+                                        case '<':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '3';
+                                            bufferWriter[bufferIndex++] = 'c';
+                                            break;
+                                        case '>':
+                                            bufferWriter[bufferIndex++] = '\\';           
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '3';
+                                            bufferWriter[bufferIndex++] = 'e';
+                                            break;
+                                        case '&':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '2';
+                                            bufferWriter[bufferIndex++] = '6';
+                                            break;
+                                        case '=':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '3';
+                                            bufferWriter[bufferIndex++] = 'd';
+                                            break;
+                                        case '\'':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '2';
+                                            bufferWriter[bufferIndex++] = '7';
+                                            break;
+                                    }
+                                }
+
+                               if (31 >= c)
                                 {
                                     bufferWriter[bufferIndex] = '\\';
                                     bufferIndex++;
@@ -180,10 +227,7 @@ namespace Zippy.Utility
 
             //flush
             var buffer = new char[bufferIndex];
-            for (var i = 0; i < bufferIndex; i++)
-            {
-                buffer[i] = bufferWriter[i];
-            }
+            Array.Copy(bufferWriter, 0, buffer, 0, bufferIndex);
             return buffer;
         }
 

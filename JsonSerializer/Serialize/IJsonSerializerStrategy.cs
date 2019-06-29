@@ -5,6 +5,6 @@ namespace Zippy.Serialize
 {
     interface IJsonSerializerStrategy
     {
-        bool TrySerializeNonPrimitiveObject(object input, Type type, out IValue[] output);
+        bool TrySerializeNonPrimitiveObject(object input, Type type, out IValueMemberInfo[] output);
     }
 }

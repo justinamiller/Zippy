@@ -71,7 +71,7 @@ namespace Models
 
         public Result[] Results { get; set; } = Array.Empty<Result>();
 
-        public IList<object> MixObjects { get; set; } = new List<object>();
+        public List<object> MixObjects { get; set; } = new List<object>();
         public IList<Result> ResultList { get; set; } = new List<Result>();
         //  public System.Collections.ArrayList ResultAL { get; set; } = new System.Collections.ArrayList();
         // public System.Collections.IList ResultSL { get; set; } = new System.Collections.ArrayList();
@@ -110,7 +110,6 @@ namespace Models
         public TimeSpan TimeSpanValue { get; set; } =DateTime.Now.TimeOfDay;
 
         public Guid GuidValue { get; set; } = Guid.NewGuid();
-
 
         public ComplexModelObject()
         {

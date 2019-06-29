@@ -81,7 +81,7 @@ namespace Zippy.Serialize
         {
             if (this._propertyInUse)
             {
-                _writer.Write(',');
+                WriteComma();
             }
             else
             {
@@ -94,16 +94,14 @@ namespace Zippy.Serialize
         {
             if (this._propertyInUse)
             {
-                _writer.Write(',');
+                WriteComma();
             }
             else
             {
                 this._propertyInUse = true;
             }
 
-            value = TypeSerializerUtils.FormatPropertyName(value);
-            _writer.Write(StringExtension.GetEncodeString(value));
-            _writer.Write(':');
+            _writer.Write(TypeSerializerUtils.BuildPropertyName(value));
         }
 
         public bool WriteValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode, object value)
@@ -252,7 +250,7 @@ namespace Zippy.Serialize
             else
             {
                 //force encode.
-                _writer.Write(StringExtension.GetEncodeString(value));
+                _writer.Write(StringExtension.GetEncodeString(value, JSON.Options.EscapeHtmlChars));
             }
         }
 
@@ -420,9 +418,10 @@ namespace Zippy.Serialize
             else
             {
                 char c = (char)charValue;
-                if (c.HasAnyEscapeChar(JSON.Options.EscapeHtmlChars))
+                bool escapeHtmlChars = JSON.Options.EscapeHtmlChars;
+                if (c.HasAnyEscapeChar(escapeHtmlChars))
                 {
-                    _writer.Write(StringExtension.GetEncodeString(c.ToString()));
+                    _writer.Write(StringExtension.GetEncodeString(c.ToString(), escapeHtmlChars));
                 }
                 else
                 {
@@ -601,6 +600,11 @@ namespace Zippy.Serialize
                 var buffer = MathUtils.WriteNumberToBuffer(value, negative);
                 writer.Write(buffer);
             }
+        }
+
+        public override string ToString()
+        {
+            return this._writer.ToString();
         }
     }
 }

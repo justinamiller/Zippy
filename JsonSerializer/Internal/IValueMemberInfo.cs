@@ -3,11 +3,14 @@ using Zippy.Serialize;
 
 namespace Zippy.Internal
 {
-    interface IValue
+    interface IValueMemberInfo
     {
         string Name { get; }
         Utility.TypeSerializerUtils.TypeCode Code { get; }
         object GetValue(object instance, ref bool isError);
-        Type ValueType { get; }
+        Type ObjectType { get; }
+        bool IsType { get; }
+
+        IValueMemberInfo ExtendedValueInfo { get; }
     }
 }
