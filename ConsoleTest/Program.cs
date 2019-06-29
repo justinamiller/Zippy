@@ -50,7 +50,7 @@ namespace ConsoleTest
             //Test(c);
             //c = new Models.ComplexModelObject();
             //Test1(c);
-            return;
+            //return;
 
             //for (var i = 0; i < 10000; i++)
             //{
