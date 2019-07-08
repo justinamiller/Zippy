@@ -2,19 +2,29 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Zippy.Utility;
 
 namespace Zippy.Serialize
 {
     sealed class ReferenceCheck
     {
         private const int DefaultSize = 10;
-        private object[] _references = new object[DefaultSize];
-        private int _size = 0;
-        private int _length = DefaultSize;
-      //  bool _hasNull = false;
+        private object[] _references;
+        private int _size;
+        private int _length;
 
-        public ReferenceCheck()
+        public ReferenceCheck() : this(DefaultSize) { }
+
+        public ReferenceCheck(int capacity)
         {
+            if (0 >= capacity)
+            {
+                capacity = DefaultSize;
+            }
+
+            _length = capacity;
+            _references = new object[capacity];
+            _size = 0;
         }
 
         public bool IsReferenced(object item)
@@ -42,9 +52,10 @@ namespace Zippy.Serialize
             if (_size >= _length)
             {
                 //need to grow.
+                var len = _length;
                 _length += DefaultSize;
                 var temp = new object[_length];
-                Array.Copy(_references, 0, temp, 0, _references.Length);
+                Array.Copy(_references, 0, temp, 0, len);
                 _references = temp;
             }
 
@@ -53,17 +64,6 @@ namespace Zippy.Serialize
 
         private bool Exists(object item)
         {
-            //if (item == null)
-            //{
-            //    //handling for null value.
-            //    if (_hasNull)
-            //    {
-            //        return true;
-            //    }
-            //    _hasNull = true;
-            //    return false;
-            //}
-
             //non null value
             for (int i = 0; i < _size; i++)
             {

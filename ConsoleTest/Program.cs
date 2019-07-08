@@ -20,14 +20,14 @@ namespace ConsoleTest
         private readonly static TextWriter _nullWriter = new NullTextWriter();
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Test(Models.ComplexModelObject c)
+        static void Test(object c)
         {
             //Zippy.JSON.SerializeObjectToString(c);
             Zippy.JSON.SerializeObject(c, _nullWriter);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Test1(Models.ComplexModelObject c)
+        static void Test1(object c)
         {
             //Zippy.JSON.SerializeObjectToString(c);
             for(var i=0; i < testCount; i++)
@@ -42,12 +42,15 @@ namespace ConsoleTest
             System.Threading.Thread.Sleep(250);
             ////var c = new Models.ComplexModelObject();
             ////Zippy.JSON.SerializeObjectToString1(c);
-            ///
-            var c = new Models.ComplexModelObject();
+
+
+
+            //   var c = new Models.ComplexModelObject();
+            var c = Enumerable.Range(1000, 1000).Select(x => new Models.TinyObject("Name" + x.ToString(), x, Models.TinyObject.State.Running)).ToArray();
             Zippy.JSON.SerializeObjectToString(c);
-            c = new Models.ComplexModelObject();
+         //   c = new Models.ComplexModelObject();
             Test(c);
-            c = new Models.ComplexModelObject();
+       //     c = new Models.ComplexModelObject();
             Test1(c);
             return;
 

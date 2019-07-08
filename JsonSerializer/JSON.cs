@@ -18,7 +18,7 @@ namespace Zippy
         /// <param name="json"></param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static string SerializeObjectToString(object Object)
+        public static string SerializeObjectToString<T>(T Object)
         {
             if (Object == null)
             {
@@ -40,7 +40,7 @@ namespace Zippy
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static TextWriter SerializeObject(object Object, TextWriter writer)
+        public static TextWriter SerializeObject<T>(T Object, TextWriter writer)
         {
             if (writer == null)
             {

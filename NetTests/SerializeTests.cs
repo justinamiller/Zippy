@@ -18,8 +18,8 @@ namespace NetTests
         [TestMethod]
         public void TestNull()
         {
-            Assert.AreEqual(Zippy.JSON.SerializeObject(null, new StringWriter()), null);
-            Assert.AreEqual(Zippy.JSON.SerializeObjectToString(null), null);
+            Assert.AreEqual(Zippy.JSON.SerializeObject((object)null, new StringWriter()), null);
+            Assert.AreEqual(Zippy.JSON.SerializeObjectToString((object)null), null);
         }
 
         [TestMethod]

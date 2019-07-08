@@ -67,6 +67,17 @@ namespace Zippy.Internal
 
         private void CheckForExtendedValueInfo()
         {
+            if(this.Code== TypeSerializerUtils.TypeCode.CustomObject)
+            {
+                IValueMemberInfo[] obj = null;
+                if (Serializer.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out obj))
+                {
+                    _valueMemberInfos = obj;
+                }
+                return;
+            }
+
+
             if (!TypeSerializerUtils.HasExtendedValueInformation(this.Code))
             {
                 return;
@@ -130,6 +141,14 @@ namespace Zippy.Internal
             //has errored
             return null;
         }
+
+        IValueMemberInfo[] _valueMemberInfos;
+        public IValueMemberInfo[] GetCustomObjectMemberInfo()
+        {
+            return _valueMemberInfos;
+        }
+
+
 
         public override bool Equals(object obj)
         {

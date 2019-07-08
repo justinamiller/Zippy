@@ -12,5 +12,7 @@ namespace Zippy.Internal
         bool IsType { get; }
 
         IValueMemberInfo ExtendedValueInfo { get; }
+
+        IValueMemberInfo[] GetCustomObjectMemberInfo();
     }
 }
