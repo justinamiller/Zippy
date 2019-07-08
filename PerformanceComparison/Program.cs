@@ -132,6 +132,9 @@ class Program
         SerializeNetSerializer(p); SerializeNetSerializer((Person[])(object)l);
         SerializeNetSerializer(integer); SerializeNetSerializer(v3); SerializeNetSerializer(largeString); SerializeNetSerializer((Vector3[])(object)v3List);
 
+                    SerializeServiceStack(p); SerializeServiceStack((Person[])(object)l);
+        SerializeServiceStack(integer); SerializeServiceStack(v3); SerializeServiceStack(largeString); SerializeServiceStack((Vector3[])(object)v3List);
+
         SerializeZippySerializer(p); SerializeZippySerializer((Person[])(object)l);
         SerializeZippySerializer(integer); SerializeZippySerializer(v3); SerializeZippySerializer(largeString); SerializeZippySerializer((Vector3[])(object)v3List);
 
@@ -152,6 +155,7 @@ class Program
         var k = SerializeWire(p); Console.WriteLine();
         var l2 = SerializeNetSerializer(p); Console.WriteLine();
         var m = SerializeZippySerializer(p); Console.WriteLine();
+     SerializeServiceStack(p); Console.WriteLine();
 
 
         Console.WriteLine($"Large Array(SmallObject[1000]) {Iteration} Iteration"); Console.WriteLine();
@@ -166,7 +170,7 @@ class Program
         var H = SerializeDataContract(l); Console.WriteLine();
         var K = SerializeWire(l); Console.WriteLine();
         var L = SerializeNetSerializer((Person[])(object)l); Console.WriteLine();
-
+        SerializeServiceStack((Person[])(object)l); Console.WriteLine();
 
         //Validate("ZeroFormatter", p, l, a, A);
         //Validate("protobuf-net", p, l, b, B);
@@ -196,6 +200,7 @@ class Program
         SerializeWire(integer); Console.WriteLine();
         SerializeNetSerializer(integer); Console.WriteLine();
         SerializeZippySerializer(integer); Console.WriteLine();
+        SerializeServiceStack(integer); Console.WriteLine();
 
         //var W1 = SerializeZeroFormatter(integer); Console.WriteLine();
         //var W2 = SerializeMsgPack(integer); Console.WriteLine();
@@ -217,6 +222,7 @@ class Program
         SerializeWire(v3); Console.WriteLine();
         SerializeNetSerializer(v3); Console.WriteLine();
         SerializeZippySerializer(v3); Console.WriteLine();
+        SerializeServiceStack(v3); Console.WriteLine();
 
         Console.WriteLine($"HtmlString({Encoding.UTF8.GetByteCount(largeString)}bytes) {Iteration} Iteration"); Console.WriteLine();
 
@@ -231,6 +237,7 @@ class Program
         SerializeWire(largeString); Console.WriteLine();
         SerializeNetSerializer(largeString); Console.WriteLine();
         SerializeZippySerializer(largeString); Console.WriteLine();
+        SerializeServiceStack(largeString); Console.WriteLine();
 
 
         Console.WriteLine($"Vector3[100] {Iteration} Iteration"); Console.WriteLine();
@@ -245,6 +252,48 @@ class Program
         SerializeWire(v3List); Console.WriteLine();
     //    SerializeNetSerializer(v3List); Console.WriteLine();
         SerializeZippySerializer(v3List); Console.WriteLine();
+        SerializeServiceStack(v3List); Console.WriteLine();
+
+        var order1 = Measure.Results.GroupBy(v => v.Key.Split('.')[1]);
+        foreach(var data in order1)
+        {
+            Console.WriteLine();
+            Console.BackgroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(data.Key);
+            Console.BackgroundColor = ConsoleColor.Black;
+            int i = 1;
+            foreach (var item in data.OrderBy(v=>v.Value))
+            {
+                if (item.Key.ToLower().Contains("zippy"))
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                Console.WriteLine(i.ToString() +") " + item.Key + " : " + item.Value.ToString("#,##0.00"));
+                i++;
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine();
+
+        var order=Measure.Results.OrderBy(v => v.Value);
+        foreach(var item in order)
+        {
+            if (item.Key.ToLower().Contains("zippy"))
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            Console.WriteLine(item.Key + " : " + item.Value.ToString("#,##0.00"));
+        }
+
 
         //Validate2("ZeroFormatter", W1, integer); Validate2("MsgPack-Cli", W2, integer); Validate2("MsgPack", W3, integer); Validate2("Wire", W4, integer); Validate2("NetSerializer", W5, integer); Validate2("Zippy", W6, integer);
         //Validate2("ZeroFormatter", X1, v3);  Validate2("MsgPack-Cli", X2, v3); Validate2("MsgPack", X3, v3); Validate2("Wire", X4, v3); Validate2("NetSerializer", X5, v3); Validate2("Zippy", X6, v3);
@@ -273,12 +322,14 @@ class Program
 
     static T SerializeZeroFormatter<T>(T original)
     {
-        Console.WriteLine("ZeroFormatter");
+    //    Console.WriteLine("ZeroFormatter");
 
         T copy = default(T);
         byte[] bytes = null;
 
-        using (new Measure("Serialize"))
+        var label = "ZeroFormatter." + original.GetType().Name;
+
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -305,13 +356,14 @@ class Program
     [MethodImpl(MethodImplOptions.NoInlining)]
     static T SerializeZippySerializer<T>(T original)
     {
-        Console.WriteLine("Zippy");
+    //    Console.WriteLine("Zippy");
 
         T copy = default(T);
         MemoryStream stream = null;
 
         var nullwriter = new Zippy.Serialize.Writers.NullTextWriter();
-        using (new Measure("Serialize"))
+        var label = "Zippy." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -339,12 +391,12 @@ class Program
 
     static T SerializeNetSerializer<T>(T original)
     {
-        Console.WriteLine("NetSerializer");
+        //Console.WriteLine("NetSerializer");
 
         T copy = default(T);
         MemoryStream stream = null;
-
-        using (new Measure("Serialize"))
+        var label = "NetSerializer." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -369,16 +421,50 @@ class Program
         return copy;
     }
 
+    static T SerializeServiceStack<T>(T original)
+    {
+        //Console.WriteLine("NetSerializer");
+        ServiceStack.Text.Config.Defaults.IncludePublicFields = true;
+        ServiceStack.Text.JsConfig.IncludePublicFields = true;
+        T copy = default(T);
+        MemoryStream stream = null;
+        var label = "ServiceStack." + original.GetType().Name;
+        using (new Measure(label))
+        {
+            for (int i = 0; i < Iteration; i++)
+            {
+
+                ServiceStack.Text.JsonSerializer.SerializeToStream(original, stream = new MemoryStream());
+            }
+        }
+
+        //using (new Measure("Deserialize"))
+        //{
+        //    for (int i = 0; i < Iteration; i++)
+        //    {
+        //        stream.Position = 0;
+        //        netSerializer.DeserializeDirect<T>(stream, out copy);
+        //    }
+        //}
+
+        //if (!dryRun)
+        //{
+        //    Console.WriteLine(string.Format("{0,15}   {1}", "Binary Size", ToHumanReadableSize(stream.Position)));
+        //}
+
+        return copy;
+    }
+
     static Wire.Serializer wireSerializer = new Wire.Serializer();
 
     static T SerializeWire<T>(T original)
     {
-        Console.WriteLine("Wire");
+      //  Console.WriteLine("Wire");
 
         T copy = default(T);
         MemoryStream stream = null;
-
-        using (new Measure("Serialize"))
+        var label = "Wire." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -405,12 +491,12 @@ class Program
 
     static T SerializeProtobuf<T>(T original)
     {
-        Console.WriteLine("protobuf-net");
+       // Console.WriteLine("protobuf-net");
 
         T copy = default(T);
         MemoryStream stream = null;
-
-        using (new Measure("Serialize"))
+        var label = "protobuf-net." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -437,12 +523,13 @@ class Program
 
     static T SerializeMsgPack<T>(T original)
     {
-        Console.WriteLine("MsgPack-CLI");
+   //     Console.WriteLine("MsgPack-CLI");
 
         T copy = default(T);
         byte[] bytes = null;
 
-        using (new Measure("Serialize"))
+        var label = "MsgPack-CLI." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -468,13 +555,15 @@ class Program
 
     static T SerializeJsonNet<T>(T original)
     {
-        Console.WriteLine("JSON.NET");
+   //     Console.WriteLine("JSON.NET");
 
         var jsonSerializer = new JsonSerializer();
         T copy = default(T);
         MemoryStream stream = null;
 
-        using (new Measure("Serialize"))
+
+        var label = "JSON_NET." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -510,13 +599,14 @@ class Program
 
     static T SerializeJil<T>(T original)
     {
-        Console.WriteLine("Jil");
+      //  Console.WriteLine("Jil");
 
         var jsonSerializer = new JsonSerializer();
         T copy = default(T);
         MemoryStream stream = null;
 
-        using (new Measure("Serialize"))
+        var label = "Jil." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -550,13 +640,14 @@ class Program
 
     static T SerializeBinaryFormatter<T>(T original)
     {
-        Console.WriteLine("BinaryFormatter");
+        //Console.WriteLine("BinaryFormatter");
 
         var serializer = new BinaryFormatter();
         T copy = default(T);
         MemoryStream stream = null;
 
-        using (new Measure("Serialize"))
+        var label = "BinaryFormatter." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -583,12 +674,13 @@ class Program
 
     static T SerializeDataContract<T>(T original)
     {
-        Console.WriteLine("DataContractSerializer");
+       // Console.WriteLine("DataContractSerializer");
 
         T copy = default(T);
         MemoryStream stream = null;
 
-        using (new Measure("Serialize"))
+        var label = "DataContractSerializer." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -615,13 +707,14 @@ class Program
 
     static T SerializeFsPickler<T>(T original)
     {
-        Console.WriteLine("FsPickler");
+        //Console.WriteLine("FsPickler");
 
         T copy = default(T);
         MemoryStream stream = null;
         var serializer = MBrace.CsPickler.CsPickler.CreateBinarySerializer();
 
-        using (new Measure("Serialize"))
+        var label = "FsPickler." + original.GetType().Name;
+        using (new Measure(label))
         {
             for (int i = 0; i < Iteration; i++)
             {
@@ -671,6 +764,7 @@ class Program
     {
         string label;
         Stopwatch s;
+        public static IDictionary<string, double> Results = new Dictionary<string, double>();
 
         public Measure(string label)
         {
@@ -684,7 +778,9 @@ class Program
             s.Stop();
             if (!dryRun)
             {
-                Console.WriteLine($"{ label,15}   {s.Elapsed.TotalMilliseconds} ms");
+                Results.Add(label, s.Elapsed.TotalMilliseconds);
+
+         //       Console.WriteLine($"{ label,15}   {s.Elapsed.TotalMilliseconds} ms");
             }
 
             System.GC.Collect(2, GCCollectionMode.Forced, blocking: true);

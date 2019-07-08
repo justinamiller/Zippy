@@ -11,7 +11,7 @@ namespace Zippy.Serialize
         private object[] _references = new object[DefaultSize];
         private int _size = 0;
         private int _length = DefaultSize;
-        bool _hasNull = false;
+      //  bool _hasNull = false;
 
         public ReferenceCheck()
         {
