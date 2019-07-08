@@ -79,11 +79,11 @@ namespace Zippy.Internal
                 return;
             }
 
-
             if (!TypeSerializerUtils.HasExtendedValueInformation(code))
             {
                 return;
             }
+
             Type type = null;
             //array?
             if (code == TypeSerializerUtils.TypeCode.Array)
