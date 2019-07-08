@@ -30,7 +30,7 @@ namespace Models
 
         public Guid Id = Guid.NewGuid();
 
-        [SwiftDirective(true)]
+        [ZippyDirective(true)]
         [IgnoreDataMember]
         public string IGNOREME { get; } = "SHOULD NOT BE SHOWN";
 
@@ -111,9 +111,11 @@ namespace Models
 
         public Guid GuidValue { get; set; } = Guid.NewGuid();
 
+        private readonly static string BIGString= new StringBuilder(1000).Append('a', 1000).ToString();
+
         public ComplexModelObject()
         {
-            this.Name = "Test";
+            this.Name = BIGString;
             this.Address = "8755 Lakeview Terrace";
 
             this.Items = (new List<int>() { 1, 3, 5, 6, 7, 88 }).ToArray();

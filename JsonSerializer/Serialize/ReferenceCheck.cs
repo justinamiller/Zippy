@@ -19,6 +19,12 @@ namespace Zippy.Serialize
 
         public bool IsReferenced(object item)
         {
+            if (item == null)
+            {
+                //nulls are never references.
+                return false;
+            }
+
             if (Exists(item))
             {
                 return true;
@@ -47,16 +53,16 @@ namespace Zippy.Serialize
 
         private bool Exists(object item)
         {
-            if (item == null)
-            {
-                //handling for null value.
-                if (_hasNull)
-                {
-                    return true;
-                }
-                _hasNull = true;
-                return false;
-            }
+            //if (item == null)
+            //{
+            //    //handling for null value.
+            //    if (_hasNull)
+            //    {
+            //        return true;
+            //    }
+            //    _hasNull = true;
+            //    return false;
+            //}
 
             //non null value
             for (int i = 0; i < _size; i++)

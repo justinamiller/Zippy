@@ -240,18 +240,20 @@ namespace Zippy.Serialize
             if (value == null)
             {
                 WriteNull();
+                return;
             }
-            else if (!value.HasAnyEscapeChars(JSON.Options.EscapeHtmlChars))
+
+            var escapeHtmlChars = JSON.Options.EscapeHtmlChars;
+            if (!value.HasAnyEscapeChars(escapeHtmlChars))
             {
                 _writer.Write(QuoteChar);
                 _writer.Write(value);
                 _writer.Write(QuoteChar);
+                return;
             }
-            else
-            {
-                //force encode.
-                _writer.Write(StringExtension.GetEncodeString(value, JSON.Options.EscapeHtmlChars));
-            }
+
+            //force encode.
+            _writer.Write(StringExtension.GetEncodeString(value, escapeHtmlChars));
         }
 
         public void WriteException(object value)

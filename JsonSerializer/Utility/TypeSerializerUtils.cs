@@ -53,7 +53,7 @@ namespace Zippy.Utility
             Bytes = 40,
             DBNull = 41,
             Exception = 42,
-            NotSetObject = 100,
+            CustomObject = 100,
             DataTable = 101,
             DataSet = 102,
             Dictionary = 103,
@@ -247,7 +247,7 @@ namespace Zippy.Utility
             {typeof(System.Data.DataSet), TypeCode.DataSet},
              {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
             {typeof(System.Collections.IDictionary), TypeCode.Dictionary},
-            {typeof(object), TypeCode.NotSetObject},
+            {typeof(object), TypeCode.CustomObject},
               {typeof(Array), TypeCode.Array}
 //  {typeof(Lazy<>), typeof(LazyFormatter<>)},
 //{typeof(Task<>), typeof(TaskValueFormatter<>)},
@@ -258,18 +258,18 @@ namespace Zippy.Utility
         public static TypeCode GetTypeCode(Type type)
         {
             TypeCode typeCode;
-            if (TypeCodeMap.GetValue(type, out typeCode))
+            if (TypeCodeMap.TryGetValue(type, out typeCode))
             {
                 return typeCode;
             }
-            if (type.IsGenericType && TypeCodeMap.GetValue(type.GetGenericTypeDefinition(), out typeCode))
+            if (type.IsGenericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
             {
                 return typeCode;
             }
             var baseType = type.BaseType;
             if (baseType == typeof(object))
             {
-                return TypeCode.NotSetObject;
+                return TypeCode.CustomObject;
             }
             if (baseType == typeof(Enum))
             {
@@ -280,7 +280,7 @@ namespace Zippy.Utility
                 return TypeCode.Array;
             }
 
-            return TypeCode.NotSetObject;
+            return TypeCode.CustomObject;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -299,6 +299,11 @@ namespace Zippy.Utility
 
         public static string BuildPropertyName(string name)
         {
+            if (name.IsNullOrEmpty())
+            {
+                return string.Empty;
+            }
+
             name = FormatPropertyName(name);
 
             bool escapeHtmlChars = JSON.Options.EscapeHtmlChars;
@@ -347,7 +352,7 @@ namespace Zippy.Utility
             {
                 return GetTypeCode(valueType);
             }
-            return TypeCode.NotSetObject;
+            return TypeCode.CustomObject;
         }
 
         public static Type GetEnumerableValueType(System.Collections.IEnumerable anEnumerable, Type type)
@@ -394,7 +399,7 @@ namespace Zippy.Utility
                 return (GetTypeCode(type.GetGenericArguments()[0]));
             }
 
-            return TypeCode.NotSetObject;
+            return TypeCode.CustomObject;
         }
     }
 }

@@ -667,7 +667,7 @@ namespace Zippy.Utility
                     {
                         return false;
                     }
-                    else if ((attr as SwiftDirectiveAttribute)?.Ignore ?? false)
+                    else if ((attr as ZippyDirectiveAttribute)?.Ignore ?? false)
                     {
                         return false;
                     }
@@ -688,7 +688,7 @@ namespace Zippy.Utility
                     {
                         return false;
                     }
-                    else if ((attr as SwiftDirectiveAttribute)?.Ignore ?? false)
+                    else if ((attr as ZippyDirectiveAttribute)?.Ignore ?? false)
                     {
                         return false;
                     }
@@ -705,10 +705,10 @@ namespace Zippy.Utility
             {
                 foreach (var attr in attributes)
                 {
-                    if (attr is SwiftDirectiveAttribute)
+                    if (attr is ZippyDirectiveAttribute)
                     {
-                        SwiftDirectiveAttribute temp = (SwiftDirectiveAttribute)attr;
-                        if (temp.Name.IsNullOrEmpty())
+                        ZippyDirectiveAttribute temp = (ZippyDirectiveAttribute)attr;
+                        if (!temp.Name.IsNullOrEmpty())
                         {
                             return temp.Name;
                         }
@@ -716,7 +716,7 @@ namespace Zippy.Utility
                     else if (attr is DataMemberAttribute)
                     {
                         DataMemberAttribute temp = (DataMemberAttribute)attr;
-                        if (temp.Name.IsNullOrEmpty())
+                        if (!temp.Name.IsNullOrEmpty())
                         {
                             return temp.Name;
                         }

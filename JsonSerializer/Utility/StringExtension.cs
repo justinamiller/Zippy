@@ -281,7 +281,10 @@ namespace Zippy.Utility
                     char* ptr = chr;
                     while ((c = *(ptr++)) != '\0')
                     {
-                        if (c.HasAnyEscapeChar(escapeHtmlChars))
+
+                        if (c.HasAnyEscapeChar1(escapeHtmlChars)) { }
+
+                            if (c.HasAnyEscapeChar(escapeHtmlChars))
                         {
                             return true;
                         }
@@ -296,6 +299,19 @@ namespace Zippy.Utility
         public static bool HasAnyEscapeChar(this char c, bool escapeHtmlChars)
         {
             if (!(c >= 32 && c <= 126) || c == '"' || c == '\\')
+                return true;
+
+            if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
+                return true;
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasAnyEscapeChar1(this char c, bool escapeHtmlChars)
+        {
+            int i = c;
+            if (!(i >= 32 && i <= 126) || i == 34 || i == 92)
                 return true;
 
             if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
