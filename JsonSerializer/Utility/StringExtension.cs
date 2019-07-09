@@ -74,7 +74,7 @@ namespace Zippy.Utility
         /// <param name="str"></param>
         /// <param name="quote">apply quotes</param>
         [SuppressMessage("brain-overload", "S1541")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
+    //    [MethodImpl(MethodImplOptions.NoInlining)]
         public static char[] GetEncodeString(string str, bool escapeHtmlChars, bool quote = true)
         {
             int strLen = str.Length;
@@ -97,63 +97,63 @@ namespace Zippy.Utility
                     {
                         case '"':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = '\"';
                             bufferIndex++;
                             break;
                         case '\\':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = '\\';
                             bufferIndex++;
                             break;
                         case '\u0007':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = 'a';
                             bufferIndex++;
                             break;
                         case '\u0008':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = 'b';
                             bufferIndex++;
                             break;
                         case '\u0009':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = 't';
                             bufferIndex++;
                             break;
                         case '\u000A':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = 'n';
                             bufferIndex++;
                             break;
                         case '\u000B':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = 'v';
                             bufferIndex++;
                             break;
                         case '\u000C':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex] = 'f';
                             bufferIndex++;
                             break;
                         case '\u000D':
                             hasEncoded = true;
-                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
                             bufferWriter[bufferIndex++] = '\\';
                             bufferWriter[bufferIndex++] = 'r';
                             break;
@@ -164,73 +164,111 @@ namespace Zippy.Utility
                                 {
                                     case '<':
                                         hasEncoded = true;
-                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 7);
                                         bufferWriter[bufferIndex++] = '\\';
                                         bufferWriter[bufferIndex++] = 'u';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '3';
                                         bufferWriter[bufferIndex++] = 'c';
-                                        break;
+                                        continue;
                                     case '>':
                                         hasEncoded = true;
-                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 7);
                                         bufferWriter[bufferIndex++] = '\\';
                                         bufferWriter[bufferIndex++] = 'u';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '3';
                                         bufferWriter[bufferIndex++] = 'e';
-                                        break;
+                                        continue;
                                     case '&':
                                         hasEncoded = true;
-                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 7);
                                         bufferWriter[bufferIndex++] = '\\';
                                         bufferWriter[bufferIndex++] = 'u';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '2';
                                         bufferWriter[bufferIndex++] = '6';
-                                        break;
+                                        continue;
                                     case '=':
                                         hasEncoded = true;
-                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 7);
                                         bufferWriter[bufferIndex++] = '\\';
                                         bufferWriter[bufferIndex++] = 'u';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '3';
                                         bufferWriter[bufferIndex++] = 'd';
-                                        break;
+                                        continue;
                                     case '\'':
                                         hasEncoded = true;
-                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 7);
                                         bufferWriter[bufferIndex++] = '\\';
                                         bufferWriter[bufferIndex++] = 'u';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '0';
                                         bufferWriter[bufferIndex++] = '2';
                                         bufferWriter[bufferIndex++] = '7';
-                                        break;
+                                        continue;
                                 }
                             }
 
-                            if (31 >= c)
+                            //printable
+                            if(c>=32 && c <= 126)// ' ' && '~'
+                            {
+                                if (hasEncoded)
+                                {
+                                    BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 2);
+                                }
+
+                                bufferWriter[bufferIndex++] = c;
+                                break;
+                            }
+                            else if(char.IsControl(c))
                             {
                                 hasEncoded = true;
-                                BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                                BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 7);
+
+                                var hexSeqBuffer = new char[4];
+                                // Default, turn into a \uXXXX sequence
+                                IntToHex(c, hexSeqBuffer);
                                 bufferWriter[bufferIndex++] = '\\';
-                                bufferWriter[bufferIndex++] = c;
+                                bufferWriter[bufferIndex++] = 'u';
+                                bufferWriter[bufferIndex++] = hexSeqBuffer[0];
+                                bufferWriter[bufferIndex++] = hexSeqBuffer[1];
+                                bufferWriter[bufferIndex++] = hexSeqBuffer[2];
+                                bufferWriter[bufferIndex++] = hexSeqBuffer[3];
+                                break;
                             }
                             else
                             {
                                 if (hasEncoded)
                                 {
-                                    BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 2);
+                                    BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 2);
                                 }
 
                                 bufferWriter[bufferIndex++] = c;
+                                break;
                             }
+
+                            //if (31 >= c)
+                            //{
+                            //    hasEncoded = true;
+                            //    BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 3);
+                            //    bufferWriter[bufferIndex++] = '\\';
+                            //    bufferWriter[bufferIndex++] = c;
+                            //}
+                            //else
+                            //{
+                            //    if (hasEncoded)
+                            //    {
+                            //        BinaryUtil.EnsureCapacityFixed(ref bufferWriter, bufferIndex, 2);
+                            //    }
+
+                            //    bufferWriter[bufferIndex++] = c;
+                            //}
                             break;
                     }
                 }
@@ -257,7 +295,7 @@ namespace Zippy.Utility
         /// <param name="str"></param>
         /// <param name="quote">apply quotes</param>
         [SuppressMessage("brain-overload", "S1541")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
+     //   [MethodImpl(MethodImplOptions.NoInlining)]
         public static unsafe char[] GetEncodeStringUnsafe(string str, bool escapeHtmlChars, bool quote = true)
         {
             int len = (str.Length * 6) + (quote ? 2 : 0);
@@ -581,6 +619,24 @@ namespace Zippy.Utility
 
             return new string(newValue);
         }
+
+        // Micro optimized
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void IntToHex(int intValue, char[] hex)
+        {
+            // TODO: test if unrolling loop is faster
+            for (var i = 3; i >= 0; i--)
+            {
+                var num = intValue & 0xF; // intValue % 16
+
+                // 0x30 + num == '0' + num
+                // 0x37 + num == 'A' + (num - 10)
+                hex[i] = (char)((num < 10 ? 0x30 : 0x37) + num);
+
+                intValue >>= 4;
+            }
+        }
+
 
         public static string ToLowercaseUnderscore(this string value)
         {

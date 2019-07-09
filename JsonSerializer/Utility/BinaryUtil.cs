@@ -10,8 +10,22 @@ namespace Zippy.Utility
 
         public const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
 
+
+        public static void EnsureCapacityFixed<T>(ref T[] array, int offset, int appendLength)
+        {
+            var newLength = offset + appendLength;
+
+            var current = array.Length;
+            if (newLength > current)
+            {
+                var newSize = current + (newLength * 2);
+     
+                FastResize(ref array, newSize);
+            }
+        }
+
             //     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-         public static void EnsureCapacity<T>(ref T[] array, int offset, int appendLength)
+        public static void EnsureCapacity<T>(ref T[] array, int offset, int appendLength)
         {
             var newLength = offset + appendLength;
 
