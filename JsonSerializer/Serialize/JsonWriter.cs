@@ -14,6 +14,7 @@ namespace Zippy.Serialize
         public const char CloseArrayChar = ']';
         public const char OpenObjectChar = '{';
         public const char CloseObjectChar = '}';
+        public const char CommaChar = ',';
 
         private static readonly long DatetimeMinTimeTicks = (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks;
         private static readonly TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
@@ -77,14 +78,14 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteComma()
         {
-            _writer.Write(',');
+            _writer.Write(CommaChar);
         }
 
         public void WritePropertyNameFast(string value)
         {
             if (this._propertyInUse)
             {
-                WriteComma();
+                _writer.Write(CommaChar);
             }
             else
             {
@@ -114,6 +115,8 @@ namespace Zippy.Serialize
                     WriteBool(value);
                     break;
                 case TypeSerializerUtils.TypeCode.Int32Nullable:
+                    WriteInt32Nullable(value);
+                    break;
                 case TypeSerializerUtils.TypeCode.Int32:
                     WriteInt32(value);
                     break;
@@ -124,6 +127,8 @@ namespace Zippy.Serialize
                     WriteGuid(value);
                     break;
                 case TypeSerializerUtils.TypeCode.DoubleNullable:
+                    WriteDoubleNullable(value);
+                    break;
                 case TypeSerializerUtils.TypeCode.Double:
                     WriteDouble(value);
                     break;
@@ -148,6 +153,8 @@ namespace Zippy.Serialize
                     WriteUInt32(value);
                     break;
                 case TypeSerializerUtils.TypeCode.Int64Nullable:
+                    WriteInt64Nullable(value);
+                    break;
                 case TypeSerializerUtils.TypeCode.Int64:
                     WriteInt64(value);
                     break;
@@ -446,7 +453,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (ushort)intValue);
         }
 
-        public void WriteInt32(object intValue)
+        public void WriteInt32Nullable(object intValue)
         {
             if (intValue == null)
             {
@@ -458,6 +465,11 @@ namespace Zippy.Serialize
             }
         }
 
+        public void WriteInt32(object intValue)
+        {
+             WriteIntegerValue(_writer, (int)intValue);
+        }
+
         public void WriteUInt32(object uintValue)
         {
             if (uintValue == null)
@@ -467,6 +479,11 @@ namespace Zippy.Serialize
         }
 
         public void WriteInt64(object integerValue)
+        {
+              WriteIntegerValue(_writer, (long)integerValue);
+        }
+
+        public void WriteInt64Nullable(object integerValue)
         {
             if (integerValue == null)
                 WriteNull();
@@ -503,6 +520,11 @@ namespace Zippy.Serialize
         }
 
         public void WriteDouble(object doubleValue)
+        {
+            _writer.Write(((double)doubleValue).ToString("0.0####################", CurrentCulture));
+        }
+
+        public void WriteDoubleNullable(object doubleValue)
         {
             if (doubleValue == null)
                 WriteNull();
