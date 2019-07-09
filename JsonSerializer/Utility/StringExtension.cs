@@ -75,145 +75,163 @@ namespace Zippy.Utility
         /// <param name="quote">apply quotes</param>
         [SuppressMessage("brain-overload", "S1541")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static unsafe char[] GetEncodeString(string str, bool escapeHtmlChars, bool quote = true)
+        public static char[] GetEncodeString(string str, bool escapeHtmlChars, bool quote = true)
         {
-            int len = (str.Length * 2) + 2;
-            char[] bufferWriter = new char[len];
+            int strLen = str.Length;
+            char[] bufferWriter = new char[strLen + (quote ? 2 : 0)];
             int bufferIndex = 0;
+            bool hasEncoded = false;
 
             if (quote)
             {
                 //open quote
-                bufferWriter[bufferIndex] = '\"';
-                bufferIndex++;
+                bufferWriter[bufferIndex++] = '\"';
             }
 
-            if (len > 2)
+            if (strLen > 2)
             {
-                char c;
-                fixed (char* chr = str)
+                for (var i = 0; i < strLen; i++)
                 {
-                    char* ptr = chr;
-                    while ((c = *(ptr++)) != '\0')
+                   char c = str[i];
+                    switch (c)
                     {
-                        switch (c)
-                        {
-                            case '"':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = '\"';
-                                bufferIndex++;
-                                break;
-                            case '\\':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                break;
-                            case '\u0007':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'a';
-                                bufferIndex++;
-                                break;
-                            case '\u0008':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'b';
-                                bufferIndex++;
-                                break;
-                            case '\u0009':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 't';
-                                bufferIndex++;
-                                break;
-                            case '\u000A':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'n';
-                                bufferIndex++;
-                                break;
-                            case '\u000B':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'v';
-                                bufferIndex++;
-                                break;
-                            case '\u000C':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'f';
-                                bufferIndex++;
-                                break;
-                            case '\u000D':
-                                bufferWriter[bufferIndex] = '\\';
-                                bufferIndex++;
-                                bufferWriter[bufferIndex] = 'r';
-                                bufferIndex++;
-                                break;
-                            default:
-                                if (escapeHtmlChars)
+                        case '"':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = '\"';
+                            bufferIndex++;
+                            break;
+                        case '\\':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = '\\';
+                            bufferIndex++;
+                            break;
+                        case '\u0007':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = 'a';
+                            bufferIndex++;
+                            break;
+                        case '\u0008':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = 'b';
+                            bufferIndex++;
+                            break;
+                        case '\u0009':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = 't';
+                            bufferIndex++;
+                            break;
+                        case '\u000A':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = 'n';
+                            bufferIndex++;
+                            break;
+                        case '\u000B':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = 'v';
+                            bufferIndex++;
+                            break;
+                        case '\u000C':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex] = 'f';
+                            bufferIndex++;
+                            break;
+                        case '\u000D':
+                            hasEncoded = true;
+                            BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                            bufferWriter[bufferIndex++] = '\\';
+                            bufferWriter[bufferIndex++] = 'r';
+                            break;
+                        default:
+                            if (escapeHtmlChars)
+                            {
+                                switch (c)
                                 {
-                                    switch (c)
-                                    {
-                                        case '<':
-                                            bufferWriter[bufferIndex++] = '\\';
-                                            bufferWriter[bufferIndex++] = 'u';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '3';
-                                            bufferWriter[bufferIndex++] = 'c';
-                                            break;
-                                        case '>':
-                                            bufferWriter[bufferIndex++] = '\\';           
-                                            bufferWriter[bufferIndex++] = 'u';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '3';
-                                            bufferWriter[bufferIndex++] = 'e';
-                                            break;
-                                        case '&':
-                                            bufferWriter[bufferIndex++] = '\\';
-                                            bufferWriter[bufferIndex++] = 'u';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '2';
-                                            bufferWriter[bufferIndex++] = '6';
-                                            break;
-                                        case '=':
-                                            bufferWriter[bufferIndex++] = '\\';
-                                            bufferWriter[bufferIndex++] = 'u';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '3';
-                                            bufferWriter[bufferIndex++] = 'd';
-                                            break;
-                                        case '\'':
-                                            bufferWriter[bufferIndex++] = '\\';
-                                            bufferWriter[bufferIndex++] = 'u';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '0';
-                                            bufferWriter[bufferIndex++] = '2';
-                                            bufferWriter[bufferIndex++] = '7';
-                                            break;
-                                    }
+                                    case '<':
+                                        hasEncoded = true;
+                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        bufferWriter[bufferIndex++] = '\\';
+                                        bufferWriter[bufferIndex++] = 'u';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '3';
+                                        bufferWriter[bufferIndex++] = 'c';
+                                        break;
+                                    case '>':
+                                        hasEncoded = true;
+                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        bufferWriter[bufferIndex++] = '\\';
+                                        bufferWriter[bufferIndex++] = 'u';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '3';
+                                        bufferWriter[bufferIndex++] = 'e';
+                                        break;
+                                    case '&':
+                                        hasEncoded = true;
+                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        bufferWriter[bufferIndex++] = '\\';
+                                        bufferWriter[bufferIndex++] = 'u';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '2';
+                                        bufferWriter[bufferIndex++] = '6';
+                                        break;
+                                    case '=':
+                                        hasEncoded = true;
+                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        bufferWriter[bufferIndex++] = '\\';
+                                        bufferWriter[bufferIndex++] = 'u';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '3';
+                                        bufferWriter[bufferIndex++] = 'd';
+                                        break;
+                                    case '\'':
+                                        hasEncoded = true;
+                                        BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 7);
+                                        bufferWriter[bufferIndex++] = '\\';
+                                        bufferWriter[bufferIndex++] = 'u';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '0';
+                                        bufferWriter[bufferIndex++] = '2';
+                                        bufferWriter[bufferIndex++] = '7';
+                                        break;
+                                }
+                            }
+
+                            if (31 >= c)
+                            {
+                                hasEncoded = true;
+                                BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 3);
+                                bufferWriter[bufferIndex++] = '\\';
+                                bufferWriter[bufferIndex++] = c;
+                            }
+                            else
+                            {
+                                if (hasEncoded)
+                                {
+                                    BinaryUtil.EnsureCapacity(ref bufferWriter, bufferIndex, 2);
                                 }
 
-                               if (31 >= c)
-                                {
-                                    bufferWriter[bufferIndex] = '\\';
-                                    bufferIndex++;
-                                    bufferWriter[bufferIndex] = c;
-                                    bufferIndex++;
-                                }
-                                else
-                                {
-                                    bufferWriter[bufferIndex] = c;
-                                    bufferIndex++;
-                                }
-                                break;
-                        }
+                                bufferWriter[bufferIndex++] = c;
+                            }
+                            break;
                     }
                 }
             }
@@ -221,14 +239,16 @@ namespace Zippy.Utility
             if (quote)
             {
                 //close quote
-                bufferWriter[bufferIndex] = '\"';
-                bufferIndex++;
+                bufferWriter[bufferIndex++] = '\"';
             }
 
             //flush
-            var buffer = new char[bufferIndex];
-            Array.Copy(bufferWriter, 0, buffer, 0, bufferIndex);
-            return buffer;
+            if (hasEncoded && bufferWriter.Length != bufferIndex)
+            {
+                BinaryUtil.FastResize(ref bufferWriter, bufferIndex);
+            }
+
+            return bufferWriter;
         }
 
         /// <summary>
@@ -281,10 +301,7 @@ namespace Zippy.Utility
                     char* ptr = chr;
                     while ((c = *(ptr++)) != '\0')
                     {
-
-                        if (c.HasAnyEscapeChar1(escapeHtmlChars)) { }
-
-                            if (c.HasAnyEscapeChar(escapeHtmlChars))
+                        if (c.HasAnyEscapeChar(escapeHtmlChars))
                         {
                             return true;
                         }
@@ -298,27 +315,9 @@ namespace Zippy.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAnyEscapeChar(this char c, bool escapeHtmlChars)
         {
-            if (!(c >= 32 && c <= 126) || c == '"' || c == '\\')
-                return true;
-
-            if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
-                return true;
-
-            return false;
+            return c < ' ' || c > '~' || c == '"' || c == '\\' || (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasAnyEscapeChar1(this char c, bool escapeHtmlChars)
-        {
-            int i = c;
-            if (!(i >= 32 && i <= 126) || i == 34 || i == 92)
-                return true;
-
-            if (escapeHtmlChars && (c == '<' || c == '>' || c == '&' || c == '=' || c == '\\'))
-                return true;
-
-            return false;
-        }
 
         public static string PrettyPrint(string input)
         {

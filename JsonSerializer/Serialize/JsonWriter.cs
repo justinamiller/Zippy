@@ -23,6 +23,9 @@ namespace Zippy.Serialize
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
 
+        private readonly bool _escapeHtmlChars=JSON.Options.EscapeHtmlChars;
+        private readonly DateHandler _dateHandler = JSON.Options.DateHandler;
+
         public JsonWriter(TextWriter writer)
         {
             _writer = writer;
@@ -235,6 +238,7 @@ namespace Zippy.Serialize
             _writer.Write(QuoteChar);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteString(string value)
         {
             if (value == null)
@@ -243,18 +247,10 @@ namespace Zippy.Serialize
                 return;
             }
 
-            var escapeHtmlChars = JSON.Options.EscapeHtmlChars;
-            if (!value.HasAnyEscapeChars(escapeHtmlChars))
-            {
-                _writer.Write(QuoteChar);
-                _writer.Write(value);
-                _writer.Write(QuoteChar);
-                return;
-            }
-
             //force encode.
-            _writer.Write(StringExtension.GetEncodeString(value, escapeHtmlChars));
+            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
         }
+
 
         public void WriteException(object value)
         {
@@ -264,8 +260,7 @@ namespace Zippy.Serialize
         public void WriteDateTime(object oDateTime)
         {
             var dateTime = (DateTime)oDateTime;
-
-            if (JSON.Options.DateHandler == DateHandler.TimestampOffset)
+            if (_dateHandler == DateHandler.TimestampOffset)
             {
                 _writer.Write(QuoteChar);
                 var offset = LocalTimeZone.GetUtcOffset(dateTime).Ticks;
@@ -283,7 +278,7 @@ namespace Zippy.Serialize
                 return;
             }
 
-            switch (JSON.Options.DateHandler)
+            switch (_dateHandler)
             {
                 case DateHandler.ISO8601:
                     _writer.Write(dateTime.ToString("o", CurrentCulture));
@@ -419,18 +414,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                char c = (char)charValue;
-                bool escapeHtmlChars = JSON.Options.EscapeHtmlChars;
-                if (c.HasAnyEscapeChar(escapeHtmlChars))
-                {
-                    _writer.Write(StringExtension.GetEncodeString(c.ToString(), escapeHtmlChars));
-                }
-                else
-                {
-                    _writer.Write(QuoteChar);
-                    _writer.Write(c);
-                    _writer.Write(QuoteChar);
-                }
+                _writer.Write(StringExtension.GetEncodeString((string)charValue, _escapeHtmlChars));
             }
         }
 

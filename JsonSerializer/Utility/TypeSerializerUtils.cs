@@ -306,43 +306,15 @@ namespace Zippy.Utility
 
             name = FormatPropertyName(name);
 
-            bool escapeHtmlChars = JSON.Options.EscapeHtmlChars;
-           if (!name.HasAnyEscapeChars(escapeHtmlChars))
-            {
-                int len = name.Length;
-                var buffer = new char[len + 3];
-                int index = 0;
-                buffer[index++] = '"';
-                unsafe
-                {
-                    fixed (char* ptr2 = name)
-                    {
-                        char* ptr = ptr2;
-                        for (var i = 0; i < len; i++)
-                        {
-                            char cc = *ptr;
-                            buffer[index++] = cc;
-                            ptr++;
-                        }
-                    }
-                }
-                buffer[index++] = '"';
-                buffer[index++] = ':';
+            //force encode.
+            var buffer = StringExtension.GetEncodeString(name, false, true);
+            int length = buffer.Length;
 
-                return new string(buffer, 0, len + 3);
-            }
-            else
-            {
-                //force encode.
-                var buffer = StringExtension.GetEncodeString(name, escapeHtmlChars, true);
-                int length = buffer.Length;
+            var newArray = new char[length + 1];
+            Array.Copy(buffer, 0, newArray, 0, length);
+            newArray[length] = ':';
 
-                var newArray = new char[length + 1];
-                Array.Copy(buffer, 0, newArray, 0, length);
-                newArray[length] = ':';
-
-                return new string(newArray, 0, length + 1);
-            }
+            return new string(newArray, 0, length + 1);
         }
 
         public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable, Type type)

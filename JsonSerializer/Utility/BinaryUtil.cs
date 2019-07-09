@@ -10,8 +10,8 @@ namespace Zippy.Utility
 
         public const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
 
-   //     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnsureCapacity<T>(ref T[] array, int offset, int appendLength)
+            //     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static void EnsureCapacity<T>(ref T[] array, int offset, int appendLength)
         {
             var newLength = offset + appendLength;
 
@@ -37,20 +37,17 @@ namespace Zippy.Utility
 
                 if (current == ArrayMaxSize)
                 {
-                    throw new InvalidOperationException("byte[] size reached maximum size of array(0x7FFFFFC7), can not write to single byte[]. Details: https://msdn.microsoft.com/en-us/library/system.array");
+                    throw new InvalidOperationException("T[] size reached maximum size of array(0x7FFFFFC7), can not write to single T[]. Details: https://msdn.microsoft.com/en-us/library/system.array");
                 }
 
-                var newSize = unchecked((current * 2));
+                var newSize = unchecked(current * 2);
                 if (newSize < 0) // overflow
                 {
                     num = ArrayMaxSize;
                 }
-                else
+                else if (num < newSize)
                 {
-                    if (num < newSize)
-                    {
-                        num = newSize;
-                    }
+                    num = newSize;
                 }
 
                 FastResize(ref array, num);
@@ -58,7 +55,7 @@ namespace Zippy.Utility
         }
 
         // Buffer.BlockCopy version of Array.Resize
-     //   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+       [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FastResize<T>(ref T[] array, int newSize)
         {
             if (newSize < 0) throw new ArgumentOutOfRangeException("newSize");
@@ -73,7 +70,8 @@ namespace Zippy.Utility
             if (len != newSize)
             {
                 T[] array3 = new T[newSize];
-                Buffer.BlockCopy(array2, 0, array3, 0, (len > newSize) ? newSize : len);
+                Array.Copy(array2, 0, array3, 0, (len > newSize) ? newSize : len);
+
                 array = array3;
             }
         }

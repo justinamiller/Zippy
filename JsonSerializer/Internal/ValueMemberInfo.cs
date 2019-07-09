@@ -69,16 +69,6 @@ namespace Zippy.Internal
         {
             var code = this.Code;
 
-            if(code == TypeSerializerUtils.TypeCode.CustomObject)
-            {
-                IValueMemberInfo[] obj = null;
-                if (Serializer.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out obj))
-                {
-                    _valueMemberInfos = obj;
-                }
-                return;
-            }
-
             if (!TypeSerializerUtils.HasExtendedValueInformation(code))
             {
                 return;
@@ -147,6 +137,15 @@ namespace Zippy.Internal
         IValueMemberInfo[] _valueMemberInfos;
         public IValueMemberInfo[] GetCustomObjectMemberInfo()
         {
+            if (_valueMemberInfos==null)
+            {
+                IValueMemberInfo[] obj = null;
+                if (Serializer.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out obj))
+                {
+                    _valueMemberInfos = obj;
+                }
+            }
+
             return _valueMemberInfos;
         }
 

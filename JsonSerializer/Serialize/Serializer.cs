@@ -25,7 +25,7 @@ namespace Zippy.Serialize
         private readonly ReferenceCheck _cirobj = new ReferenceCheck();
         private int _currentDepth = 0;
         private JsonWriter _jsonWriter;
-        
+
         public Serializer()
         {
         }
@@ -88,7 +88,7 @@ namespace Zippy.Serialize
                     else
                     {
                         //first record.
-                       var  valueType = GetEnumerableValueType(values, valueMemberInfo.ObjectType);
+                        var valueType = GetEnumerableValueType(values, valueMemberInfo.ObjectType);
                         if (valueType != typeof(object))
                         {
                             valueMember = new ValueMemberInfo(valueType);
@@ -238,7 +238,7 @@ namespace Zippy.Serialize
                 return true;
             }
 
-            IValueMemberInfo valueMember= valueMemberInfo.ExtendedValueInfo;
+            IValueMemberInfo valueMember = valueMemberInfo.ExtendedValueInfo;
 
             if (valueMember.IsType)
             {
@@ -320,13 +320,11 @@ namespace Zippy.Serialize
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SerializeObjectInternal<T>(T obj, TextWriter writer)
+        public void SerializeObjectInternal(object obj, TextWriter writer)
         {
             _jsonWriter = new JsonWriter(writer);
 
-               var type = obj.GetType();
-
-            var valueMember = new ValueMemberInfo(type);
+            var valueMember = new ValueMemberInfo(obj.GetType());
 
             if (!WriteObjectValue(obj, valueMember))
             {
@@ -498,7 +496,7 @@ namespace Zippy.Serialize
                 _jsonWriter.WriteNull();
                 return true;
             }
-            
+
             var typeCode = valueMemberInfo.Code;
             if (typeCode >= TypeSerializerUtils.TypeCode.CustomObject)
             {
@@ -522,7 +520,7 @@ namespace Zippy.Serialize
                     {
                         return false;
                     }
-                }        
+                }
             }
             finally
             {
@@ -661,7 +659,7 @@ namespace Zippy.Serialize
                         }
                     case TypeSerializerUtils.TypeCode.Array:
                         {
-                           return SerializeArray((Array)value, valueMemberInfo);
+                            return SerializeArray((Array)value, valueMemberInfo);
                         }
                     case TypeSerializerUtils.TypeCode.IList:
                         {
@@ -708,7 +706,7 @@ namespace Zippy.Serialize
         {
             IValueMemberInfo[] obj = valueMemberInfo.GetCustomObjectMemberInfo();
 
-            if (obj!=null)
+            if (obj != null)
             {
                 return this.SerializeValueMemberInfo(value, obj);
             }
