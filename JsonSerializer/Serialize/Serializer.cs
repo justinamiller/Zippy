@@ -52,7 +52,7 @@ namespace Zippy.Serialize
                     if (!name.IsNullOrEmpty())
                     {
                         _jsonWriter.WritePropertyName(name);
-                        _jsonWriter.WriteString(value.Get(i));
+                        _jsonWriter.WriteStringNullable(value.Get(i));
                     }
                 }
             }

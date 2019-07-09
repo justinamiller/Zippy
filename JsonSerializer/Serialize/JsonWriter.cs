@@ -95,16 +95,7 @@ namespace Zippy.Serialize
 
         public void WritePropertyName(string value)
         {
-            if (this._propertyInUse)
-            {
-                WriteComma();
-            }
-            else
-            {
-                this._propertyInUse = true;
-            }
-
-            _writer.Write(TypeSerializerUtils.BuildPropertyName(value));
+            WritePropertyNameFast(TypeSerializerUtils.BuildPropertyName(value));
         }
 
         public bool WriteValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode, object value)
@@ -238,8 +229,13 @@ namespace Zippy.Serialize
             _writer.Write(QuoteChar);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public void WriteString(string value)
+        {
+            //force encode.
+            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
+        }
+
+        public void WriteStringNullable(string value)
         {
             if (value == null)
             {
@@ -254,7 +250,7 @@ namespace Zippy.Serialize
 
         public void WriteException(object value)
         {
-            WriteString(((Exception)value).Message);
+            WriteStringNullable(((Exception)value).Message);
         }
 
         public void WriteDateTime(object oDateTime)
@@ -361,7 +357,7 @@ namespace Zippy.Serialize
             if (uri == null)
                 WriteNull();
             else
-                WriteString(((Uri)uri).OriginalString);
+                WriteStringNullable(((Uri)uri).OriginalString);
         }
 
 
