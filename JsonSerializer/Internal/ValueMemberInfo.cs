@@ -110,7 +110,7 @@ namespace Zippy.Internal
 
         public object GetValue(object instance, ref bool isError)
         {
-            if (!_errored && instance != null)
+            if (!_errored)
             {
                 isError = false;
                 try

@@ -26,6 +26,10 @@ namespace Zippy.Serialize
         private int _currentDepth = 0;
         private JsonWriter _jsonWriter;
 
+        private readonly int _recursionLimit = JSON.Options.RecursionLimit;
+        private readonly bool _excludeNulls = JSON.Options.ShouldExcludeNulls;
+
+
         public Serializer()
         {
         }
@@ -467,7 +471,7 @@ namespace Zippy.Serialize
 
                     if (!isError || JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ReportValueAsNull)
                     {
-                        if (value != null || !JSON.Options.ShouldExcludeNulls)
+                        if (value != null || !_excludeNulls)
                         {
                             _jsonWriter.WritePropertyNameFast(item.Name);
 
@@ -636,7 +640,7 @@ namespace Zippy.Serialize
             }
             _currentDepth++;
             //recursion limit or max char length
-            if (_currentDepth >= JSON.Options.RecursionLimit)
+            if (_currentDepth >= _recursionLimit)
             {
                 _currentDepth--;
                 _jsonWriter.WriteNull();
