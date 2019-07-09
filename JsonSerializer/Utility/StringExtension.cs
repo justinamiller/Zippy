@@ -92,7 +92,7 @@ namespace Zippy.Utility
             {
                 for (var i = 0; i < strLen; i++)
                 {
-                   char c = str[i];
+                    char c = str[i];
                     switch (c)
                     {
                         case '"':
@@ -249,6 +249,169 @@ namespace Zippy.Utility
             }
 
             return bufferWriter;
+        }
+
+        /// <summary>
+        /// memory buffer; faster than using stringbuilder.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="quote">apply quotes</param>
+        [SuppressMessage("brain-overload", "S1541")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static unsafe char[] GetEncodeStringUnsafe(string str, bool escapeHtmlChars, bool quote = true)
+        {
+            int len = (str.Length * 6) + (quote ? 2 : 0);
+            char[] bufferWriter = new char[len];
+            int bufferIndex = 0;
+
+            if (quote)
+            {
+                //open quote
+                bufferWriter[bufferIndex] = '\"';
+                bufferIndex++;
+            }
+
+            if (len > 2)
+            {
+                char c;
+                fixed (char* chr = str)
+                {
+                    char* ptr = chr;
+                    while ((c = *(ptr++)) != '\0')
+                    {
+                        switch (c)
+                        {
+                            case '"':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = '\"';
+                                bufferIndex++;
+                                break;
+                            case '\\':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                break;
+                            case '\u0007':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'a';
+                                bufferIndex++;
+                                break;
+                            case '\u0008':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'b';
+                                bufferIndex++;
+                                break;
+                            case '\u0009':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 't';
+                                bufferIndex++;
+                                break;
+                            case '\u000A':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'n';
+                                bufferIndex++;
+                                break;
+                            case '\u000B':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'v';
+                                bufferIndex++;
+                                break;
+                            case '\u000C':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'f';
+                                bufferIndex++;
+                                break;
+                            case '\u000D':
+                                bufferWriter[bufferIndex] = '\\';
+                                bufferIndex++;
+                                bufferWriter[bufferIndex] = 'r';
+                                bufferIndex++;
+                                break;
+                            default:
+                                if (escapeHtmlChars)
+                                {
+                                    switch (c)
+                                    {
+                                        case '<':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '3';
+                                            bufferWriter[bufferIndex++] = 'c';
+                                            break;
+                                        case '>':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '3';
+                                            bufferWriter[bufferIndex++] = 'e';
+                                            break;
+                                        case '&':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '2';
+                                            bufferWriter[bufferIndex++] = '6';
+                                            break;
+                                        case '=':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '3';
+                                            bufferWriter[bufferIndex++] = 'd';
+                                            break;
+                                        case '\'':
+                                            bufferWriter[bufferIndex++] = '\\';
+                                            bufferWriter[bufferIndex++] = 'u';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '0';
+                                            bufferWriter[bufferIndex++] = '2';
+                                            bufferWriter[bufferIndex++] = '7';
+                                            break;
+                                    }
+                                }
+
+                                if (31 >= c)
+                                {
+                                    bufferWriter[bufferIndex] = '\\';
+                                    bufferIndex++;
+                                    bufferWriter[bufferIndex] = c;
+                                    bufferIndex++;
+                                }
+                                else
+                                {
+                                    bufferWriter[bufferIndex] = c;
+                                    bufferIndex++;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            if (quote)
+            {
+                //close quote
+                bufferWriter[bufferIndex] = '\"';
+                bufferIndex++;
+            }
+
+            //flush
+            var buffer = new char[bufferIndex];
+            Array.Copy(bufferWriter, 0, buffer, 0, bufferIndex);
+            return buffer;
         }
 
         /// <summary>

@@ -410,7 +410,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(StringExtension.GetEncodeString((string)charValue, _escapeHtmlChars));
+                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), _escapeHtmlChars));
             }
         }
 
