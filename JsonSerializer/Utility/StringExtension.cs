@@ -267,7 +267,6 @@ namespace Zippy.Utility
 
                         //    bufferWriter[bufferIndex++] = c;
                         //}
-                        break;
                 }
             }
 

@@ -455,10 +455,10 @@ namespace Zippy.Serialize
 
             int len = items.Length;
             IValueMemberInfo item;
+            bool isError = false;
             _jsonWriter.WriteStartObject();
             try
             {
-                bool isError = false;
                 for (var i = 0; i < len; i++)
                 {
                     item = items[i];
