@@ -26,6 +26,7 @@ namespace Zippy.Internal
             this.ObjectType = type;
             this.Code = TypeSerializerUtils.GetTypeCode(type);
             this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
+
             CheckForExtendedValueInfo();
         }
 
@@ -67,6 +68,11 @@ namespace Zippy.Internal
 
         private void CheckForExtendedValueInfo()
         {
+            if (!this.IsType)
+            {
+                return;
+            }
+
             var code = this.Code;
 
             if (!TypeSerializerUtils.HasExtendedValueInformation(code))
@@ -108,14 +114,14 @@ namespace Zippy.Internal
             ExtendedValueInfo = new ValueMemberInfo(type ?? typeof(object));
         }
 
-        public object GetValue(object instance, ref bool isError)
+        public bool TryGetValue(object instance, ref object value)
         {
             if (!_errored)
             {
-                isError = false;
                 try
                 {
-                    return _getter(instance);
+                    value= _getter(instance);
+                    return true;
                 }
                 catch (Exception ex)
                 {
@@ -123,15 +129,12 @@ namespace Zippy.Internal
                     {
                         throw ex;
                     }
-                    _errored = true;
-
-                    return null;
                 }
             }
 
-            isError = true;
             //has errored
-            return null;
+            value = null;
+            return false;
         }
 
         IValueMemberInfo[] _valueMemberInfos;
@@ -139,10 +142,9 @@ namespace Zippy.Internal
         {
             if (_valueMemberInfos==null)
             {
-                IValueMemberInfo[] obj = null;
-                if (Serializer.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out obj))
+                if (!Serializer.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out _valueMemberInfos))
                 {
-                    _valueMemberInfos = obj;
+                    throw new Exception("Unable to serialize " + this.ObjectType.FullName);
                 }
             }
 

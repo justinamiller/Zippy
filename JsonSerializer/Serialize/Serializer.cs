@@ -467,9 +467,9 @@ namespace Zippy.Serialize
                 {
                     item = items[i];
 
-                    var value = item.GetValue(instance, ref isError);
+                    object value = null;
 
-                    if (!isError || JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ReportValueAsNull)
+                    if (!item.TryGetValue(instance, ref value) || JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ReportValueAsNull)
                     {
                         if (value != null || !_excludeNulls)
                         {

@@ -7,7 +7,7 @@ namespace Zippy.Internal
     {
         string Name { get; }
         Utility.TypeSerializerUtils.TypeCode Code { get; }
-        object GetValue(object instance, ref bool isError);
+        bool TryGetValue(object instance, ref object value);
         Type ObjectType { get; }
         bool IsType { get; }
 
