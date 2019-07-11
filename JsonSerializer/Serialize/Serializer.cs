@@ -27,7 +27,7 @@ namespace Zippy.Serialize
         private JsonWriter _jsonWriter;
 
         private readonly int _recursionLimit = JSON.Options.RecursionLimit;
-        private readonly bool _excludeNulls = JSON.Options.ShouldExcludeNulls;
+        private readonly SerializationErrorHandling _errorHandling = JSON.Options.SerializationErrorHandling;
 
 
         public Serializer()
@@ -456,29 +456,23 @@ namespace Zippy.Serialize
         private bool SerializeValueMemberInfo(object instance, IValueMemberInfo[] items)
         {
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
-
             int len = items.Length;
             IValueMemberInfo item;
-            bool isError = false;
+            object value;
             _jsonWriter.WriteStartObject();
             try
             {
                 for (var i = 0; i < len; i++)
                 {
                     item = items[i];
-
-                    object value = null;
-
-                    if (!item.TryGetValue(instance, ref value) || JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ReportValueAsNull)
+                    value = null;
+                    if (!item.TryGetValue(instance, ref value) || _errorHandling == SerializationErrorHandling.ReportValueAsNull)
                     {
-                        if (value != null || !_excludeNulls)
-                        {
-                            _jsonWriter.WritePropertyNameFast(item.Name);
+                        _jsonWriter.WritePropertyNameFast(item.Name);
 
-                            if (!WriteObjectValue(value, item))
-                            {
-                                return false;
-                            }
+                        if (!WriteObjectValue(value, item))
+                        {
+                            return false;
                         }
                     }
                 }

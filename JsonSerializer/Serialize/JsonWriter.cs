@@ -212,17 +212,6 @@ namespace Zippy.Serialize
             return true;
         }
 
-        /// <summary>
-        /// Shortcut escape when we're sure value doesn't contain any escaped chars
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="value"></param>
-        public void WriteRawString(string value)
-        {
-            _writer.Write(QuoteChar);
-            _writer.Write(value);
-            _writer.Write(QuoteChar);
-        }
 
         /// <summary>
         /// Shortcut escape when we're sure value doesn't contain any escaped chars
@@ -241,6 +230,7 @@ namespace Zippy.Serialize
             //force encode.
             _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
         }
+
 
         public void WriteStringNullable(string value)
         {
@@ -402,7 +392,10 @@ namespace Zippy.Serialize
         public void WriteBytes(object oByteValue)
         {
             if (oByteValue == null) return;
-            WriteRawString(Convert.ToBase64String((byte[])oByteValue));
+
+            _writer.Write(QuoteChar);
+            _writer.Write(Convert.ToBase64String((byte[])oByteValue));
+            _writer.Write(QuoteChar);
         }
 
         internal readonly static char[] Null = new char[4] { 'n', 'u', 'l', 'l' };

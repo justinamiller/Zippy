@@ -27,7 +27,10 @@ namespace Zippy.Internal
             this.Code = TypeSerializerUtils.GetTypeCode(type);
             this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
 
-            CheckForExtendedValueInfo();
+            if (this.IsType)
+            {
+                CheckForExtendedValueInfo();
+            }
         }
 
         public ValueMemberInfo(MemberInfo memberInfo)
@@ -54,8 +57,11 @@ namespace Zippy.Internal
                     this.ObjectType = type;
                     this.Code = Utility.TypeSerializerUtils.GetTypeCode(type);
                     this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
-                    CheckForExtendedValueInfo();
-                }                
+                    if (this.IsType)
+                    {
+                        CheckForExtendedValueInfo();
+                    }
+                }
             }
             else
             {
@@ -66,11 +72,6 @@ namespace Zippy.Internal
 
         private void CheckForExtendedValueInfo()
         {
-            if (!this.IsType)
-            {
-                return;
-            }
-
             var code = this.Code;
 
             if (!TypeSerializerUtils.HasExtendedValueInformation(code))
@@ -118,7 +119,7 @@ namespace Zippy.Internal
             {
                 try
                 {
-                    value= _getter(instance);
+                    value = _getter(instance);
                     return true;
                 }
                 catch (Exception ex)
@@ -138,7 +139,7 @@ namespace Zippy.Internal
         IValueMemberInfo[] _valueMemberInfos;
         public IValueMemberInfo[] GetCustomObjectMemberInfo()
         {
-            if (_valueMemberInfos==null)
+            if (_valueMemberInfos == null)
             {
                 if (!Serializer.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out _valueMemberInfos))
                 {
