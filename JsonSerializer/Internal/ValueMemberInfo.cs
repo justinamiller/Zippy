@@ -33,8 +33,7 @@ namespace Zippy.Internal
         public ValueMemberInfo(MemberInfo memberInfo)
         {
             Type type = null;
-            // this.MemberInfo = memberInfo;
-            var propertyInfo = memberInfo as PropertyInfo;
+            PropertyInfo propertyInfo = memberInfo as PropertyInfo;
             if (propertyInfo != null)
             {
                 type = propertyInfo.PropertyType;
@@ -54,7 +53,6 @@ namespace Zippy.Internal
                 {
                     this.ObjectType = type;
                     this.Code = Utility.TypeSerializerUtils.GetTypeCode(type);
-
                     this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
                     CheckForExtendedValueInfo();
                 }                
