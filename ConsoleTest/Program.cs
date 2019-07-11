@@ -40,16 +40,16 @@ namespace ConsoleTest
         {
          //   AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             System.Threading.Thread.Sleep(250);
-            ////var c = new Models.ComplexModelObject();
+           //var c = new Models.ComplexModelObject();
             ////Zippy.JSON.SerializeObjectToString1(c);
 
            // var largeString = File.ReadAllText("CSharpHtml.txt");
 //Zippy.JSON.SerializeObjectToString(largeString);
 
           //  Zippy.JSON.Options.EscapeHtmlChars = true;
-            //   var c = new Models.ComplexModelObject();
-            var c = Enumerable.Range(1000, 1000).Select(x => new Models.TinyObject("Name<Data/>" + x.ToString(), x, Models.TinyObject.State.Running)).ToArray();
-            Zippy.JSON.SerializeObjectToString(c);
+             var c = new Models.ComplexModelObject();
+         //   var c = Enumerable.Range(1000, 1000).Select(x => new Models.TinyObject("Name<Data/>" + x.ToString(), x, Models.TinyObject.State.Running)).ToArray();
+          //  Zippy.JSON.SerializeObjectToString(c);
          //   c = new Models.ComplexModelObject();
             Test(c);
        //     c = new Models.ComplexModelObject();

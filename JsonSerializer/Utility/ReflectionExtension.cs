@@ -317,7 +317,6 @@ namespace Zippy.Utility
         public static List<MemberInfo> GetFieldsAndProperties(Type type, BindingFlags bindingAttr)
         {
             List<MemberInfo> targetMembers = new List<MemberInfo>();
-
             targetMembers.AddRange(GetFields(type, bindingAttr));
             targetMembers.AddRange(GetProperties(type, bindingAttr));
 
@@ -646,6 +645,12 @@ namespace Zippy.Utility
             var fieldInfo = memberInfo as FieldInfo;
             if (fieldInfo != null)
             {
+                //no backing fields
+                if (fieldInfo.Name.Contains("k__BackingField"))
+                {
+                    return false;
+                }
+
                 return fieldInfo.ShouldUseMember();
             }
             return false;
