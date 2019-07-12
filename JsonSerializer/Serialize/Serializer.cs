@@ -146,7 +146,11 @@ namespace Zippy.Serialize
                     }
 
                     var value = list[i];
-                    if (!WriteObjectValue(value, valueMemberInfo))
+                    if (value == null)
+                    {
+                        _jsonWriter.WriteNull();
+                    }
+                    else if (!WriteObjectValue(value, valueMemberInfo))
                     {
                         return false;
                     }
@@ -176,7 +180,11 @@ namespace Zippy.Serialize
                     }
 
                     var value = list[i];
-                    if (value != null)
+                    if (value == null)
+                    {
+                        _jsonWriter.WriteNull();
+                    }
+                    else
                     {
                         var valueType = value.GetType();
                         if (lastType != valueType)
@@ -184,11 +192,11 @@ namespace Zippy.Serialize
                             lastType = valueType;
                             valueMemberInfo = new ValueMemberInfo(valueType);
                         }
-                    }
 
-                    if (!WriteObjectValue(value, valueMemberInfo))
-                    {
-                        return false;
+                        if (!WriteObjectValue(value, valueMemberInfo))
+                        {
+                            return false;
+                        }
                     }
                 }
             }
@@ -291,15 +299,22 @@ namespace Zippy.Serialize
                             flag = false;
                         }
 
-                        var typeCode = value.GetType();
-                        if (lastTypeCode != typeCode)
+                        if (value == null)
                         {
-                            lastTypeCode = typeCode;
-                            valueMember = new ValueMemberInfo(typeCode);
+                            _jsonWriter.WriteNull();
                         }
-                        if (!WriteObjectValue(value, valueMember))
+                        else
                         {
-                            return false;
+                            var typeCode = value.GetType();
+                            if (lastTypeCode != typeCode)
+                            {
+                                lastTypeCode = typeCode;
+                                valueMember = new ValueMemberInfo(typeCode);
+                            }
+                            if (!WriteObjectValue(value, valueMember))
+                            {
+                                return false;
+                            }
                         }
                     }
                     else
@@ -431,10 +446,14 @@ namespace Zippy.Serialize
                     string name = entry.Key.ToString();
                     if (!name.IsNullOrEmpty())
                     {
-                        var value = entry.Value;
+                       _jsonWriter.WritePropertyName(name);
 
-                        _jsonWriter.WritePropertyName(name);
-                        if (!WriteObjectValue(value, valueMember))
+                        var value = entry.Value;
+                        if (value == null)
+                        {
+                            _jsonWriter.WriteNull();
+                        }
+                        else if (!WriteObjectValue(value, valueMember))
                         {
                             return false;
                         }
@@ -467,7 +486,11 @@ namespace Zippy.Serialize
                     {
                         _jsonWriter.WritePropertyNameFast(item.Name);
 
-                        if (!WriteObjectValue(value, item))
+                        if (value == null)
+                        {
+                            _jsonWriter.WriteNull();
+                        }
+                        else if (!WriteObjectValue(value, item))
                         {
                             return false;
                         }
@@ -486,12 +509,6 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool WriteObjectValue(object value, IValueMemberInfo valueMemberInfo)
         {
-            if (value == null)
-            {
-                _jsonWriter.WriteNull();
-                return true;
-            }
-
             //var typeCode = valueMemberInfo.Code;
             //if (typeCode >= TypeSerializerUtils.TypeCode.CustomObject)
             //{
@@ -590,7 +607,11 @@ namespace Zippy.Serialize
                             _jsonWriter.WritePropertyNameFast(column.Item1);
                             //build column data
                             var value = row[column.Item3];
-                            if (!WriteObjectValue(value, column.Item2))
+                            if (value == null)
+                            {
+                                _jsonWriter.WriteNull();
+                            }
+                            else if (!WriteObjectValue(value, column.Item2))
                             {
                                 return false;
                             }
