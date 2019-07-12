@@ -7,6 +7,8 @@ namespace Zippy.Internal
     {
         string Name { get; }
         Utility.TypeSerializerUtils.TypeCode Code { get; }
+        JsonWriter.WriteObjectDelegate WriteDelegate { get; }
+
         bool TryGetValue(object instance, ref object value);
         Type ObjectType { get; }
         bool IsType { get; }

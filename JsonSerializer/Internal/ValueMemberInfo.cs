@@ -17,6 +17,8 @@ namespace Zippy.Internal
 
         public bool IsType { get; private set; }
 
+        public JsonWriter.WriteObjectDelegate WriteDelegate { get; }
+
         private bool _errored;
 
         public IValueMemberInfo ExtendedValueInfo { get; private set; }
@@ -26,7 +28,7 @@ namespace Zippy.Internal
             this.ObjectType = type;
             this.Code = TypeSerializerUtils.GetTypeCode(type);
             this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
-
+            WriteDelegate = JsonWriter.GetWriteObjectDelegate(Code);
             if (this.IsType)
             {
                 CheckForExtendedValueInfo();
@@ -56,6 +58,7 @@ namespace Zippy.Internal
                 {
                     this.ObjectType = type;
                     this.Code = Utility.TypeSerializerUtils.GetTypeCode(type);
+                    WriteDelegate = JsonWriter.GetWriteObjectDelegate(Code);
                     this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
                     if (this.IsType)
                     {
@@ -141,7 +144,7 @@ namespace Zippy.Internal
         {
             if (_valueMemberInfos == null)
             {
-                if (!Serializer.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out _valueMemberInfos))
+                if (!Options.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out _valueMemberInfos))
                 {
                     throw new Exception("Unable to serialize " + this.ObjectType.FullName);
                 }

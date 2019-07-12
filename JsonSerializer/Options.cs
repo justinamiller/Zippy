@@ -1,9 +1,12 @@
 ﻿using System;
+using Zippy.Serialize;
 
 namespace Zippy
 {
     sealed class Options : IOptions
     {
+        internal readonly static IJsonSerializerStrategy CurrentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
+
         internal const int MAXJSONLENGTH = 2097152;
         internal const int RECURSIONLIMIT = 7;
 

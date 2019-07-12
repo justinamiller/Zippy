@@ -19,8 +19,6 @@ namespace Zippy.Serialize
     /// <remarks>guide from http://www.json.org/ </remarks>
     sealed class Serializer
     {
-        internal readonly static IJsonSerializerStrategy CurrentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
-
         // The following logic performs circular reference detection
         private readonly ReferenceCheck _cirobj = new ReferenceCheck();
         private int _currentDepth = 0;
@@ -322,7 +320,6 @@ namespace Zippy.Serialize
             return true;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SerializeObjectInternal(object obj, TextWriter writer)
         {
@@ -495,15 +492,25 @@ namespace Zippy.Serialize
                 return true;
             }
 
-            var typeCode = valueMemberInfo.Code;
-            if (typeCode >= TypeSerializerUtils.TypeCode.CustomObject)
+            //var typeCode = valueMemberInfo.Code;
+            //if (typeCode >= TypeSerializerUtils.TypeCode.CustomObject)
+            //{
+            //    //object type
+            //    return SerializeNonPrimitiveValue(value, valueMemberInfo);
+            //}
+            ////primiative type
+            //return _jsonWriter.WriteValueTypeToStringMethod(typeCode, value);
+
+
+            var writeFunc = valueMemberInfo.WriteDelegate;
+
+            if (writeFunc != null)
             {
-                //object type
-                return SerializeNonPrimitiveValue(value, valueMemberInfo);
+                writeFunc(_jsonWriter, value);
+                return true;
             }
 
-            //primiative type
-            return _jsonWriter.WriteValueTypeToStringMethod(typeCode, value);
+            return SerializeNonPrimitiveValue(value, valueMemberInfo);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
