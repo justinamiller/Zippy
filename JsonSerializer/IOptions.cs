@@ -21,11 +21,6 @@
         bool PrettyPrint { get; set; }
 
         /// <summary>
-        /// whether or not to write object members whose value is null
-        /// </summary>
-        bool ShouldExcludeNulls { get; set; }
-
-        /// <summary>
         /// Text case to use for property names
         /// </summary>
         TextCase TextCase { get; set; }

@@ -250,7 +250,7 @@ namespace Zippy.Utility
             {
                 buffer[index++] = '.';
 
-                int effectiveDigits = 7 - MathUtils.IntLength((ulong)fraction);
+                int effectiveDigits = 7 - MathUtils.GetIntLength((ulong)fraction);
 
                 for (var i = 0; i < effectiveDigits; i++)
                 {

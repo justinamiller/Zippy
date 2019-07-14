@@ -19,13 +19,13 @@ namespace Zippy.Serialize
     /// <remarks>guide from http://www.json.org/ </remarks>
     sealed class Serializer
     {
-        private readonly static IJsonSerializerStrategy s_currentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
-
         // The following logic performs circular reference detection
         private readonly ReferenceCheck _cirobj = new ReferenceCheck();
-
         private int _currentDepth = 0;
         private JsonWriter _jsonWriter;
+
+        private readonly int _recursionLimit = JSON.Options.RecursionLimit;
+        private readonly SerializationErrorHandling _errorHandling = JSON.Options.SerializationErrorHandling;
 
 
         public Serializer()
@@ -50,8 +50,12 @@ namespace Zippy.Serialize
                 int len = keys.Length;
                 for (int i = 0; i < len; i++)
                 {
-                    _jsonWriter.WritePropertyName(keys[i]);
-                    _jsonWriter.WriteString(value.Get(i));
+                    var name = keys[i];
+                    if (!name.IsNullOrEmpty())
+                    {
+                        _jsonWriter.WritePropertyName(name);
+                        _jsonWriter.WriteStringNullable(value.Get(i));
+                    }
                 }
             }
             finally
@@ -86,7 +90,7 @@ namespace Zippy.Serialize
                     else
                     {
                         //first record.
-                       var  valueType = GetEnumerableValueType(values, valueMemberInfo.ObjectType);
+                        var valueType = GetEnumerableValueType(values, valueMemberInfo.ObjectType);
                         if (valueType != typeof(object))
                         {
                             valueMember = new ValueMemberInfo(valueType);
@@ -128,6 +132,83 @@ namespace Zippy.Serialize
             return true;
         }
 
+        private bool SerializeIListTyped(IList list, int len, IValueMemberInfo valueMemberInfo)
+        {
+            _jsonWriter.WriteStartArray();
+            try
+            {
+                //one type
+                for (var i = 0; i < len; i++)
+                {
+                    if (i > 0)
+                    {
+                        _jsonWriter.WriteComma();
+                    }
+
+                    var value = list[i];
+                    if (value == null)
+                    {
+                        _jsonWriter.WriteNull();
+                    }
+                    else if (!WriteObjectValue(value, valueMemberInfo))
+                    {
+                        return false;
+                    }
+                }
+            }
+            finally
+            {
+                _jsonWriter.WriteEndArray();
+            }
+
+            return true;
+        }
+
+        private bool SerializeIListUnTyped(IList list, int len, IValueMemberInfo valueMemberInfo)
+        {
+            Type lastType = null;
+
+            _jsonWriter.WriteStartArray();
+            try
+            {
+                //dynamic types
+                for (var i = 0; i < len; i++)
+                {
+                    if (i > 0)
+                    {
+                        _jsonWriter.WriteComma();
+                    }
+
+                    var value = list[i];
+                    if (value == null)
+                    {
+                        _jsonWriter.WriteNull();
+                    }
+                    else
+                    {
+                        var valueType = value.GetType();
+                        if (lastType != valueType)
+                        {
+                            lastType = valueType;
+                            valueMemberInfo = new ValueMemberInfo(valueType);
+                        }
+
+                        if (!WriteObjectValue(value, valueMemberInfo))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _jsonWriter.WriteEndArray();
+            }
+
+            return true;
+        }
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeArray(Array array, IValueMemberInfo valueMemberInfo)
         {
@@ -144,46 +225,17 @@ namespace Zippy.Serialize
                 return true;
             }
 
-            Type lastType = null;
-
             var valueMember = valueMemberInfo.ExtendedValueInfo;
-            bool isTyped = valueMember.IsType;
 
-            _jsonWriter.WriteStartArray();
-            try
+            if (valueMember.IsType)
             {
-                // note that an error in the IEnumerable won't be caught
-                for (var i = 0; i < len; i++)
-                {
-                    if (i>0)
-                    {
-                        _jsonWriter.WriteComma();
-                    }
-
-                    var value = array.GetValue(i);
-                    if (!isTyped)
-                    {
-                        var valueType = value.GetType();
-                        if (lastType != valueType)
-                        {
-                            lastType = valueType;
-                            valueMember = new ValueMemberInfo(valueType);
-                        }
-                    }
-
-                    if (!WriteObjectValue(value, valueMember))
-                    {
-                        return false;
-                    }
-                }
-            }
-            finally
-            {
-                _jsonWriter.WriteEndArray();
+                return SerializeIListTyped(array, len, valueMember);
             }
 
-            return true;
+            //no typed.
+            return SerializeIListUnTyped(array, len, valueMember);
         }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeList(System.Collections.IList list, IValueMemberInfo valueMemberInfo)
@@ -196,51 +248,15 @@ namespace Zippy.Serialize
                 return true;
             }
 
-            Type lastType = null;
-            var valueMember = valueMemberInfo.ExtendedValueInfo;
-            var isTyped = valueMember.IsType;
+            IValueMemberInfo valueMember = valueMemberInfo.ExtendedValueInfo;
 
-            _jsonWriter.WriteStartArray();
-            try
+            if (valueMember.IsType)
             {
-                // note that an error in the IEnumerable won't be caught
-                for (var i = 0; i < len; i++)
-                {
-                    if (i>0)
-                    {
-                        _jsonWriter.WriteComma();
-                    }
-
-                    var value = list[i];
-                    if (value == null)
-                    {
-                        _jsonWriter.WriteNull();
-                    }
-                    else
-                    {
-                        if (!isTyped)
-                        {
-                            Type valueType = value.GetType();
-                            if (lastType != valueType)
-                            {
-                                lastType = valueType;
-                                valueMember = new ValueMemberInfo(valueType);
-                            }
-                        }
-
-                        if (!WriteObjectValue(value, valueMember))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                _jsonWriter.WriteEndArray();
+                return SerializeIListTyped(list, len, valueMember);
             }
 
-            return true;
+            //no typed.
+            return SerializeIListUnTyped(list, len, valueMember);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -283,15 +299,22 @@ namespace Zippy.Serialize
                             flag = false;
                         }
 
-                        var typeCode = value.GetType();
-                        if (lastTypeCode != typeCode)
+                        if (value == null)
                         {
-                            lastTypeCode = typeCode;
-                            valueMember = new ValueMemberInfo(typeCode);
+                            _jsonWriter.WriteNull();
                         }
-                        if (!WriteObjectValue(value, valueMember))
+                        else
                         {
-                            return false;
+                            var typeCode = value.GetType();
+                            if (lastTypeCode != typeCode)
+                            {
+                                lastTypeCode = typeCode;
+                                valueMember = new ValueMemberInfo(typeCode);
+                            }
+                            if (!WriteObjectValue(value, valueMember))
+                            {
+                                return false;
+                            }
                         }
                     }
                     else
@@ -313,13 +336,13 @@ namespace Zippy.Serialize
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SerializeObjectInternal(object json, TextWriter writer)
+        public void SerializeObjectInternal(object obj, TextWriter writer)
         {
             _jsonWriter = new JsonWriter(writer);
-            Type type = json.GetType();
-            var valueMember = new ValueMemberInfo(type);
 
-            if (!WriteObjectValue(json, valueMember))
+            var valueMember = new ValueMemberInfo(obj.GetType());
+
+            if (!WriteObjectValue(obj, valueMember))
             {
                 throw new Exception("Unable to Serialize");
             }
@@ -409,36 +432,67 @@ namespace Zippy.Serialize
                 return true;
             }
 
-               return SerializeGenericDictionaryInternal(values, valueMemberInfo.ExtendedValueInfo);
+            // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
+            IDictionaryEnumerator e = values.GetEnumerator();
+            var valueMember = valueMemberInfo.ExtendedValueInfo;
+
+            _jsonWriter.WriteStartObject();
+            try
+            {
+                while (e.MoveNext())
+                {
+                    DictionaryEntry entry = e.Entry;
+
+                    string name = entry.Key.ToString();
+                    if (!name.IsNullOrEmpty())
+                    {
+                       _jsonWriter.WritePropertyName(name);
+
+                        var value = entry.Value;
+                        if (value == null)
+                        {
+                            _jsonWriter.WriteNull();
+                        }
+                        else if (!WriteObjectValue(value, valueMember))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _jsonWriter.WriteEndObject();
+            }
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeValueMemberInfo(object instance, IValueMemberInfo[] items)
         {
             // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
-
             int len = items.Length;
             IValueMemberInfo item;
+            object value;
             _jsonWriter.WriteStartObject();
             try
             {
-                bool isError = false;
                 for (var i = 0; i < len; i++)
                 {
                     item = items[i];
-
-                    var value = item.GetValue(instance, ref isError);
-
-                    if (!isError || JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ReportValueAsNull)
+                    value = null;
+                    if (!item.TryGetValue(instance, ref value) || _errorHandling == SerializationErrorHandling.ReportValueAsNull)
                     {
-                        if (value != null || !JSON.Options.ShouldExcludeNulls)
-                        {
-                            _jsonWriter.WritePropertyNameFast(item.Name);
+                        _jsonWriter.WritePropertyNameFast(item.Name);
 
-                            if (!WriteObjectValue(value, item))
-                            {
-                                return false;
-                            }
+                        if (value == null)
+                        {
+                            _jsonWriter.WriteNull();
+                        }
+                        else if (!WriteObjectValue(value, item))
+                        {
+                            return false;
                         }
                     }
                 }
@@ -455,49 +509,25 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool WriteObjectValue(object value, IValueMemberInfo valueMemberInfo)
         {
-            if (value == null)
+            //var typeCode = valueMemberInfo.Code;
+            //if (typeCode >= TypeSerializerUtils.TypeCode.CustomObject)
+            //{
+            //    //object type
+            //    return SerializeNonPrimitiveValue(value, valueMemberInfo);
+            //}
+            ////primiative type
+            //return _jsonWriter.WriteValueTypeToStringMethod(typeCode, value);
+
+
+            var writeFunc = valueMemberInfo.WriteDelegate;
+
+            if (writeFunc != null)
             {
-                _jsonWriter.WriteNull();
+                writeFunc(_jsonWriter, value);
                 return true;
             }
-            var typeCode = valueMemberInfo.Code;
-            if (typeCode >= TypeSerializerUtils.TypeCode.NotSetObject)
-            {
-                return SerializeNonPrimitiveValue(value, valueMemberInfo);
-            }
 
-            return _jsonWriter.WriteValueTypeToStringMethod(typeCode, value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SerializeGenericDictionaryInternal(IDictionary values, IValueMemberInfo valueMember)
-        {
-            _jsonWriter.WriteStartObject();
-            // Manual use of IDictionaryEnumerator instead of foreach to avoid DictionaryEntry box allocations.
-            IDictionaryEnumerator e = values.GetEnumerator();
-            DictionaryEntry entry;
-            try
-            {
-                while (e.MoveNext())
-                {
-                    entry = e.Entry;
-
-                    string name = entry.Key.ToString();
-                    _jsonWriter.WritePropertyName(name);
-                    var value = entry.Value;
-
-                    if (!WriteObjectValue(value, valueMember))
-                    {
-                        return false;
-                    }
-                }
-            }
-            finally
-            {
-                _jsonWriter.WriteEndObject();
-            }
-
-            return true;
+            return SerializeNonPrimitiveValue(value, valueMemberInfo);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -512,7 +542,7 @@ namespace Zippy.Serialize
                     {
                         return false;
                     }
-                }        
+                }
             }
             finally
             {
@@ -577,7 +607,11 @@ namespace Zippy.Serialize
                             _jsonWriter.WritePropertyNameFast(column.Item1);
                             //build column data
                             var value = row[column.Item3];
-                            if (!WriteObjectValue(value, column.Item2))
+                            if (value == null)
+                            {
+                                _jsonWriter.WriteNull();
+                            }
+                            else if (!WriteObjectValue(value, column.Item2))
                             {
                                 return false;
                             }
@@ -617,9 +651,6 @@ namespace Zippy.Serialize
             return true;
         }
 
-
-
-
         private bool SerializeNonPrimitiveValue(object value, IValueMemberInfo valueMemberInfo)
         {
             //this prevents recursion
@@ -631,7 +662,7 @@ namespace Zippy.Serialize
             }
             _currentDepth++;
             //recursion limit or max char length
-            if (_currentDepth >= JSON.Options.RecursionLimit)
+            if (_currentDepth >= _recursionLimit)
             {
                 _currentDepth--;
                 _jsonWriter.WriteNull();
@@ -648,6 +679,10 @@ namespace Zippy.Serialize
             {
                 switch (valueMemberInfo.Code)
                 {
+                    case TypeSerializerUtils.TypeCode.CustomObject:
+                        {
+                            return SerializeCustomObject(value, valueMemberInfo);
+                        }
                     case TypeSerializerUtils.TypeCode.Array:
                         {
                             return SerializeArray((Array)value, valueMemberInfo);
@@ -680,19 +715,6 @@ namespace Zippy.Serialize
                         {
                             return SerializeDataTable((System.Data.DataTable)value);
                         }
-                    case TypeSerializerUtils.TypeCode.NotSetObject:
-                        {
-                            IValueMemberInfo[] obj = null;
-                            if (s_currentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, valueMemberInfo.ObjectType, out obj))
-                            {
-                                return this.SerializeValueMemberInfo(value, obj);
-                            }
-                            else
-                            {
-                                _jsonWriter.WriteNull();
-                                return true;//was false but when false prevent continuing.
-                            }
-                        }
                     default:
                         {
                             throw new NotImplementedException(valueMemberInfo.Code.ToString());
@@ -702,6 +724,22 @@ namespace Zippy.Serialize
             finally
             {
                 _currentDepth--;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SerializeCustomObject(object value, IValueMemberInfo valueMemberInfo)
+        {
+            IValueMemberInfo[] obj = valueMemberInfo.GetCustomObjectMemberInfo();
+
+            if (obj != null)
+            {
+                return this.SerializeValueMemberInfo(value, obj);
+            }
+            else
+            {
+                _jsonWriter.WriteNull();
+                return true;//was false but when false prevent continuing.
             }
         }
     }

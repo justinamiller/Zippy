@@ -17,23 +17,78 @@ namespace Zippy.Internal
 
         public bool IsType { get; private set; }
 
-        private bool _errored = false;
+        public JsonWriter.WriteObjectDelegate WriteDelegate { get; }
+
+        private bool _errored;
 
         public IValueMemberInfo ExtendedValueInfo { get; private set; }
 
+        public ValueMemberInfo(Type type)
+        {
+            this.ObjectType = type;
+            this.Code = TypeSerializerUtils.GetTypeCode(type);
+            this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
+            WriteDelegate = JsonWriter.GetWriteObjectDelegate(Code);
+            if (this.IsType)
+            {
+                CheckForExtendedValueInfo();
+            }
+        }
+
+        public ValueMemberInfo(MemberInfo memberInfo)
+        {
+            Type type = null;
+            PropertyInfo propertyInfo = memberInfo as PropertyInfo;
+            if (propertyInfo != null)
+            {
+                type = propertyInfo.PropertyType;
+                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(propertyInfo);
+            }
+            else if (memberInfo is FieldInfo)
+            {
+                FieldInfo fieldInfo = (FieldInfo)memberInfo;
+                type = fieldInfo.FieldType;
+                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(fieldInfo);
+            }
+
+            if (type != null)
+            {
+                this.Name = TypeSerializerUtils.BuildPropertyName(memberInfo.GetSerializationName());
+                if (!this.Name.IsNullOrEmpty())
+                {
+                    this.ObjectType = type;
+                    this.Code = Utility.TypeSerializerUtils.GetTypeCode(type);
+                    WriteDelegate = JsonWriter.GetWriteObjectDelegate(Code);
+                    this.IsType = type != typeof(object);// && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
+                    if (this.IsType)
+                    {
+                        CheckForExtendedValueInfo();
+                    }
+                }
+            }
+            else
+            {
+                //not a field or property
+                _errored = true;
+            }
+        }
+
         private void CheckForExtendedValueInfo()
         {
-            if (!TypeSerializerUtils.HasExtendedValueInformation(this.Code))
+            var code = this.Code;
+
+            if (!TypeSerializerUtils.HasExtendedValueInformation(code))
             {
                 return;
             }
+
             Type type = null;
             //array?
-            if(this.Code== TypeSerializerUtils.TypeCode.Array)
+            if (code == TypeSerializerUtils.TypeCode.Array)
             {
-                 type = ObjectType.GetElementType();
+                type = ObjectType.GetElementType();
             }
-            else  if (ObjectType.IsGenericType)
+            else if (ObjectType.IsGenericType)
             {
                 //generic list / dictionary
                 var args = ObjectType.GetGenericArguments();
@@ -61,54 +116,14 @@ namespace Zippy.Internal
             ExtendedValueInfo = new ValueMemberInfo(type ?? typeof(object));
         }
 
-        public ValueMemberInfo(Type type)
+        public bool TryGetValue(object instance, ref object value)
         {
-            this.ObjectType = type;
-            this.Code = TypeSerializerUtils.GetTypeCode(type);
-            this.IsType = type != typeof(object) && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
-            CheckForExtendedValueInfo();
-        }
-
-        public ValueMemberInfo(MemberInfo memberInfo)
-        {
-            Type type = null;
-            // this.MemberInfo = memberInfo;
-            var propertyInfo = memberInfo as PropertyInfo;
-            if (propertyInfo != null)
+            if (!_errored)
             {
-                type = propertyInfo.PropertyType;
-                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(propertyInfo);
-            }
-            else if (memberInfo is FieldInfo)
-            {
-                FieldInfo fieldInfo = (FieldInfo)memberInfo;
-                type = fieldInfo.FieldType;
-                this._getter = Utility.ReflectionExtension.CreateGet<object, object>(fieldInfo);
-            }
-
-            if (type != null)
-            {
-                this.ObjectType = type;
-                this.Code = Utility.TypeSerializerUtils.GetTypeCode(type);
-                this.Name = TypeSerializerUtils.BuildPropertyName(memberInfo.GetSerializationName());
-                this.IsType = type != typeof(object) && this.Code != TypeSerializerUtils.TypeCode.NotSetObject;
-                CheckForExtendedValueInfo();
-            }
-            else
-            {
-                //not a field or property
-                _errored = true;
-            }
-        }
-
-        public object GetValue(object instance, ref bool isError)
-        {
-            if (!_errored && instance != null)
-            {
-                isError = false;
                 try
                 {
-                    return _getter(instance);
+                    value = _getter(instance);
+                    return true;
                 }
                 catch (Exception ex)
                 {
@@ -116,16 +131,29 @@ namespace Zippy.Internal
                     {
                         throw ex;
                     }
-                    _errored = true;
-
-                    return null;
                 }
             }
 
-            isError = true;
             //has errored
-            return null;
+            value = null;
+            return false;
         }
+
+        IValueMemberInfo[] _valueMemberInfos;
+        public IValueMemberInfo[] GetCustomObjectMemberInfo()
+        {
+            if (_valueMemberInfos == null)
+            {
+                if (!Options.CurrentJsonSerializerStrategy.TrySerializeNonPrimitiveObject(this.ObjectType, out _valueMemberInfos))
+                {
+                    throw new Exception("Unable to serialize " + this.ObjectType.FullName);
+                }
+            }
+
+            return _valueMemberInfos;
+        }
+
+
 
         public override bool Equals(object obj)
         {

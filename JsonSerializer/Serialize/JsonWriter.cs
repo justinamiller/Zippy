@@ -14,6 +14,7 @@ namespace Zippy.Serialize
         public const char CloseArrayChar = ']';
         public const char OpenObjectChar = '{';
         public const char CloseObjectChar = '}';
+        public const char CommaChar = ',';
 
         private static readonly long DatetimeMinTimeTicks = (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks;
         private static readonly TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
@@ -22,6 +23,9 @@ namespace Zippy.Serialize
         private readonly TextWriter _writer;
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
+
+        private readonly bool _escapeHtmlChars=JSON.Options.EscapeHtmlChars;
+        private readonly DateHandler _dateHandler = JSON.Options.DateHandler;
 
         public JsonWriter(TextWriter writer)
         {
@@ -74,14 +78,14 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteComma()
         {
-            _writer.Write(',');
+            _writer.Write(CommaChar);
         }
 
         public void WritePropertyNameFast(string value)
         {
             if (this._propertyInUse)
             {
-                WriteComma();
+                _writer.Write(CommaChar);
             }
             else
             {
@@ -92,16 +96,7 @@ namespace Zippy.Serialize
 
         public void WritePropertyName(string value)
         {
-            if (this._propertyInUse)
-            {
-                WriteComma();
-            }
-            else
-            {
-                this._propertyInUse = true;
-            }
-
-            _writer.Write(TypeSerializerUtils.BuildPropertyName(value));
+            WritePropertyNameFast(TypeSerializerUtils.BuildPropertyName(value));
         }
 
         public bool WriteValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode, object value)
@@ -120,6 +115,8 @@ namespace Zippy.Serialize
                     WriteBool(value);
                     break;
                 case TypeSerializerUtils.TypeCode.Int32Nullable:
+                    WriteInt32Nullable(value);
+                    break;
                 case TypeSerializerUtils.TypeCode.Int32:
                     WriteInt32(value);
                     break;
@@ -130,6 +127,8 @@ namespace Zippy.Serialize
                     WriteGuid(value);
                     break;
                 case TypeSerializerUtils.TypeCode.DoubleNullable:
+                    WriteDoubleNullable(value);
+                    break;
                 case TypeSerializerUtils.TypeCode.Double:
                     WriteDouble(value);
                     break;
@@ -154,6 +153,8 @@ namespace Zippy.Serialize
                     WriteUInt32(value);
                     break;
                 case TypeSerializerUtils.TypeCode.Int64Nullable:
+                    WriteInt64Nullable(value);
+                    break;
                 case TypeSerializerUtils.TypeCode.Int64:
                     WriteInt64(value);
                     break;
@@ -211,17 +212,6 @@ namespace Zippy.Serialize
             return true;
         }
 
-        /// <summary>
-        /// Shortcut escape when we're sure value doesn't contain any escaped chars
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="value"></param>
-        public void WriteRawString(string value)
-        {
-            _writer.Write(QuoteChar);
-            _writer.Write(value);
-            _writer.Write(QuoteChar);
-        }
 
         /// <summary>
         /// Shortcut escape when we're sure value doesn't contain any escaped chars
@@ -237,33 +227,33 @@ namespace Zippy.Serialize
 
         public void WriteString(string value)
         {
+            //force encode.
+            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
+        }
+
+
+        public void WriteStringNullable(string value)
+        {
             if (value == null)
             {
                 WriteNull();
+                return;
             }
-            else if (!value.HasAnyEscapeChars(JSON.Options.EscapeHtmlChars))
-            {
-                _writer.Write(QuoteChar);
-                _writer.Write(value);
-                _writer.Write(QuoteChar);
-            }
-            else
-            {
-                //force encode.
-                _writer.Write(StringExtension.GetEncodeString(value, JSON.Options.EscapeHtmlChars));
-            }
+
+            //force encode.
+            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
         }
+
 
         public void WriteException(object value)
         {
-            WriteString(((Exception)value).Message);
+            WriteStringNullable(((Exception)value).Message);
         }
 
         public void WriteDateTime(object oDateTime)
         {
             var dateTime = (DateTime)oDateTime;
-
-            if (JSON.Options.DateHandler == DateHandler.TimestampOffset)
+            if (_dateHandler == DateHandler.TimestampOffset)
             {
                 _writer.Write(QuoteChar);
                 var offset = LocalTimeZone.GetUtcOffset(dateTime).Ticks;
@@ -281,7 +271,7 @@ namespace Zippy.Serialize
                 return;
             }
 
-            switch (JSON.Options.DateHandler)
+            switch (_dateHandler)
             {
                 case DateHandler.ISO8601:
                     _writer.Write(dateTime.ToString("o", CurrentCulture));
@@ -364,7 +354,7 @@ namespace Zippy.Serialize
             if (uri == null)
                 WriteNull();
             else
-                WriteString(((Uri)uri).OriginalString);
+                WriteStringNullable(((Uri)uri).OriginalString);
         }
 
 
@@ -402,7 +392,10 @@ namespace Zippy.Serialize
         public void WriteBytes(object oByteValue)
         {
             if (oByteValue == null) return;
-            WriteRawString(Convert.ToBase64String((byte[])oByteValue));
+
+            _writer.Write(QuoteChar);
+            _writer.Write(Convert.ToBase64String((byte[])oByteValue));
+            _writer.Write(QuoteChar);
         }
 
         internal readonly static char[] Null = new char[4] { 'n', 'u', 'l', 'l' };
@@ -417,18 +410,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                char c = (char)charValue;
-                bool escapeHtmlChars = JSON.Options.EscapeHtmlChars;
-                if (c.HasAnyEscapeChar(escapeHtmlChars))
-                {
-                    _writer.Write(StringExtension.GetEncodeString(c.ToString(), escapeHtmlChars));
-                }
-                else
-                {
-                    _writer.Write(QuoteChar);
-                    _writer.Write(c);
-                    _writer.Write(QuoteChar);
-                }
+                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), _escapeHtmlChars));
             }
         }
 
@@ -464,7 +446,7 @@ namespace Zippy.Serialize
                 WriteIntegerValue(_writer, (ushort)intValue);
         }
 
-        public void WriteInt32(object intValue)
+        public void WriteInt32Nullable(object intValue)
         {
             if (intValue == null)
             {
@@ -476,6 +458,11 @@ namespace Zippy.Serialize
             }
         }
 
+        public void WriteInt32(object intValue)
+        {
+             WriteIntegerValue(_writer, (int)intValue);
+        }
+
         public void WriteUInt32(object uintValue)
         {
             if (uintValue == null)
@@ -485,6 +472,11 @@ namespace Zippy.Serialize
         }
 
         public void WriteInt64(object integerValue)
+        {
+              WriteIntegerValue(_writer, (long)integerValue);
+        }
+
+        public void WriteInt64Nullable(object integerValue)
         {
             if (integerValue == null)
                 WriteNull();
@@ -521,6 +513,11 @@ namespace Zippy.Serialize
         }
 
         public void WriteDouble(object doubleValue)
+        {
+            _writer.Write(((double)doubleValue).ToString("0.0####################", CurrentCulture));
+        }
+
+        public void WriteDoubleNullable(object doubleValue)
         {
             if (doubleValue == null)
                 WriteNull();
@@ -600,6 +597,224 @@ namespace Zippy.Serialize
                 var buffer = MathUtils.WriteNumberToBuffer(value, negative);
                 writer.Write(buffer);
             }
+        }
+
+        public delegate void WriteObjectDelegate(JsonWriter writer, object obj);
+
+        public static WriteObjectDelegate GetWriteObjectDelegate(TypeSerializerUtils.TypeCode typeCode)
+        {
+            if (typeCode >= TypeSerializerUtils.TypeCode.CustomObject)
+            {
+                return null;
+            }
+
+            switch (typeCode)
+            {
+                case TypeSerializerUtils.TypeCode.CharNullable:
+                case TypeSerializerUtils.TypeCode.Char:
+                    return WriteChar;
+                case TypeSerializerUtils.TypeCode.String:
+                    return WriteString;
+                case TypeSerializerUtils.TypeCode.BooleanNullable:
+                case TypeSerializerUtils.TypeCode.Boolean:
+                    return WriteBool;
+                case TypeSerializerUtils.TypeCode.SByteNullable:
+                case TypeSerializerUtils.TypeCode.SByte:
+                    return WriteSByte;
+                case TypeSerializerUtils.TypeCode.Int16Nullable:
+                case TypeSerializerUtils.TypeCode.Int16:
+                    return WriteInt16;
+                case TypeSerializerUtils.TypeCode.UInt16Nullable:
+                case TypeSerializerUtils.TypeCode.UInt16:
+                    return WriteUInt16;
+                case TypeSerializerUtils.TypeCode.Int32Nullable:
+                case TypeSerializerUtils.TypeCode.Int32:
+                    return WriteInt32;
+                case TypeSerializerUtils.TypeCode.ByteNullable:
+                case TypeSerializerUtils.TypeCode.Byte:
+                    return WriteByte;
+                case TypeSerializerUtils.TypeCode.UInt32Nullable:
+                case TypeSerializerUtils.TypeCode.UInt32:
+                    return WriteUInt32;
+                case TypeSerializerUtils.TypeCode.Int64Nullable:
+                case TypeSerializerUtils.TypeCode.Int64:
+                    return WriteInt64;
+                case TypeSerializerUtils.TypeCode.UInt64Nullable:
+                case TypeSerializerUtils.TypeCode.UInt64:
+                    return WriteUInt64;
+                case TypeSerializerUtils.TypeCode.SingleNullable:
+                case TypeSerializerUtils.TypeCode.Single:
+                    return WriteFloat;
+                case TypeSerializerUtils.TypeCode.DoubleNullable:
+                case TypeSerializerUtils.TypeCode.Double:
+                    return WriteDouble;
+                case TypeSerializerUtils.TypeCode.DateTimeNullable:
+                    return WriteNullableDateTime;
+                case TypeSerializerUtils.TypeCode.DateTime:
+                    return WriteDateTime;
+                case TypeSerializerUtils.TypeCode.DateTimeOffsetNullable:
+                    return WriteNullableDateTimeOffset;
+                case TypeSerializerUtils.TypeCode.DateTimeOffset:
+                    return WriteDateTimeOffset;
+                case TypeSerializerUtils.TypeCode.DecimalNullable:
+                case TypeSerializerUtils.TypeCode.Decimal:
+                    return WriteDecimal;
+                case TypeSerializerUtils.TypeCode.GuidNullable:
+                    return WriteNullableGuid;
+                case TypeSerializerUtils.TypeCode.Guid:
+                    return WriteGuid;
+                case TypeSerializerUtils.TypeCode.TimeSpanNullable:
+                    return WriteNullableTimeSpan;
+                case TypeSerializerUtils.TypeCode.TimeSpan:
+                    return WriteTimeSpan;
+
+                ////case PrimitiveTypeCode.BigInteger:
+                ////    // this will call to WriteValue(object)
+                ////    WriteValue((BigInteger)value);
+                ////    return;
+                case TypeSerializerUtils.TypeCode.Uri:
+                    return WriteUri;
+
+                case TypeSerializerUtils.TypeCode.Bytes:
+                    return WriteBytes;
+                case TypeSerializerUtils.TypeCode.DBNull:
+                    return WriteNull;
+                case TypeSerializerUtils.TypeCode.Exception:
+                    return WriteException;
+
+                default:
+                    return null;
+                    //if (value is IConvertible convertible)
+                    //{
+                    //    ResolveConvertibleValue(convertible, out typeCode, out value);
+                    //    continue;
+                    //}
+            }
+
+        }
+
+
+
+        public static void WriteString(JsonWriter writer, object value)
+        {
+            writer.WriteString((string)value);
+        }
+
+        public static void WriteChar(JsonWriter writer, object value)
+        {
+            writer.WriteChar(value);
+        }
+
+        public static void WriteInt32(JsonWriter writer, object value)
+        {
+            writer.WriteInt32(value);
+        }
+
+        public static void WriteInt16(JsonWriter writer, object value)
+        {
+            writer.WriteInt16(value);
+        }
+
+        public static void WriteBool(JsonWriter writer, object value)
+        {
+            writer.WriteBool(value);
+        }
+
+        public static void WriteSByte(JsonWriter writer, object value)
+        {
+            writer.WriteSByte(value);
+        }
+
+        public static void WriteUInt16(JsonWriter writer, object value)
+        {
+            writer.WriteUInt16(value);
+        }
+
+        public static void WriteByte(JsonWriter writer, object value)
+        {
+            writer.WriteByte(value);
+        }
+
+        public static void WriteDouble(JsonWriter writer, object value)
+        {
+            writer.WriteDouble(value);
+        }
+
+
+        public static void WriteDecimal(JsonWriter writer, object value)
+        {
+            writer.WriteDecimal(value);
+        }
+
+
+        public static void WriteException(JsonWriter writer, object value)
+        {
+            writer.WriteException(value);
+        }
+
+        public static void WriteNullableGuid(JsonWriter writer, object value)
+        {
+            writer.WriteNullableGuid(value);
+        }
+
+        public static void WriteNull(JsonWriter writer, object value)
+        {
+            writer.WriteNull();
+        }
+        public static void WriteBytes(JsonWriter writer, object value)
+        {
+            writer.WriteBytes(value);
+        }
+        public static void WriteGuid(JsonWriter writer, object value)
+        {
+            writer.WriteGuid(value);
+        }
+
+        public static void WriteInt64(JsonWriter writer, object value)
+        {
+            writer.WriteInt64(value);
+        }
+        public static void WriteTimeSpan(JsonWriter writer, object value)
+        {
+            writer.WriteTimeSpan(value);
+        }
+        public static void WriteUri(JsonWriter writer, object value)
+        {
+            writer.WriteUri(value);
+        }
+        public static void WriteNullableTimeSpan(JsonWriter writer, object value)
+        {
+            writer.WriteNullableTimeSpan(value);
+        }
+        public static void WriteUInt32(JsonWriter writer, object value)
+        {
+            writer.WriteUInt32(value);
+        }
+        public static void WriteDateTimeOffset(JsonWriter writer, object value)
+        {
+            writer.WriteDateTimeOffset(value);
+        }
+        public static void WriteDateTime(JsonWriter writer, object value)
+        {
+            writer.WriteDateTime(value);
+        }
+        public static void WriteUInt64(JsonWriter writer, object value)
+        {
+            writer.WriteUInt64(value);
+        }
+
+        public static void WriteFloat(JsonWriter writer, object value)
+        {
+            writer.WriteFloat(value);
+        }
+
+        public static void WriteNullableDateTime(JsonWriter writer, object value)
+        {
+            writer.WriteNullableDateTime(value);
+        }
+        public static void WriteNullableDateTimeOffset(JsonWriter writer, object value)
+        {
+            writer.WriteNullableDateTimeOffset(value);
         }
 
         public override string ToString()

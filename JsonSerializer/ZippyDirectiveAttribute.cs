@@ -13,7 +13,7 @@ namespace Zippy
     /// Takes precedence over [DataMember] and [IgnoreDataMember].
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    public class SwiftDirectiveAttribute : Attribute
+    public class ZippyDirectiveAttribute : Attribute
     {
         /// <summary>
         /// If true, the decorated member will not be serialized or deserialized.
@@ -31,12 +31,12 @@ namespace Zippy
         /// <summary>
         /// Create a new SwiftDirectiveAttribute
         /// </summary>
-        public SwiftDirectiveAttribute() { }
+        public ZippyDirectiveAttribute() { }
 
         /// <summary>
         /// Create a new SwiftDirectiveAttribute, with a name override.
         /// </summary>
-        public SwiftDirectiveAttribute(string name)
+        public ZippyDirectiveAttribute(string name)
         {
             Name = name;
         }
@@ -44,7 +44,7 @@ namespace Zippy
         /// <summary>
         /// Create a new SwiftDirectiveAttribute, optionally ignoring the decorated member.
         /// </summary>
-        public SwiftDirectiveAttribute(bool ignore)
+        public ZippyDirectiveAttribute(bool ignore)
         {
             Ignore = ignore;
         }

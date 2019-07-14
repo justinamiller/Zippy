@@ -49,15 +49,35 @@ namespace Zippy.Utility
 
         public void Add(TKey key, TValue value)
         {
-            Array.Resize(ref _key, _index + 1);
-            Array.Resize(ref _value, _index + 1);
+            if (ContainsKey(key))
+            {
+                //do not add already exists.
+                return;
+            }
+
+            int newSize = _index + 1;
+            Array.Resize(ref _key, newSize);
+            Array.Resize(ref _value, newSize);
 
             _key[_index] = key;
             _value[_index] = value;
             _index++;
         }
 
-        public bool GetValue(TKey key, out TValue value)
+        public bool ContainsKey(TKey key)
+        {
+            for (var i = 0; i < _index; i++)
+            {
+                if (RuntimeHelpers.Equals(_key[i], key))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool TryGetValue(TKey key, out TValue value)
         {
             for (var i = 0; i < _index; i++)
             {
