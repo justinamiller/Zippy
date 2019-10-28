@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Zippy.Serialize.Writers
 {
-    public sealed class BufferTextWriter : TextWriter
+    sealed class BufferTextWriter : TextWriter
     {
         private char[] _buffer = new char[1000];
         int _bufferIndex = 0;

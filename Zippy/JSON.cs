@@ -7,6 +7,10 @@ using Zippy.Serialize;
 using Zippy.Serialize.Writers;
 using Zippy.Utility;
 [assembly: InternalsVisibleTo("Zippy.UnitTest")]
+[assembly: InternalsVisibleTo("ConsoleTest")]
+[assembly: InternalsVisibleTo("PerformanceComparison")]
+
+
 namespace Zippy
 {
     public sealed class JSON

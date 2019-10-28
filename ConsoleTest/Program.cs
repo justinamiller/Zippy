@@ -38,7 +38,8 @@ namespace ConsoleTest
 
         static void Main(string[] args)
         {
-         //   AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+
+        //   AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             System.Threading.Thread.Sleep(250);
            //var c = new Models.ComplexModelObject();
             ////Zippy.JSON.SerializeObjectToString1(c);
@@ -49,12 +50,12 @@ namespace ConsoleTest
           //  Zippy.JSON.Options.EscapeHtmlChars = true;
              var c = new Models.ComplexModelObject();
          //   var c = Enumerable.Range(1000, 1000).Select(x => new Models.TinyObject("Name<Data/>" + x.ToString(), x, Models.TinyObject.State.Running)).ToArray();
-          //  Zippy.JSON.SerializeObjectToString(c);
+       var strData=   Zippy.JSON.SerializeObjectToString(c);
          //   c = new Models.ComplexModelObject();
        //     Test(c);
        ////     c = new Models.ComplexModelObject();
        //     Test1(c);
-       //     return;
+          return;
 
             //for (var i = 0; i < 10000; i++)
             //{

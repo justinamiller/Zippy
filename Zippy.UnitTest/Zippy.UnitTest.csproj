@@ -62,6 +62,7 @@
     <Compile Include="StringBuilderWriterShould.cs" />
     <Compile Include="FastGuidStructShould.cs" />
     <Compile Include="StringExtensionsShould.cs" />
+    <Compile Include="JsonWriterShould.cs" />
     <Compile Include="ValueMemberInfoShould.cs" />
     <Compile Include="UTF8WriterShould.cs" />
   </ItemGroup>
@@ -69,13 +70,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JsonSerializer\Zippy.csproj">
-      <Project>{000bc650-72c6-48ee-8b7b-884a70bde90f}</Project>
-      <Name>Zippy</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Models\Models.csproj">
       <Project>{5eaa74f1-e06a-41eb-ab19-5143571b07d8}</Project>
       <Name>Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Zippy\Zippy.csproj">
+      <Project>{09c7fdaf-ad10-4487-864a-52c91b49a66a}</Project>
+      <Name>Zippy</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

@@ -23,10 +23,35 @@ namespace Zippy.UnitTest
 
             Assert.AreEqual(t, new ValueMemberInfo(mi));
 
+            Assert.IsTrue(t.Equals(new ValueMemberInfo(mi)));
+
+            Assert.IsFalse(t.Equals(null));
+
+
+            Assert.IsTrue(t.Equals(new ValueMemberInfo(typeof(Models.SimpleModelType).GetProperty("Test1"))));
+
+            Assert.IsFalse(t.Equals(new ValueMemberInfo(typeof(Models.SimpleModelType).GetProperty("Test2"))));
+
             Assert.AreEqual(t, new ValueMemberInfo(typeof(Models.SimpleModelType).GetProperty("Test1")));
 
             Assert.AreNotEqual(t, new ValueMemberInfo(typeof(Models.SimpleModelType).GetProperty("Test2")));
             Assert.AreNotEqual(t, null);
+        }
+
+        [TestMethod]
+        public void TestGetHashCode()
+        {
+            var mi = typeof(Models.SimpleModelType).GetProperty("Test1");
+            var t = new ValueMemberInfo(mi);
+            Assert.IsTrue(t.GetHashCode()!=0);
+        }
+
+        [TestMethod]
+        public void TestBadMethod()
+        {
+            var mi = typeof(Models.ComplexModelObject).GetMethod("TestMethod");
+            var t = new ValueMemberInfo(mi);
+            Assert.IsTrue(t.Code == Utility.TypeSerializerUtils.TypeCode.Empty);
         }
     }
 }

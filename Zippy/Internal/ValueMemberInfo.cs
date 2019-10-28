@@ -51,6 +51,7 @@ namespace Zippy.Internal
                 this._getter = Utility.ReflectionExtension.CreateGet<object, object>(fieldInfo);
             }
 
+            this.Name = string.Empty;
             if (type != null)
             {
                 this.Name = TypeSerializerUtils.BuildPropertyName(memberInfo.GetSerializationName());
@@ -172,7 +173,7 @@ namespace Zippy.Internal
 
         public override int GetHashCode()
         {
-            return (int)this.Code ^ this.ObjectType.GetHashCode() ^ this.Name?.GetHashCode() ?? 0;
+            return (int)this.Code ^ this.ObjectType.GetHashCode() ^ this.Name.GetHashCode();
         }
 
         public override string ToString()

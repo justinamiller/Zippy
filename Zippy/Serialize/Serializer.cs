@@ -660,12 +660,6 @@ namespace Zippy.Serialize
                 _jsonWriter.WriteNull();
                 return true;
             }
-            //if( _jsonWriter.Length > JSON.Options.MaxJsonLength)
-            //{
-            //    _currentDepth--;
-            //    _jsonWriter.WriteNull();
-            //    return false;
-            //}
 
             try
             {

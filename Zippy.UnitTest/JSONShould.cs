@@ -64,6 +64,50 @@ namespace NetTests
             JSON.Options.DateHandler = DateHandler.ISO8601;
             Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
 
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.DateHandler = DateHandler.DCJSCompatible;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.DateHandler = DateHandler.ISO8601;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.DateHandler = DateHandler.ISO8601DateOnly;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.DateHandler = DateHandler.ISO8601DateTime;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.DateHandler = DateHandler.RFC1123;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.DateHandler = DateHandler.TimestampOffset;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            try
+            {
+                JSON.Options.RecursionLimit = -2;
+                Assert.Fail();
+            }
+            catch (Exception)
+            {
+                Assert.IsTrue(true);
+            }
+
+            try
+            {
+                JSON.Options.RecursionLimit =0;
+                Assert.Fail();
+            }
+            catch (Exception)
+            {
+                Assert.IsTrue(true);
+            }
+
             //    Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType,  new System.IO.StringWriter()));
             //var json1 = JSON.SerializeObjectToString(_SimpleModelType);
             //int currentLength = JSON.Options.MaxJsonLength;

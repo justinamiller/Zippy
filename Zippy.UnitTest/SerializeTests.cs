@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Models;
 using Zippy;
 
 namespace NetTests
@@ -85,6 +86,9 @@ namespace NetTests
             dr[0] = "HELLO";
             dr[1] = 1234;
             dt.Rows.Add(dr);
+
+            dt = new System.Data.DataTable();
+            ds.Tables.Add(dt);
             Assert.IsTrue(Zippy.JSON.SerializeObjectToString(ds).Length > 0);
         }
 
@@ -102,6 +106,7 @@ namespace NetTests
 
             dr = dt.NewRow();
             dt.Rows.Add(dr);
+
             Assert.IsTrue(Zippy.JSON.SerializeObjectToString(dt).Length > 0);
         }
 
@@ -145,6 +150,21 @@ namespace NetTests
 
             Assert.IsTrue(Zippy.JSON.SerializeObjectToString(array3Da).Length > 0);
 
+        }
+
+        [TestMethod]
+        public void TestSerializeObjectToStringWithInterface()
+        {
+            ITest test = new TestObject();
+            Assert.IsTrue(Zippy.JSON.SerializeObjectToString(test).Length > 0);
+        }
+
+
+        [TestMethod]
+        public void TestSerializeObjectToStringCurrentPrincipal()
+        {
+            var p = System.Threading.Thread.CurrentPrincipal;
+            Assert.IsTrue(Zippy.JSON.SerializeObjectToString(p).Length > 0);
         }
     }
 }

@@ -3,11 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zippy", "JsonSerializer\Zippy.csproj", "{000BC650-72C6-48EE-8B7B-884A70BDE90F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{9798F02E-0688-4374-886C-692709BC2A84}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zippy.UnitTest", "NetTests\Zippy.UnitTest.csproj", "{5A064381-F9E1-4B56-8702-715FE8C5200F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{6FE7A5C9-02A0-46AF-A807-E65781438329}"
 EndProject
@@ -15,24 +11,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "Models\Models.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceComparison", "PerformanceComparison\PerformanceComparison.csproj", "{B1142E68-278A-4A98-80AB-FA850AF3B68F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zippy", "Zippy\Zippy.csproj", "{09C7FDAF-AD10-4487-864A-52C91B49A66A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zippy.UnitTest", "Zippy.UnitTest\Zippy.UnitTest.csproj", "{5A064381-F9E1-4B56-8702-715FE8C5200F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{000BC650-72C6-48EE-8B7B-884A70BDE90F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{000BC650-72C6-48EE-8B7B-884A70BDE90F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{000BC650-72C6-48EE-8B7B-884A70BDE90F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{000BC650-72C6-48EE-8B7B-884A70BDE90F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9798F02E-0688-4374-886C-692709BC2A84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9798F02E-0688-4374-886C-692709BC2A84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9798F02E-0688-4374-886C-692709BC2A84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9798F02E-0688-4374-886C-692709BC2A84}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6FE7A5C9-02A0-46AF-A807-E65781438329}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6FE7A5C9-02A0-46AF-A807-E65781438329}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FE7A5C9-02A0-46AF-A807-E65781438329}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +37,14 @@ Global
 		{B1142E68-278A-4A98-80AB-FA850AF3B68F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1142E68-278A-4A98-80AB-FA850AF3B68F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1142E68-278A-4A98-80AB-FA850AF3B68F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09C7FDAF-AD10-4487-864A-52C91B49A66A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09C7FDAF-AD10-4487-864A-52C91B49A66A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09C7FDAF-AD10-4487-864A-52C91B49A66A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09C7FDAF-AD10-4487-864A-52C91B49A66A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A064381-F9E1-4B56-8702-715FE8C5200F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

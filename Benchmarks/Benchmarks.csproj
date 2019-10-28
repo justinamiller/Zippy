@@ -255,13 +255,13 @@
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.2.6.1\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JsonSerializer\Zippy.csproj">
-      <Project>{000bc650-72c6-48ee-8b7b-884a70bde90f}</Project>
-      <Name>Zippy</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Models\Models.csproj">
       <Project>{5eaa74f1-e06a-41eb-ab19-5143571b07d8}</Project>
       <Name>Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Zippy\Zippy.csproj">
+      <Project>{09c7fdaf-ad10-4487-864a-52c91b49a66a}</Project>
+      <Name>Zippy</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

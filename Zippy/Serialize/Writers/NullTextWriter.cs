@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Zippy.Serialize.Writers
 {
-    public sealed class NullTextWriter : TextWriter
+    sealed class NullTextWriter : TextWriter
     {
         private readonly static Encoding s_encoding = Encoding.Default;
 

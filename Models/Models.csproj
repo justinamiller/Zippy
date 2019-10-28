@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JsonSerializer\Zippy.csproj" />
+    <ProjectReference Include="..\Zippy\Zippy.csproj" />
   </ItemGroup>
 
 </Project>

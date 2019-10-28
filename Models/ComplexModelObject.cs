@@ -26,7 +26,7 @@ namespace Models
             public DateTime Date { get; set; } = DateTime.Now;
         }
 
-
+        public ComplexModelObject ComplexObject { get; }
         public string Version = "1.0";
         public System.Collections.IList Collect = new System.Collections.ArrayList();
 
@@ -158,6 +158,8 @@ namespace Models
             MixObjects.Add(1);
             MixObjects.Add(true);
         }
+
+        public void TestMethod() { }
 
         public static void Testing()
         {
