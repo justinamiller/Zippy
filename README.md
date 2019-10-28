@@ -50,9 +50,9 @@ As with all benchmarks, take these with a grain of salt.
 ### Serialization
 
 For comparison, here's how Zippy stacks up against other popular .NET serializers in a synthetic benchmark
- - [Json.NET](http://james.newtonking.com/json), version 6.0.7
- - [ServiceStack.Text](https://github.com/ServiceStack/ServiceStack.Text), version 3.9.71
- - [protobuf-net](https://code.google.com/p/protobuf-net/), version 2.0.0.688
+ - [Json.NET](http://james.newtonking.com/json), version 12.0.2
+ - [ServiceStack.Text](https://github.com/ServiceStack/ServiceStack.Text), version 5.5.0
+ - [Jil](https://github.com/kevin-montrose/Jil), version 2.17.0
    
 ## Configuration
 
