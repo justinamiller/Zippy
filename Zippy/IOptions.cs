@@ -6,7 +6,10 @@
 
         int RecursionLimit { get; set; }
 
-        //bool ShouldExcludeNulls { get; set; }
+        /// <summary>
+        /// Skip property when value is null
+        /// </summary>
+     //   bool ShouldExcludeNulls { get; set; }
 
         /// <summary>
         /// Addtional encoding for supporting direct elastic search write.

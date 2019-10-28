@@ -30,14 +30,6 @@ namespace Zippy.Serialize
             _writer = writer;
         }
 
-        //public int Length
-        //{
-        //    get
-        //    {
-        //        return _length;
-        //    }
-        //}
-
         public bool IsValid()
         {
             return _arrayIndex == 0 && _objectIndex == 0;
@@ -160,44 +152,6 @@ namespace Zippy.Serialize
                     return;
             }
         }
-
-        //private static void WriteJsonDateOld(TextWriter writer, DateTime dateTime)
-        //{
-        //    switch (JSON.Options.DateHandler)
-        //    {
-        //        case DateHandler.ISO8601:
-        //            writer.Write(dateTime.ToString("o", CurrentCulture));
-        //            return;
-        //        case DateHandler.ISO8601DateOnly:
-        //            writer.Write(dateTime.ToString("yyyy-MM-dd", CurrentCulture));
-        //            return;
-        //        case DateHandler.ISO8601DateTime:
-        //            writer.Write(dateTime.ToString("yyyy-MM-dd HH:mm:ss", CurrentCulture));
-        //            return;
-        //        case DateHandler.RFC1123:
-        //            writer.Write(dateTime.ToUniversalTime().ToString("R", CurrentCulture));
-        //            return;
-        //    }
-
-        //    char[] offset = LocalTimeZone.GetUtcOffset(dateTime).ToTimeOffsetString(); 
-        //    DateTime utcDate = dateTime;
-        //    var kind = dateTime.Kind;
-        //    if (kind != DateTimeKind.Utc)
-        //    {
-        //        // need to convert to utc time
-        //        utcDate = dateTime.ToUniversalTime();
-        //    }
-        //    writer.Write(@"\/Date(");
-        //    //     _writer.Write(_datePrefix, 0, 7);
-        //    var value = (utcDate.Ticks - DatetimeMinTimeTicks) / 10000;
-        //    writer.Write(value.ToString(CurrentCulture));
-        //    writer.Write(offset);
-        //    writer.Write(@")\/");
-        //    //  _writer.Write(_dateSuffix,0,3);
-        //}
-
-        //private static readonly char[] _datePrefix= new char[7] { '\\', '/', 'D', 'a', 't', 'e', '(' };
-        //private static readonly char[] _dateSuffix = new char[3] { ')', '\\','/' };
 
         public void WriteNullableDateTime(object dateTime)
         {
