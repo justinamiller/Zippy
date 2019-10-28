@@ -1,3 +1,5 @@
+[NuGet Package](https://www.nuget.org/packages/Zippy/)
+
 #### Zippy
 .NET Standard, Fast JSON Serializer.
 
@@ -31,6 +33,7 @@ var strExtend = dt.ToJson();
 The first time Zippy is used to serialize a given configuration and type pair, it will spend extra time building the serializer.
 Subsequent invocations will be much faster, so if a consistently fast runtime is necessary in your code you may want to "prime the pump"
 with an earlier "throw away" serialization.
+
 
 Built-in support types
 ---
