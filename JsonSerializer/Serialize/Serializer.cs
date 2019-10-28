@@ -509,14 +509,6 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool WriteObjectValue(object value, IValueMemberInfo valueMemberInfo)
         {
-            //var typeCode = valueMemberInfo.Code;
-            //if (typeCode >= TypeSerializerUtils.TypeCode.CustomObject)
-            //{
-            //    //object type
-            //    return SerializeNonPrimitiveValue(value, valueMemberInfo);
-            //}
-            ////primiative type
-            //return _jsonWriter.WriteValueTypeToStringMethod(typeCode, value);
 
 
             var writeFunc = valueMemberInfo.WriteDelegate;
@@ -607,7 +599,7 @@ namespace Zippy.Serialize
                             _jsonWriter.WritePropertyNameFast(column.Item1);
                             //build column data
                             var value = row[column.Item3];
-                            if (value == null)
+                            if (value == null || value == DBNull.Value)
                             {
                                 _jsonWriter.WriteNull();
                             }

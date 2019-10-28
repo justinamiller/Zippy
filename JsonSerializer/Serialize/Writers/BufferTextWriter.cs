@@ -15,24 +15,6 @@ namespace Zippy.Serialize.Writers
 
         public override void Write(string value)
         {
-
-
-            //int length = value.Length;
-            //char[] chars = new char[length];
-            //if (length > 0)
-            //{
-            //    unsafe
-            //    {
-            //        fixed (char* src = value)
-            //        fixed (char* dest = chars)
-            //        {
-            //            Array.Copy()
-            //            Buffer.MemoryCopy()
-            //            Buffer.Memcpy((byte*)dmem, (byte*)smem, charCount * 2);
-            //            wstrcpy(dest, src, length);
-            //        }
-            //    }
-            //}
            unsafe
             {
                 int strLength = value.Length;
@@ -44,28 +26,7 @@ namespace Zippy.Serialize.Writers
                         _buffer[++_bufferIndex] = *pChar++;
                     }
                 }
-
-                //fixed (char* pString = value)
-                //{
-                //    char* pChar = pString;
-                //    while (*pChar != '\0')
-                //    {
-                //        _buffer[++_bufferIndex] = *pChar++;
-                //    }
-                //}
             }
-
-
-
-
-            //var buffer = value.ToCharArray();
-            //int count = buffer.Length;
-            //Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
-            //_bufferIndex += count;
-            //foreach (var v in value)
-            //{
-            //    _buffer[++_bufferIndex] = v;
-            //}
         }
 
         public override void Write(char value)
@@ -75,15 +36,15 @@ namespace Zippy.Serialize.Writers
 
         public override void Write(char[] buffer, int index, int count)
         {
-        //    Array.Copy(buffer, index, _buffer, _bufferIndex, count);
-        //    _bufferIndex += count;
+            Array.Copy(buffer, index, _buffer, _bufferIndex, count);
+            _bufferIndex += count;
         }
 
         public override void Write(char[] buffer)
         {
-        //    int count = buffer.Length;
-      //      Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
-        //    _bufferIndex += count;
+            int count = buffer.Length;
+            Array.Copy(buffer, 0, _buffer, _bufferIndex, count);
+            _bufferIndex += count;
         }
 
         public override string ToString()

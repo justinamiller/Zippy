@@ -220,30 +220,6 @@ namespace Zippy.Utility
         }
 
         /// <summary>
-        /// Gets the member's underlying type.
-        /// </summary>
-        /// <param name="member">The member.</param>
-        /// <returns>The underlying type of the member.</returns>
-        public static Type GetMemberUnderlyingType(MemberInfo member)
-        {
-            switch (member.MemberType)
-            {
-                case MemberTypes.Field:
-                    return ((FieldInfo)member).FieldType;
-                case MemberTypes.Property:
-                    return ((PropertyInfo)member).PropertyType;
-                case MemberTypes.Event:
-                    return ((EventInfo)member).EventHandlerType;
-                case MemberTypes.Method:
-                    return ((MethodInfo)member).ReturnType;
-                default:
-                    throw new ArgumentException("MemberInfo must be of type FieldInfo, PropertyInfo, EventInfo or MethodInfo", nameof(member));
-            }
-        }
-
-
-
-        /// <summary>
         /// Determines whether the property is an indexed property.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -399,7 +375,7 @@ namespace Zippy.Utility
 
         public static MemberInfo GetMemberInfoFromType(Type targetType, MemberInfo memberInfo)
         {
-            BindingFlags bindingAttr = DefaultFlags; //BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+            BindingFlags bindingAttr = DefaultFlags; 
 
             switch (memberInfo.MemberType)
             {
@@ -415,44 +391,6 @@ namespace Zippy.Utility
         }
 
         public delegate object GetDelegate(object source);
-
-        public static bool CanSerialize(Type type)
-        {
-            string typeFullName = type.FullName;
-
-            //filter out unknown type
-            if (typeFullName == null)
-            {
-                return false;
-            }
-
-            //filter out by namespace & Types
-            if (typeFullName.IndexOf("System.", StringComparison.Ordinal) == 0)
-            {
-                if (typeFullName == "System.RuntimeType")
-                {
-                    return false;
-                }
-                if (typeFullName.IndexOf("System.Runtime.Serialization", StringComparison.Ordinal) == 0)
-                {
-                    return false;
-                }
-                if (typeFullName.IndexOf("System.Runtime.CompilerServices", StringComparison.Ordinal) == 0)
-                {
-                    return false;
-                }
-                if (typeFullName.IndexOf("System.Reflection", StringComparison.Ordinal) == 0)
-                {
-                    return false;
-                }
-                if (typeFullName.IndexOf("System.Threading.Task", StringComparison.Ordinal) == 0)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
 
 
         public static bool ShouldUseMember(this MemberInfo memberInfo)

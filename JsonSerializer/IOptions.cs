@@ -2,7 +2,7 @@
 {
     public interface IOptions
     {
-        int MaxJsonLength { get; set; }
+ //       int MaxJsonLength { get; set; }
 
         int RecursionLimit { get; set; }
 

@@ -34,5 +34,10 @@ namespace Zippy.Serialize.Writers
         public override void Write(char[] buffer)
         {
         }
+
+        public override string ToString()
+        {
+            return null;
+        }
     }
 }

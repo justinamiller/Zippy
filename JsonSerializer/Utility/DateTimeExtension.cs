@@ -9,18 +9,6 @@ namespace Zippy.Utility
         private const long UnixEpoch = 621355968000000000L;
         private static readonly DateTime UnixEpochDateTimeUtc = new DateTime(UnixEpoch, DateTimeKind.Utc);
         private static readonly DateTime MinDateTimeUtc = new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-
-        public static DateTime ToStableUniversalTime(this DateTime dateTime)
-        {
-            if (dateTime.Kind == DateTimeKind.Utc)
-                return dateTime;
-            if (dateTime == DateTime.MinValue)
-                return MinDateTimeUtc;
-
-            return dateTime.ToUniversalTime();
-        }
-
         private readonly static char[][] _time = new char[60][];
 
         static DateTimeExtension()

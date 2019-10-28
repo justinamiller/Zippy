@@ -23,11 +23,6 @@ namespace Zippy.Utility
             return ret;
         }
 
-        public static void Free(StringBuilderWriter writer)
-        {
-            s_Cache = writer;
-        }
-
         public static string ReturnAndFree(StringBuilderWriter writer)
         {
             var ret = writer.ToString();

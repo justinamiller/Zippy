@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Zippy;
+using Zippy.Serialize;
 
 namespace NetTests
 {
@@ -11,7 +12,7 @@ namespace NetTests
         public void TestSerializeObjectToString()
         {
             Assert.IsNull(JSON.SerializeObjectToString(null));
-            Assert.AreEqual(JSON.SerializeObjectToString(""),"\"\"");
+            Assert.IsTrue(JSON.SerializeObjectToString("").Length>0);
         }
 
         [TestMethod]
@@ -40,6 +41,38 @@ namespace NetTests
 
      
             Assert.IsNull(JSON.SerializeObject(null, new System.IO.StringWriter()));
+        }
+
+        [TestMethod]
+        public void TestSerializeObjectOptions()
+        {
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.TextCase = TextCase.CamelCase;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.TextCase = TextCase.SnakeCase;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.TextCase = TextCase.Default;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.EscapeHtmlChars = true;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            JSON.Options.PrettyPrint = true;
+            JSON.Options.SerializationErrorHandling = SerializationErrorHandling.ReportValueAsNull;
+            JSON.Options.DateHandler = DateHandler.ISO8601;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            //    Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType,  new System.IO.StringWriter()));
+            //var json1 = JSON.SerializeObjectToString(_SimpleModelType);
+            //int currentLength = JSON.Options.MaxJsonLength;
+            //JSON.Options.MaxJsonLength = 25;
+            //var json = JSON.SerializeObjectToString(_SimpleModelType);
+            //Assert.IsTrue(json1.Length>json.Length);
+
+            //JSON.Options.MaxJsonLength = currentLength;
+
         }
     }
 }

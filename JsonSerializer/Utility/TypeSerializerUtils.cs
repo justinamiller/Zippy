@@ -238,16 +238,6 @@ namespace Zippy.Utility
             return new string(newArray, 0, length + 1);
         }
 
-        public static TypeCode GetEnumerableValueTypeCode(System.Collections.IEnumerable anEnumerable, Type type)
-        {
-            var valueType = GetEnumerableValueType(anEnumerable, type);
-            if (valueType != typeof(object))
-            {
-                return GetTypeCode(valueType);
-            }
-            return TypeCode.CustomObject;
-        }
-
         public static Type GetEnumerableValueType(System.Collections.IEnumerable anEnumerable, Type type)
         {
             if (anEnumerable is System.Collections.ArrayList)
@@ -278,21 +268,6 @@ namespace Zippy.Utility
                 || typeCode == TypeCode.Array 
                 || typeCode == TypeCode.Dictionary 
                 || typeCode == TypeCode.Enumerable;
-        }
-
-        public static TypeCode GetArrayValueTypeCode(Type type)
-        {
-            return GetTypeCode(type.GetElementType());
-        }
-
-        public static TypeCode GetIListValueTypeCode(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                return (GetTypeCode(type.GetGenericArguments()[0]));
-            }
-
-            return TypeCode.CustomObject;
         }
     }
 }

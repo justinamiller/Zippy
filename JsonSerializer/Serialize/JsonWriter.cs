@@ -24,8 +24,6 @@ namespace Zippy.Serialize
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
 
-        private readonly bool _escapeHtmlChars=JSON.Options.EscapeHtmlChars;
-        private readonly DateHandler _dateHandler = JSON.Options.DateHandler;
 
         public JsonWriter(TextWriter writer)
         {
@@ -99,136 +97,11 @@ namespace Zippy.Serialize
             WritePropertyNameFast(TypeSerializerUtils.BuildPropertyName(value));
         }
 
-        public bool WriteValueTypeToStringMethod(TypeSerializerUtils.TypeCode typeCode, object value)
-        {
-            switch (typeCode)
-            {
-                case TypeSerializerUtils.TypeCode.String:
-                    WriteString((string)value);
-                    break;
-                case TypeSerializerUtils.TypeCode.CharNullable:
-                case TypeSerializerUtils.TypeCode.Char:
-                    WriteChar(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.BooleanNullable:
-                case TypeSerializerUtils.TypeCode.Boolean:
-                    WriteBool(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Int32Nullable:
-                    WriteInt32Nullable(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Int32:
-                    WriteInt32(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DateTime:
-                    WriteDateTime(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Guid:
-                    WriteGuid(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DoubleNullable:
-                    WriteDoubleNullable(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Double:
-                    WriteDouble(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.SByteNullable:
-                case TypeSerializerUtils.TypeCode.SByte:
-                    WriteSByte(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Int16Nullable:
-                case TypeSerializerUtils.TypeCode.Int16:
-                    WriteInt16(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.UInt16Nullable:
-                case TypeSerializerUtils.TypeCode.UInt16:
-                    WriteUInt16(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.ByteNullable:
-                case TypeSerializerUtils.TypeCode.Byte:
-                    WriteByte(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.UInt32Nullable:
-                case TypeSerializerUtils.TypeCode.UInt32:
-                    WriteUInt32(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Int64Nullable:
-                    WriteInt64Nullable(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Int64:
-                    WriteInt64(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.UInt64Nullable:
-                case TypeSerializerUtils.TypeCode.UInt64:
-                    WriteUInt64(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.SingleNullable:
-                case TypeSerializerUtils.TypeCode.Single:
-                    WriteFloat(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DateTimeNullable:
-                    WriteNullableDateTime(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DateTimeOffsetNullable:
-                    WriteNullableDateTimeOffset(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DateTimeOffset:
-                    WriteDateTimeOffset(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DecimalNullable:
-                case TypeSerializerUtils.TypeCode.Decimal:
-                    WriteDecimal(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.GuidNullable:
-                    WriteNullableGuid(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.TimeSpanNullable:
-                    WriteNullableTimeSpan(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.TimeSpan:
-                    WriteTimeSpan(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Uri:
-                    WriteUri(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.Bytes:
-                    WriteBytes(value);
-                    break;
-                case TypeSerializerUtils.TypeCode.DBNull:
-                    WriteNull();
-                    break;
-                case TypeSerializerUtils.TypeCode.Exception:
-                    WriteException(value);
-                    break;
-                default:
-                    throw new NotImplementedException(typeCode.ToString());
-                    //if (value is IConvertible convertible)
-                    //{
-                    //    ResolveConvertibleValue(convertible, out typeCode, out value);
-                    //    continue;
-                    //}
-            }
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Shortcut escape when we're sure value doesn't contain any escaped chars
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="value"></param>
-        public void WriteRawString(char[] value)
-        {
-            _writer.Write(QuoteChar);
-            _writer.Write(value);
-            _writer.Write(QuoteChar);
-        }
 
         public void WriteString(string value)
         {
             //force encode.
-            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
+            _writer.Write(StringExtension.GetEncodeString(value, JSON.Options.EscapeHtmlChars));
         }
 
 
@@ -241,7 +114,7 @@ namespace Zippy.Serialize
             }
 
             //force encode.
-            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
+            _writer.Write(StringExtension.GetEncodeString(value, JSON.Options.EscapeHtmlChars));
         }
 
 
@@ -253,7 +126,7 @@ namespace Zippy.Serialize
         public void WriteDateTime(object oDateTime)
         {
             var dateTime = (DateTime)oDateTime;
-            if (_dateHandler == DateHandler.TimestampOffset)
+            if (JSON.Options.DateHandler == DateHandler.TimestampOffset)
             {
                 _writer.Write(QuoteChar);
                 var offset = LocalTimeZone.GetUtcOffset(dateTime).Ticks;
@@ -271,7 +144,7 @@ namespace Zippy.Serialize
                 return;
             }
 
-            switch (_dateHandler)
+            switch (JSON.Options.DateHandler)
             {
                 case DateHandler.ISO8601:
                     _writer.Write(dateTime.ToString("o", CurrentCulture));
@@ -410,7 +283,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), _escapeHtmlChars));
+                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), JSON.Options.EscapeHtmlChars));
             }
         }
 

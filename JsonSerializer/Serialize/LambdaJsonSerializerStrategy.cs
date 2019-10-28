@@ -16,6 +16,11 @@ namespace Zippy.Serialize
         {
         }
 
+        public void Reset()
+        {
+            this.GetCache.Clear();
+        }
+
 
         public bool TrySerializeNonPrimitiveObject(Type type, out IValueMemberInfo[] output)
         {

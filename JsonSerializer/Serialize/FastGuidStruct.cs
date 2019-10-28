@@ -57,6 +57,7 @@ namespace Zippy.Serialize
         [FieldOffset(15)]
         public readonly byte B15;
 
+
         public FastGuidStruct(Guid guid)
             : this()
         {

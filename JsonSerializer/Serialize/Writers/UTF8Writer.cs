@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Zippy.Serialize.Writers
 {
-    class UTF8Writer: TextWriter
+    internal class UTF8Writer: TextWriter
     {
         private byte[] _buffer;
         private int _index = 0;

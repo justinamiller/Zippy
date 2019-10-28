@@ -10,7 +10,7 @@ using Zippy;
 namespace Models
 {
     [ExcludeFromCodeCoverage]
-   public class ComplexModelObject
+    public class ComplexModelObject
     {
 
         public enum TType
@@ -65,13 +65,26 @@ namespace Models
         public short S { get; set; }
 
         public double D { get; set; }
+        public double? Dnull { get; set; }
 
         public byte B { get; set; }
 
         public sbyte SB { get; set; }
 
-       //public DataTable DT { get; } = new DataTable();
-     //  public DataSet DS { get; } = new DataSet();
+        public int? Inull { get; set; }
+
+        public Uri UriNull { get; set; }
+        public Uri Uri { get; set; } = new Uri("http://www.google.com");
+        public Guid? Gnull { get; set; }
+        public Int64? BInull { get; set; }
+        public AppDomain Domain { get; set; } = AppDomain.CurrentDomain;
+
+        public char[] Chars { get; set; } = new char[2] { 'a', 'b' };
+
+        public Exception Ex { get; set; } = new InvalidCastException("Bad Cast Exception");
+
+        //public DataTable DT { get; } = new DataTable();
+        //  public DataSet DS { get; } = new DataSet();
 
         public Result[] Results { get; set; } = Array.Empty<Result>();
 

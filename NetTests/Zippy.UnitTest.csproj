@@ -57,6 +57,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JsonExtensionsShould.cs" />
     <Compile Include="JSONShould.cs" />
+    <Compile Include="BufferTextWriterShould.cs" />
+    <Compile Include="NullTextWriterShould.cs" />
+    <Compile Include="StringBuilderWriterShould.cs" />
+    <Compile Include="FastGuidStructShould.cs" />
+    <Compile Include="StringExtensionsShould.cs" />
+    <Compile Include="ValueMemberInfoShould.cs" />
+    <Compile Include="UTF8WriterShould.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
