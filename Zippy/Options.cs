@@ -24,6 +24,7 @@ namespace Zippy
         }
         public bool PrettyPrint { get; set; }
         public SerializationErrorHandling SerializationErrorHandling { get; set; }
+        public bool ShouldExcludeNulls { get; set; }
 
         public TextCase TextCase { get; set; }
 

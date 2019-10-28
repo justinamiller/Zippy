@@ -6,6 +6,8 @@
 
         int RecursionLimit { get; set; }
 
+        //bool ShouldExcludeNulls { get; set; }
+
         /// <summary>
         /// Addtional encoding for supporting direct elastic search write.
         /// </summary>
