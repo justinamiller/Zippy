@@ -2,6 +2,7 @@
 
 namespace Models
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class ModelWithCommonTypes
     {
         public char CharValue { get; set; }

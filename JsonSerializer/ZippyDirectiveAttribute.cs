@@ -13,7 +13,7 @@ namespace Zippy
     /// Takes precedence over [DataMember] and [IgnoreDataMember].
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    public class ZippyDirectiveAttribute : Attribute
+    public sealed class ZippyDirectiveAttribute : Attribute
     {
         /// <summary>
         /// If true, the decorated member will not be serialized or deserialized.

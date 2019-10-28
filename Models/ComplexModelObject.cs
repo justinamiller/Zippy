@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
 using Zippy;
 
 namespace Models
 {
+    [ExcludeFromCodeCoverage]
    public class ComplexModelObject
     {
 
@@ -39,8 +41,10 @@ namespace Models
 
         public string Name { get; set; }
 
+        [ZippyDirective()]
         public string Address { get; set; }
 
+        [ZippyDirective("Is_Ready")]
         public bool IsReady { get; set; }
         public DateTime CreateDate { get; } = DateTime.Now;
 

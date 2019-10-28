@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Models
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class SimpleModelType
     {
         private readonly string _test;

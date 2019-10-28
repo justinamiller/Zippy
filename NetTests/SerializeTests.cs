@@ -63,5 +63,48 @@ namespace NetTests
         {
             Assert.IsTrue(Zippy.JSON.SerializeObjectToString(_ModelWithCommonTypes).Length > 0);
         }
+
+        [TestMethod]
+        public void TestSerializeObjectToStringDataSet()
+        {
+          var ds=new   System.Data.DataSet();
+            var dt = new System.Data.DataTable();
+            ds.Tables.Add(dt);
+            dt.Columns.Add("Name", typeof(string));
+            dt.Columns.Add("Id", typeof(int));
+            var dr = dt.NewRow();
+            dr[0] = "HELLO";
+            dr[1] = 1234;
+            dt.Rows.Add(dr);
+
+            dt = new System.Data.DataTable();
+            ds.Tables.Add(dt);
+            dt.Columns.Add("Name1", typeof(string));
+            dt.Columns.Add("Id1", typeof(int));
+             dr = dt.NewRow();
+            dr[0] = "HELLO";
+            dr[1] = 1234;
+            dt.Rows.Add(dr);
+            Assert.IsTrue(Zippy.JSON.SerializeObjectToString(ds).Length > 0);
+        }
+
+        [TestMethod]
+        public void TestSerializeObjectToStringDataTable ()
+        {
+            var dt = new System.Data.DataTable();
+            dt.Columns.Add("Name", typeof(string));
+            dt.Columns.Add("Id", typeof(int));
+            var dr = dt.NewRow();
+            dr[0] = "HELLO";
+            dr[1] = 1234;
+            dt.Rows.Add(dr);
+            Assert.IsTrue(Zippy.JSON.SerializeObjectToString(dt).Length > 0);
+        }
+
+        [TestMethod]
+        public void TestSerializeObjectToStringAppDomain()
+        {
+            Assert.IsTrue(Zippy.JSON.SerializeObjectToString(System.AppDomain.CurrentDomain).Length > 0);
+        }
     }
 }

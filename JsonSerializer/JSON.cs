@@ -2,10 +2,11 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Zippy.Serialize;
 using Zippy.Serialize.Writers;
 using Zippy.Utility;
-
+[assembly: InternalsVisibleTo("Zippy.UnitTest")]
 namespace Zippy
 {
     public sealed class JSON

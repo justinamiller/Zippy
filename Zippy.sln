@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zippy", "JsonSerializer\Zip
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{9798F02E-0688-4374-886C-692709BC2A84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTests", "NetTests\NetTests.csproj", "{5A064381-F9E1-4B56-8702-715FE8C5200F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zippy.UnitTest", "NetTests\Zippy.UnitTest.csproj", "{5A064381-F9E1-4B56-8702-715FE8C5200F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{6FE7A5C9-02A0-46AF-A807-E65781438329}"
 EndProject

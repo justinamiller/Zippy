@@ -51,10 +51,10 @@ namespace ConsoleTest
          //   var c = Enumerable.Range(1000, 1000).Select(x => new Models.TinyObject("Name<Data/>" + x.ToString(), x, Models.TinyObject.State.Running)).ToArray();
           //  Zippy.JSON.SerializeObjectToString(c);
          //   c = new Models.ComplexModelObject();
-            Test(c);
-       //     c = new Models.ComplexModelObject();
-            Test1(c);
-            return;
+       //     Test(c);
+       ////     c = new Models.ComplexModelObject();
+       //     Test1(c);
+       //     return;
 
             //for (var i = 0; i < 10000; i++)
             //{

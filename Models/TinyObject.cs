@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Models
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class TinyObject
     {
        public string Name { get; }

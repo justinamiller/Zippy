@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Zippy.Utility;
 
-namespace Zippy
+namespace System
 {
     public static class JsonExtensions
     {
@@ -15,7 +15,7 @@ namespace Zippy
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static string ToJson(this object instance)
         { 
-            return JSON.SerializeObjectToString(instance);
+            return Zippy.JSON.SerializeObjectToString(instance);
         }
 
         public static string BeautifyJson(string input)

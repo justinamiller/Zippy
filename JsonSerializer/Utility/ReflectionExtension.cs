@@ -63,33 +63,6 @@ namespace Zippy.Utility
         }
 
 
-        public static GetDelegate GetGetMethod(MemberInfo item)
-        {
-            try
-            {
-                if (item is PropertyInfo)
-                {
-                    return GetGetMethod((PropertyInfo)item);
-                }
-                else if (item is FieldInfo)
-                {
-                    return GetGetMethod((FieldInfo)item);
-                }
-            }
-            catch (Exception)
-            {
-                //do nothing
-            }
-            return null;
-        }
-
-
-        public static GetDelegate GetGetMethod(PropertyInfo propertyInfo)
-        {
-            return GetGetMethodByReflection(propertyInfo);
-        }
-
-
         private static Expression EnsureCastExpression(Expression expression, Type targetType, bool allowWidening = false)
         {
             Type expressionType = expression.Type;
@@ -193,35 +166,6 @@ namespace Zippy.Utility
             }
         }
 
-
-        public static Func<TKey, TValue> CreateGet<TKey, TValue>(MemberInfo item)
-        {
-            if (item is PropertyInfo)
-            {
-                return CreateGet<TKey, TValue>((PropertyInfo)item);
-            }
-            else if (item is FieldInfo)
-            {
-                return CreateGet<TKey, TValue>((FieldInfo)item);
-            }
-            return null;
-        }
-
-        public static ReflectionExtension.GetDelegate GetGetMethod(FieldInfo fieldInfo)
-        {
-            return ReflectionExtension.GetGetMethodByReflection(fieldInfo);
-        }
-
-        public static GetDelegate GetGetMethodByReflection(PropertyInfo propertyInfo)
-        {
-            return (object source) => propertyInfo.GetValue(source, null);
-        }
-
-        public static ReflectionExtension.GetDelegate GetGetMethodByReflection(FieldInfo fieldInfo)
-        {
-            return (object source) => fieldInfo.GetValue(source);
-        }
-
         public static List<PropertyInfo> GetProperties(Type type, BindingFlags bindingFlags)
         {
             List<PropertyInfo> propertyInfos = new List<PropertyInfo>(type.GetProperties(bindingFlags));
@@ -257,63 +201,6 @@ namespace Zippy.Utility
             return GetFieldsAndProperties(type, DefaultFlags);
         }
 
-        public static List<MemberInfo> GetFieldsAndPropertiesLegacy(Type type, BindingFlags bindingAttr)
-        {
-            List<MemberInfo> targetMembers = new List<MemberInfo>();
-
-            targetMembers.AddRange(GetFields(type, bindingAttr));
-            targetMembers.AddRange(GetProperties(type, bindingAttr));
-
-            // for some reason .NET returns multiple members when overriding a generic member on a base class
-            // http://social.msdn.microsoft.com/Forums/en-US/b5abbfee-e292-4a64-8907-4e3f0fb90cd9/reflection-overriden-abstract-generic-properties?forum=netfxbcl
-            // filter members to only return the override on the topmost class
-            // update: I think this is fixed in .NET 3.5 SP1 - leave this in for now...
-            List<MemberInfo> distinctMembers = new List<MemberInfo>(targetMembers.Count);
-
-
-            //Automatic Property syntax is actually not recommended if the class can be used in serialization. 
-            var groupbyTargetMemebers = targetMembers.Where(l => !l.Name.Contains("k__BackingField")).GroupBy(m => m.Name);
-            foreach (var groupedMember in groupbyTargetMemebers)
-            {
-                IList<MemberInfo> members = groupedMember.ToList();
-                int count = members.Count();
-
-                if (count == 1)
-                {
-                    var member = members[0];
-                    if (member.ShouldUseMember())
-                    {
-                        distinctMembers.Add(member);
-                    }
-                }
-                else
-                {
-                    IList<MemberInfo> resolvedMembers = new List<MemberInfo>();
-                    foreach (MemberInfo memberInfo in members)
-                    {
-                        if (memberInfo.ShouldUseMember())
-                        {
-                            // this is a bit hacky
-                            // if the hiding property is hiding a base property and it is virtual
-                            // then this ensures the derived property gets used
-                            if (resolvedMembers.Count == 0)
-                            {
-                                resolvedMembers.Add(memberInfo);
-                            }
-                            else if (!IsOverridenGenericMember(memberInfo, bindingAttr) || memberInfo.Name == "Item")
-                            {
-                                resolvedMembers.Add(memberInfo);
-                            }
-                        }
-                    }
-
-                    distinctMembers.AddRange(resolvedMembers);
-                }
-            }
-
-            return distinctMembers;
-        }
-
         public static List<MemberInfo> GetFieldsAndProperties(Type type, BindingFlags bindingAttr)
         {
             List<MemberInfo> targetMembers = new List<MemberInfo>();
@@ -330,43 +217,6 @@ namespace Zippy.Utility
                 }
             }
             return filterMembers;
-        }
-
-        private static bool IsOverridenGenericMember(MemberInfo memberInfo, BindingFlags bindingAttr)
-        {
-            if (memberInfo.MemberType != MemberTypes.Property)
-            {
-                return false;
-            }
-
-            PropertyInfo propertyInfo = (PropertyInfo)memberInfo;
-            if (!IsVirtual(propertyInfo))
-            {
-                return false;
-            }
-
-            Type declaringType = propertyInfo.DeclaringType;
-            if (!declaringType.IsGenericType)
-            {
-                return false;
-            }
-            Type genericTypeDefinition = declaringType.GetGenericTypeDefinition();
-            if (genericTypeDefinition == null)
-            {
-                return false;
-            }
-            MemberInfo[] members = genericTypeDefinition.GetMember(propertyInfo.Name, bindingAttr);
-            if (members.Length == 0)
-            {
-                return false;
-            }
-            Type memberUnderlyingType = GetMemberUnderlyingType(members[0]);
-            if (!memberUnderlyingType.IsGenericParameter)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -391,25 +241,6 @@ namespace Zippy.Utility
             }
         }
 
-        /// <summary>
-        /// Determines whether the member is an indexed property.
-        /// </summary>
-        /// <param name="member">The member.</param>
-        /// <returns>
-        /// 	<c>true</c> if the member is an indexed property; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsIndexedProperty(MemberInfo member)
-        {
-            var properyInfo = member as PropertyInfo;
-            if (properyInfo != null)
-            {
-                return IsIndexedProperty(properyInfo);
-            }
-            else
-            {
-                return false;
-            }
-        }
 
 
         /// <summary>
@@ -623,17 +454,6 @@ namespace Zippy.Utility
             return true;
         }
 
-        /// <summary>
-        /// List of namespaces where we do not Serialize
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        [SuppressMessage("brain-overload", "S1541")]
-        [SuppressMessage("brain-overload", "S1067")]
-        public static bool CanSerializeComplexObject(object instance)
-        {
-            return CanSerialize(instance.GetType());
-        }
 
         public static bool ShouldUseMember(this MemberInfo memberInfo)
         {
