@@ -18,6 +18,14 @@ using(var output = new StringWriter())
         output
     );
 }
+
+var dt = new DataTable();
+
+//use default stringwriter
+var str= Zippy.JSON.SerializeObjectToString(dt);
+
+//use of extensions
+var strExtend = dt.ToJson();
 ```
 
 The first time Zippy is used to serialize a given configuration and type pair, it will spend extra time building the serializer.
