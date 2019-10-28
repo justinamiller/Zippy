@@ -41,7 +41,6 @@
         ReportValueAsNull=0,
         SkipProperty=1,
         ThrowException=2
-
     }
 
     public enum DateHandler

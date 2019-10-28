@@ -47,7 +47,6 @@ namespace Zippy.Utility
             return true;
         }
 
-        private static readonly CompareInfo s_CompareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
 
         /// <summary>

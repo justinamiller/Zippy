@@ -49,7 +49,7 @@ namespace Zippy
         {
             if (writer == null)
             {
-                throw new ArgumentNullException("writer");
+                throw new ArgumentNullException(nameof(writer));
             }
             else if (Object == null)
             {
