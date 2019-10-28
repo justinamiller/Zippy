@@ -5,6 +5,7 @@
     <Description>Fast JSON Serializer</Description>
     <Authors>Justin</Authors>
     <Company />
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
