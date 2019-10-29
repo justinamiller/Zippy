@@ -164,7 +164,22 @@ namespace NetTests
         public void TestSerializeObjectToStringCurrentPrincipal()
         {
             var p = System.Threading.Thread.CurrentPrincipal;
+            JSON.Options.SerializationErrorHandling = SerializationErrorHandling.ReportValueAsNull;
             Assert.IsTrue(Zippy.JSON.SerializeObjectToString(p).Length > 0);
+            JSON.Options.SerializationErrorHandling = SerializationErrorHandling.SkipProperty;
+            Assert.IsTrue(Zippy.JSON.SerializeObjectToString(p).Length > 0);
+
+
+            try
+            {
+                JSON.Options.SerializationErrorHandling = SerializationErrorHandling.ThrowException;
+                Assert.IsTrue(Zippy.JSON.SerializeObjectToString(p).Length > 0);
+                Assert.Fail("Should throw exception");
+            }
+            catch(InvalidOperationException ex)
+            {
+                Assert.IsNotNull(ex);
+            }
         }
     }
 }

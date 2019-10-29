@@ -3,48 +3,107 @@ using Zippy.Serialize;
 
 namespace Zippy
 {
-    sealed class Options : IOptions
+
+    public enum SerializationErrorHandling
+    {
+        /// <summary>
+        /// report value as null
+        /// </summary>
+        ReportValueAsNull = 0,
+        /// <summary>
+        /// will not report property & value
+        /// </summary>
+        SkipProperty = 1,
+        /// <summary>
+        /// will throw exception to calling method.
+        /// </summary>
+        ThrowException = 2
+    }
+
+    public enum DateHandler
+    {
+        TimestampOffset = 0,
+        ISO8601 = 1,
+        ISO8601DateOnly = 2,
+        ISO8601DateTime = 3,
+        RFC1123 = 4
+    }
+
+    public enum TextCase
+    {
+        /// <summary>
+        /// If unspecified use as is.
+        /// </summary>
+        Default,
+        /// <summary>
+        /// camelCase
+        /// </summary>
+        CamelCase,
+        /// <summary>
+        /// snake_case
+        /// </summary>
+        SnakeCase,
+    }
+    public sealed class Options 
     {
         internal readonly static IJsonSerializerStrategy CurrentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
-        internal const int MAXJSONLENGTH = 2097152;
-        internal const int RECURSIONLIMIT = 7;
+        private const int MAXJSONLENGTH = 2097152;
+        private const int RECURSIONLIMIT = 7;
 
-        int _MaxJsonLength = MAXJSONLENGTH;
-        int _RecursionLimit = RECURSIONLIMIT;
+   //     int _MaxJsonLength;
+        int _RecursionLimit;
 
+        /// <summary>
+        ///  if HTML entity chars [&gt; &lt; &amp; = '] should be escaped as "\uXXXX".
+        /// </summary>
         public bool EscapeHtmlChars { get; set; }
 
-
-        internal Options(int maxJsonLength=MAXJSONLENGTH, int recursionLimit=RECURSIONLIMIT)
+        public Options()
         {
-            CurrentJsonSerializerStrategy.Reset();
-            this.MaxJsonLength = maxJsonLength;
-            this.RecursionLimit = recursionLimit;
+            //default
+         //   this._MaxJsonLength = MAXJSONLENGTH;
+            this._RecursionLimit = RECURSIONLIMIT;
+            SerializationErrorHandling = SerializationErrorHandling.ReportValueAsNull;
+            TextCase = TextCase.Default;
         }
+        /// <summary>
+        /// whether or not to include whitespace and newlines for ease of reading
+        /// </summary>
         public bool PrettyPrint { get; set; }
+        /// <summary>
+        /// What is done when unable to serialize field or property.
+        /// </summary>
         public SerializationErrorHandling SerializationErrorHandling { get; set; }
+        /// <summary>
+        /// Skip property when value is null
+        /// </summary>
         public bool ExcludeNulls { get; set; }
-
+        /// <summary>
+        /// Text case to use for property names
+        /// </summary>
         public TextCase TextCase { get; set; }
 
 
-        public int MaxJsonLength
-        {
-            get
-            {
-                return _MaxJsonLength;
-            }
+        //public int MaxJsonLength
+        //{
+        //    get
+        //    {
+        //        return _MaxJsonLength;
+        //    }
 
-            set
-            {
-                if (0 >= value)
-                    throw new ArgumentException("MaxJsonLength must be greater than 0.");
-                _MaxJsonLength = value;
+        //    set
+        //    {
+        //        if (0 >= value)
+        //            throw new ArgumentException("MaxJsonLength must be greater than 0.");
+        //        _MaxJsonLength = value;
 
-            }
-        }
+        //    }
+        //}
 
+        /// <summary>
+        /// depth to drill into object graph
+        /// </summary>
         public int RecursionLimit
         {
             get

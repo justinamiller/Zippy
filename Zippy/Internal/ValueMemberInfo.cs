@@ -54,9 +54,12 @@ namespace Zippy.Internal
             this.Name = string.Empty;
             if (type != null)
             {
-                this.Name = TypeSerializerUtils.BuildPropertyName(memberInfo.GetSerializationName());
+                this.Name = memberInfo.GetSerializationName();
+   
                 if (!this.Name.IsNullOrEmpty())
                 {
+                    //encode name
+                    this.Name = new string(StringExtension.GetEncodeString(this.Name, false, false));
                     this.ObjectType = type;
                     this.Code = Utility.TypeSerializerUtils.GetTypeCode(type);
                     WriteDelegate = JsonWriter.GetWriteObjectDelegate(Code);
@@ -125,18 +128,8 @@ namespace Zippy.Internal
         {
             if (!_errored)
             {
-                try
-                {
                     value = _getter(instance);
                     return true;
-                }
-                catch (Exception ex)
-                {
-                    if (JSON.Options.SerializationErrorHandling == SerializationErrorHandling.ThrowException)
-                    {
-                        throw ex;
-                    }
-                }
             }
 
             //has errored

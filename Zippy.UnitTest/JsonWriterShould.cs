@@ -10,7 +10,7 @@ namespace Zippy.UnitTest
         [TestMethod]
         public void TestJsonWriter()
         {
-            var w = new JsonWriter(new System.IO.StringWriter());
+            var w = new JsonWriter(new System.IO.StringWriter(), JSON.Options);
             Assert.IsTrue(w.ToString().Length == 0);
             w.WriteBool(true);
             w.WriteBool(false);

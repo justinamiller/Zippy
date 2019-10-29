@@ -23,12 +23,15 @@ namespace Zippy.Serialize
         private readonly TextWriter _writer;
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
-        private readonly DateHandler _dateHandler = JSON.Options.DateHandler;
-        private readonly bool _escapeHtmlChars = JSON.Options.EscapeHtmlChars;
+        private readonly DateHandler _dateHandler;
+        private readonly bool _escapeHtmlChars;
+        private readonly TextCase _textCase;
+        private readonly Options _options;
 
-        public JsonWriter(TextWriter writer)
+        public JsonWriter(TextWriter writer, Options options)
         {
             _writer = writer;
+            _options = options;
         }
 
         public bool IsValid()
@@ -72,6 +75,10 @@ namespace Zippy.Serialize
             _writer.Write(CommaChar);
         }
 
+        /// <summary>
+        /// prestructure property name with \" & \":
+        /// </summary>
+        /// <param name="value"></param>
         public void WritePropertyNameFast(string value)
         {
             if (this._propertyInUse)
@@ -85,9 +92,9 @@ namespace Zippy.Serialize
             _writer.Write(value);
         }
 
-        public void WritePropertyName(string value)
+        public void WritePropertyName(string value, bool encode)
         {
-            WritePropertyNameFast(TypeSerializerUtils.BuildPropertyName(value));
+            WritePropertyNameFast(TypeSerializerUtils.BuildPropertyName(value, _textCase, encode));
         }
 
 

@@ -23,14 +23,11 @@ namespace Zippy.Serialize
         private readonly ReferenceCheck _cirobj = new ReferenceCheck();
         private int _currentDepth = 0;
         private JsonWriter _jsonWriter;
+        private readonly Options _options;
 
-        private readonly int _recursionLimit = JSON.Options.RecursionLimit;
-        private readonly SerializationErrorHandling _errorHandling = JSON.Options.SerializationErrorHandling;
-        private readonly bool _excludeNulls = JSON.Options.ExcludeNulls;
-
-
-        public Serializer()
+        public Serializer(Options options)
         {
+            this._options = options;
         }
 
 
@@ -54,7 +51,7 @@ namespace Zippy.Serialize
                     var name = keys[i];
                     if (!name.IsNullOrEmpty())
                     {
-                        _jsonWriter.WritePropertyName(name);
+                        _jsonWriter.WritePropertyName(name,true);
                         _jsonWriter.WriteStringNullable(value.Get(i));
                     }
                 }
@@ -338,7 +335,7 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SerializeObjectInternal(object obj, TextWriter writer)
         {
-            _jsonWriter = new JsonWriter(writer);
+            _jsonWriter = new JsonWriter(writer, _options);
 
             var valueMember = new ValueMemberInfo(obj.GetType());
 
@@ -390,7 +387,7 @@ namespace Zippy.Serialize
                     }
 
                     string name = key.ToString();
-                    _jsonWriter.WritePropertyName(name);
+                    _jsonWriter.WritePropertyName(name,true);
 
                     var dictionaryValue = enumerator.Value;
                     if (dictionaryValue == null)
@@ -446,7 +443,7 @@ namespace Zippy.Serialize
                     string name = entry.Key.ToString();
                     if (!name.IsNullOrEmpty())
                     {
-                       _jsonWriter.WritePropertyName(name);
+                        _jsonWriter.WritePropertyName(name,true);
 
                         var value = entry.Value;
                         if (value == null)
@@ -482,24 +479,42 @@ namespace Zippy.Serialize
                 {
                     item = items[i];
                     value = null;
-                    if (!item.TryGetValue(instance, ref value) || _errorHandling == SerializationErrorHandling.ReportValueAsNull)
+
+                    try
                     {
-                        if(value is null && _excludeNulls)
+                        item.TryGetValue(instance, ref value);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (_options.SerializationErrorHandling == SerializationErrorHandling.ThrowException)
                         {
-                            //skip writen the object the object.
+                            //throw up to application
+                            throw ex;
+                        }
+                        else if (_options.SerializationErrorHandling == SerializationErrorHandling.SkipProperty)
+                        {
+                            //skip writing value
                             break;
                         }
+                    }
 
-                        _jsonWriter.WritePropertyNameFast(item.Name);
+                    //continue with value
+                    var valueIsNull = value == null;
+                    if (valueIsNull && _options.ExcludeNulls)
+                    {
+                        //skip writen the object the object.
+                        break;
+                    }
 
-                        if (value == null)
-                        {
-                            _jsonWriter.WriteNull();
-                        }
-                        else if (!WriteObjectValue(value, item))
-                        {
-                            return false;
-                        }
+                    _jsonWriter.WritePropertyName(item.Name,false);
+
+                    if (valueIsNull)
+                    {
+                        _jsonWriter.WriteNull();
+                    }
+                    else if (!WriteObjectValue(value, item))
+                    {
+                        return false;
                     }
                 }
             }
@@ -567,8 +582,7 @@ namespace Zippy.Serialize
             {
                 var valueMember = new ValueMemberInfo(column.DataType);
 
-                var columnName = BuildPropertyName(column.ColumnName);
-
+                var columnName = BuildPropertyName(column.ColumnName, _options.TextCase,true);
                 columnType.Add(new Tuple<string, ValueMemberInfo, int>(columnName, valueMember, column.Ordinal));
                 columnCount++;
             }
@@ -580,7 +594,7 @@ namespace Zippy.Serialize
             }
 
             bool rowseparator = false;
-            _jsonWriter.WritePropertyName(tableName);
+            _jsonWriter.WritePropertyName(tableName,true);
             _jsonWriter.WriteStartArray();
             try
             {
@@ -661,7 +675,7 @@ namespace Zippy.Serialize
             }
             _currentDepth++;
             //recursion limit or max char length
-            if (_currentDepth >= _recursionLimit)
+            if (_currentDepth >= _options.RecursionLimit)
             {
                 _currentDepth--;
                 _jsonWriter.WriteNull();

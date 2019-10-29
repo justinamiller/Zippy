@@ -203,9 +203,9 @@ namespace Zippy.Utility
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string FormatPropertyName(string value)
+        public static string FormatPropertyName(string value, TextCase textCase)
         {
-            switch (JSON.Options.TextCase)
+            switch (textCase)
             {
                 case TextCase.CamelCase:
                     return value.ToCamelCase();
@@ -216,24 +216,31 @@ namespace Zippy.Utility
             }
         }
 
-        public static string BuildPropertyName(string name)
+        public static string BuildPropertyName(string name, TextCase textCase, bool encode)
         {
             if (name.IsNullOrEmpty())
             {
                 return string.Empty;
             }
 
-            name = FormatPropertyName(name);
+            name = FormatPropertyName(name, textCase);
+            //encode propertyName
+            if (encode)
+            {
+                //force encode.
+                var buffer = StringExtension.GetEncodeString(name, false, true);
+                int length = buffer.Length;
 
-            //force encode.
-            var buffer = StringExtension.GetEncodeString(name, false, true);
-            int length = buffer.Length;
+                var newArray = new char[length + 1];
+                Array.Copy(buffer, 0, newArray, 0, length);
+                newArray[length] = ':';
 
-            var newArray = new char[length + 1];
-            Array.Copy(buffer, 0, newArray, 0, length);
-            newArray[length] = ':';
-
-            return new string(newArray, 0, length + 1);
+                return new string(newArray, 0, length + 1);
+            }
+            else
+            {
+                return string.Concat("\"", name, "\":");
+            }
         }
 
         public static Type GetEnumerableValueType(System.Collections.IEnumerable anEnumerable, Type type)

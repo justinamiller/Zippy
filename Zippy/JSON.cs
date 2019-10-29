@@ -15,26 +15,37 @@ namespace Zippy
 {
     public sealed class JSON
     {
-        public static IOptions Options { get; } = new Options();
+        private static Options s_DefaultOptions = new Options();
+        public static Options Options { get; } = new Options();
+
+        /// <summary>
+        /// Gets the Options objectwill use to calls of Serialize....
+        /// if no Options object is provided.
+        /// </summary>
+        public static Options GetDefaultOptions()
+        {
+            return s_DefaultOptions;
+        } 
 
         /// <summary>
         /// use default settings
         /// </summary>
-        /// <param name="json"></param>
+        /// <param name="Object">serializable object</param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static string SerializeObjectToString(object Object)
+        public static string SerializeObjectToString(object Object, Options options=null)
         {
             if (Object == null)
             {
                 return null;
             }
 
+            bool prettyPrint = Options.PrettyPrint;
             var writer = StringWriterThreadStatic.Allocate();
-            new Serializer().SerializeObjectInternal(Object, writer);
+            new Serializer(options?? s_DefaultOptions).SerializeObjectInternal(Object, writer);
             var json = StringWriterThreadStatic.ReturnAndFree(writer);
 
-            if (Options.PrettyPrint)
+            if (prettyPrint)
             {
                 return StringExtension.PrettyPrint(json);
             }
@@ -45,7 +56,7 @@ namespace Zippy
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static TextWriter SerializeObject(object Object, TextWriter writer)
+        public static TextWriter SerializeObject(object Object, TextWriter writer, Options options=null)
         {
             if (writer == null)
             {
@@ -56,7 +67,7 @@ namespace Zippy
                 return null;
             }
 
-            new Serializer().SerializeObjectInternal(Object, writer);
+            new Serializer(options ?? s_DefaultOptions).SerializeObjectInternal(Object, writer);
 
             return writer;
         }
