@@ -18,7 +18,7 @@ namespace NetTests
         [TestMethod]
         public void TestOptions()
         {
-            Assert.IsNotNull(JSON.Options);
+            Assert.IsNotNull(JSON.GetDefaultOptions());
         }
 
         private static Models.SimpleModelType _SimpleModelType = new Models.SimpleModelType();
@@ -47,55 +47,60 @@ namespace NetTests
         public void TestSerializeObjectOptions()
         {
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.TextCase = TextCase.CamelCase;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            var option = new Options()
+            {
+                TextCase = TextCase.CamelCase
+        };
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(),option));
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.TextCase = TextCase.SnakeCase;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.TextCase = TextCase.SnakeCase;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(), option));
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.TextCase = TextCase.Default;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.TextCase = TextCase.Default;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(),option));
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.EscapeHtmlChars = true;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.EscapeHtmlChars = true;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(), option));
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.PrettyPrint = true;
-            JSON.Options.SerializationErrorHandling = SerializationErrorHandling.ReportValueAsNull;
-            JSON.Options.DateHandler = DateHandler.ISO8601;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.PrettyPrint = true;
+            option.SerializationErrorHandling = SerializationErrorHandling.ReportValueAsNull;
+            option.DateHandler = DateHandler.ISO8601;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(), option));
 
 
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.DateHandler = DateHandler.ISO8601;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.DateHandler = DateHandler.ISO8601;
+
+
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(),option));
 
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.DateHandler = DateHandler.ISO8601DateOnly;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.DateHandler = DateHandler.ISO8601DateOnly;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(), option));
 
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.DateHandler = DateHandler.ISO8601DateTime;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.DateHandler = DateHandler.ISO8601DateTime;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(), option));
 
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.DateHandler = DateHandler.RFC1123;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.DateHandler = DateHandler.RFC1123;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(), option));
 
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.DateHandler = DateHandler.TimestampOffset;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+            option.DateHandler = DateHandler.TimestampOffset;
+            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter(), option));
 
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            var str1 = JSON.SerializeObjectToString(_SimpleModelType);
+            var str1 = JSON.SerializeObjectToString(_SimpleModelType, option);
 
-            JSON.Options.ExcludeNulls = true;
-            var str2 = JSON.SerializeObjectToString(_SimpleModelType);
+            option.ExcludeNulls = true;
+            var str2 = JSON.SerializeObjectToString(_SimpleModelType,option);
 
             Assert.IsTrue(str1.Length != str2.Length);
 
             try
             {
-                JSON.Options.RecursionLimit = -2;
+                option.RecursionLimit = -2;
                 Assert.Fail();
             }
             catch (Exception)
@@ -105,7 +110,7 @@ namespace NetTests
 
             try
             {
-                JSON.Options.RecursionLimit =0;
+           option.RecursionLimit =0;
                 Assert.Fail();
             }
             catch (Exception)

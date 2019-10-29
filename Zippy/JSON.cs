@@ -16,7 +16,6 @@ namespace Zippy
     public sealed class JSON
     {
         private static Options s_DefaultOptions = new Options();
-        public static Options Options { get; } = new Options();
 
         /// <summary>
         /// Gets the Options objectwill use to calls of Serialize....
@@ -39,13 +38,12 @@ namespace Zippy
             {
                 return null;
             }
-
-            bool prettyPrint = Options.PrettyPrint;
+            options = options ?? s_DefaultOptions;
             var writer = StringWriterThreadStatic.Allocate();
-            new Serializer(options?? s_DefaultOptions).SerializeObjectInternal(Object, writer);
+            new Serializer(options).SerializeObjectInternal(Object, writer);
             var json = StringWriterThreadStatic.ReturnAndFree(writer);
 
-            if (prettyPrint)
+            if (options.PrettyPrint)
             {
                 return StringExtension.PrettyPrint(json);
             }
