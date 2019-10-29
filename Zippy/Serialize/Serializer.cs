@@ -26,6 +26,7 @@ namespace Zippy.Serialize
 
         private readonly int _recursionLimit = JSON.Options.RecursionLimit;
         private readonly SerializationErrorHandling _errorHandling = JSON.Options.SerializationErrorHandling;
+        private readonly bool _excludeNulls = JSON.Options.ExcludeNulls;
 
 
         public Serializer()
@@ -484,6 +485,12 @@ namespace Zippy.Serialize
                     value = null;
                     if (!item.TryGetValue(instance, ref value) || _errorHandling == SerializationErrorHandling.ReportValueAsNull)
                     {
+                        if(value is null && _excludeNulls)
+                        {
+                            //skip writen the object the object.
+                            break;
+                        }
+
                         _jsonWriter.WritePropertyNameFast(item.Name);
 
                         if (value == null)

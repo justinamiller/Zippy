@@ -4,20 +4,21 @@
     {
  //       int MaxJsonLength { get; set; }
 
+            /// <summary>
+            /// depth to drill into object graph
+            /// </summary>
         int RecursionLimit { get; set; }
 
         /// <summary>
         /// Skip property when value is null
         /// </summary>
-     //   bool ShouldExcludeNulls { get; set; }
-
-        /// <summary>
-        /// Addtional encoding for supporting direct elastic search write.
-        /// </summary>
-     //   bool IsElasticSearchReady { get; set; }
+        bool ExcludeNulls { get; set; }
 
         DateHandler DateHandler { get; set; }
 
+        /// <summary>
+        ///  if HTML entity chars [&gt; &lt; &amp; = '] should be escaped as "\uXXXX".
+        /// </summary>
         bool EscapeHtmlChars { get; set; }
 
         /// <summary>
@@ -46,11 +47,10 @@
     public enum DateHandler
     {
         TimestampOffset = 0,
-        DCJSCompatible = 1,
-        ISO8601 = 2,
-        ISO8601DateOnly = 3,
-        ISO8601DateTime = 4,
-        RFC1123 = 5
+        ISO8601 = 1,
+        ISO8601DateOnly = 2,
+        ISO8601DateTime = 3,
+        RFC1123 = 4
     }
 
     public enum TextCase

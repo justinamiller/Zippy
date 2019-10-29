@@ -23,7 +23,8 @@ namespace Zippy.Serialize
         private readonly TextWriter _writer;
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
-
+        private readonly DateHandler _dateHandler = JSON.Options.DateHandler;
+        private readonly bool _escapeHtmlChars = JSON.Options.EscapeHtmlChars;
 
         public JsonWriter(TextWriter writer)
         {
@@ -93,7 +94,7 @@ namespace Zippy.Serialize
         public void WriteString(string value)
         {
             //force encode.
-            _writer.Write(StringExtension.GetEncodeString(value, JSON.Options.EscapeHtmlChars));
+            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
         }
 
 
@@ -106,7 +107,7 @@ namespace Zippy.Serialize
             }
 
             //force encode.
-            _writer.Write(StringExtension.GetEncodeString(value, JSON.Options.EscapeHtmlChars));
+            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
         }
 
 
@@ -115,29 +116,28 @@ namespace Zippy.Serialize
             WriteStringNullable(((Exception)value).Message);
         }
 
+        private void WriteTimeStampOffset(DateTime dateTime)
+        {
+            _writer.Write(QuoteChar);
+            var offset = LocalTimeZone.GetUtcOffset(dateTime).Ticks;
+            var ticks = dateTime.ToUniversalTicks(offset);
+            long value = unchecked((ticks - DatetimeMinTimeTicks) / 10000);
+
+            _writer.Write(@"\/Date(");
+            _writer.Write(value.ToString(CurrentCulture));
+            _writer.Write(offset.ToTimeOffsetChars());
+            _writer.Write(@")\/");
+            _writer.Write(QuoteChar);
+        }
+
         public void WriteDateTime(object oDateTime)
         {
             var dateTime = (DateTime)oDateTime;
-            if (JSON.Options.DateHandler == DateHandler.TimestampOffset)
+            switch (_dateHandler)
             {
-                _writer.Write(QuoteChar);
-                var offset = LocalTimeZone.GetUtcOffset(dateTime).Ticks;
-                var ticks = dateTime.ToUniversalTicks(offset);
-                long value = unchecked((ticks - DatetimeMinTimeTicks) / 10000);
-
-                _writer.Write(@"\/Date(");
-                //     _writer.Write(_datePrefix, 0, 7);
-                //_writer.Write(MathUtils.WriteNumberToBuffer((uint)value, false));
-                _writer.Write(value.ToString(CurrentCulture));
-                _writer.Write(offset.ToTimeOffsetChars());
-                _writer.Write(@")\/");
-                //  _writer.Write(_dateSuffix,0,3);
-                _writer.Write(QuoteChar);
-                return;
-            }
-
-            switch (JSON.Options.DateHandler)
-            {
+                case DateHandler.TimestampOffset:
+                    WriteTimeStampOffset(dateTime);
+                    return;
                 case DateHandler.ISO8601:
                     _writer.Write(dateTime.ToString("o", CurrentCulture));
                     return;
@@ -237,7 +237,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), JSON.Options.EscapeHtmlChars));
+                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), _escapeHtmlChars));
             }
         }
 
