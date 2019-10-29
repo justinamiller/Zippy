@@ -4,7 +4,6 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Buffers.Text;
 using System.Runtime.InteropServices;
 
 namespace Zippy.Utility
@@ -359,7 +358,6 @@ namespace Zippy.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void IntToHex(int intValue, char[] hex)
         {
-            // TODO: test if unrolling loop is faster
             for (var i = 3; i >= 0; i--)
             {
                 var num = intValue & 0xF; // intValue % 16

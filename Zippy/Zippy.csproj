@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Description>Fast JSON Serializer</Description>
+    <Description>.NET Fast, Light, Flexible JSON Serializer</Description>
     <Authors>Justin</Authors>
     <Company />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -10,6 +10,9 @@
     <PackageTags>JSON</PackageTags>
     <RepositoryUrl>https://github.com/justinamiller/Zippy</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -25,9 +28,10 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.3" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <DefineConstants />
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\LICENSE">

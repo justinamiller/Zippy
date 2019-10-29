@@ -8,18 +8,18 @@ namespace Zippy.Serialize
 {
     sealed class ReferenceCheck
     {
-        private const int DefaultSize = 10;
+        private const int SIZE = 10;
         private object[] _references;
         private int _size;
         private int _length;
 
-        public ReferenceCheck() : this(DefaultSize) { }
+        public ReferenceCheck() : this(SIZE) { }
 
         public ReferenceCheck(int capacity)
         {
             if (0 >= capacity)
             {
-                capacity = DefaultSize;
+                capacity = SIZE;
             }
 
             _length = capacity;
@@ -53,7 +53,7 @@ namespace Zippy.Serialize
             {
                 //need to grow.
                 var len = _length;
-                _length += DefaultSize;
+                _length += SIZE;
                 var temp = new object[_length];
                 Array.Copy(_references, 0, temp, 0, len);
                 _references = temp;

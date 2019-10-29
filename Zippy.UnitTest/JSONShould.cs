@@ -64,9 +64,6 @@ namespace NetTests
             JSON.Options.DateHandler = DateHandler.ISO8601;
             Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
 
-            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
-            JSON.Options.DateHandler = DateHandler.DCJSCompatible;
-            Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
 
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
             JSON.Options.DateHandler = DateHandler.ISO8601;
@@ -87,6 +84,14 @@ namespace NetTests
             Zippy.Options.CurrentJsonSerializerStrategy.Reset();
             JSON.Options.DateHandler = DateHandler.TimestampOffset;
             Assert.IsNotNull(JSON.SerializeObject(_SimpleModelType, new System.IO.StringWriter()));
+
+            Zippy.Options.CurrentJsonSerializerStrategy.Reset();
+            var str1 = JSON.SerializeObjectToString(_SimpleModelType);
+
+            JSON.Options.ExcludeNulls = true;
+            var str2 = JSON.SerializeObjectToString(_SimpleModelType);
+
+            Assert.IsTrue(str1.Length != str2.Length);
 
             try
             {
