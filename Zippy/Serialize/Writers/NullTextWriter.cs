@@ -6,14 +6,8 @@ namespace Zippy.Serialize.Writers
 {
     sealed class NullTextWriter : TextWriter
     {
-        private readonly static Encoding s_encoding = Encoding.Default;
 
-        public override Encoding Encoding {
-            get
-            {
-                return s_encoding;
-            }
-        }
+        public override Encoding Encoding { get; } = Utility.StringExtension.DefaultEncoding;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Write(string value)

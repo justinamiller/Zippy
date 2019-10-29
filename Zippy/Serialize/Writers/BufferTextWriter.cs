@@ -9,9 +9,8 @@ namespace Zippy.Serialize.Writers
     {
         private char[] _buffer = new char[1000];
         int _bufferIndex = 0;
-        private readonly static Encoding s_encoding = Encoding.Default;
 
-        public override Encoding Encoding { get; } = s_encoding;
+     public override Encoding Encoding { get; } = Utility.StringExtension.DefaultEncoding;
 
         public override void Write(string value)
         {

@@ -54,8 +54,10 @@ namespace Zippy.Utility
             DBNull = 41,
             Exception = 42,
             CustomObject = 100,
+#if !NETCOREAPP1_0
             DataTable = 101,
             DataSet = 102,
+#endif
             Dictionary = 103,
             NameValueCollection = 104,
             Enumerable = 105,
@@ -134,7 +136,6 @@ namespace Zippy.Utility
                 { typeof(Uri), TypeCode.Uri },
                 { typeof(string), TypeCode.String },
                 { typeof(byte[]), TypeCode.Bytes },
-                { typeof(DBNull), TypeCode.DBNull },
             {typeof(Exception), TypeCode.Exception },
                {typeof(List<>), TypeCode.IList},
             {typeof(LinkedList<>),TypeCode.Enumerable},
@@ -152,7 +153,6 @@ namespace Zippy.Utility
             {typeof(SortedList<,>), TypeCode.Dictionary},
             {typeof(System.Linq.ILookup<,>), TypeCode.Enumerable},
             {typeof(System.Linq.IGrouping<,>), TypeCode.Enumerable},
-            #if NETSTANDARD
             {typeof(System.Collections.ObjectModel.ObservableCollection<>), TypeCode.Enumerable},
             {typeof(System.Collections.ObjectModel.ReadOnlyObservableCollection<>),TypeCode.Enumerable},
             {typeof(IReadOnlyList<>), TypeCode.Enumerable},
@@ -164,14 +164,14 @@ namespace Zippy.Utility
             {typeof(System.Collections.ObjectModel.ReadOnlyDictionary<,>), TypeCode.Dictionary},
             {typeof(IReadOnlyDictionary<,>),TypeCode.Dictionary},
             {typeof(System.Collections.Concurrent.ConcurrentDictionary<,>), TypeCode.Dictionary},
-            {typeof(System.Data.DataTable), TypeCode.DataTable},
-            {typeof(System.Data.DataSet), TypeCode.DataSet},
-             {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
+            {typeof(System.Collections.Specialized.NameValueCollection), TypeCode.NameValueCollection},
             {typeof(System.Collections.IDictionary), TypeCode.Dictionary},
             {typeof(object), TypeCode.CustomObject},
-              {typeof(Array), TypeCode.Array}
-//  {typeof(Lazy<>), typeof(LazyFormatter<>)},
-//{typeof(Task<>), typeof(TaskValueFormatter<>)},
+              {typeof(Array), TypeCode.Array},
+#if !NETCOREAPP1_0
+            { typeof(DBNull), TypeCode.DBNull },
+            {typeof(System.Data.DataTable), TypeCode.DataTable},
+            {typeof(System.Data.DataSet), TypeCode.DataSet},
 #endif
 };
 
@@ -183,11 +183,23 @@ namespace Zippy.Utility
             {
                 return typeCode;
             }
-            if (type.IsGenericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
+
+#if NETCOREAPP1_0
+            var genericType = type.GetTypeInfo().IsGenericType;
+#else
+            var genericType = type.IsGenericType;
+#endif
+
+            if (genericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
             {
                 return typeCode;
             }
+
+#if NETCOREAPP1_0
+            var baseType = type.GetTypeInfo().BaseType;
+#else
             var baseType = type.BaseType;
+#endif
             if (baseType == typeof(object))
             {
                 return TypeCode.CustomObject;
@@ -205,7 +217,7 @@ namespace Zippy.Utility
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string  FormatPropertyName(string value)
+        public static string FormatPropertyName(string value)
         {
             switch (JSON.Options.TextCase)
             {
@@ -246,7 +258,14 @@ namespace Zippy.Utility
             }
             else if (anEnumerable is System.Collections.IList)
             {
-                if (type.IsGenericType)
+
+#if NETCOREAPP1_0
+                var genericType = type.GetTypeInfo().IsGenericType;
+#else
+                var genericType = type.IsGenericType;
+#endif
+
+                if (genericType)
                 {
                     return type.GetGenericArguments()[0];
                 }
@@ -263,10 +282,10 @@ namespace Zippy.Utility
 
         public static bool HasExtendedValueInformation(TypeCode typeCode)
         {
-            return typeCode == TypeCode.GenericDictionary 
-                || typeCode == TypeCode.IList 
-                || typeCode == TypeCode.Array 
-                || typeCode == TypeCode.Dictionary 
+            return typeCode == TypeCode.GenericDictionary
+                || typeCode == TypeCode.IList
+                || typeCode == TypeCode.Array
+                || typeCode == TypeCode.Dictionary
                 || typeCode == TypeCode.Enumerable;
         }
     }

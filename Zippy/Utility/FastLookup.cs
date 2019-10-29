@@ -8,8 +8,8 @@ namespace Zippy.Utility
 {
     sealed class FastLookup<TKey, TValue> : IEnumerable
     {
-        TKey[] _key = Array.Empty<TKey>();
-        TValue[] _value = Array.Empty<TValue>();
+        TKey[] _key = ArrayExtensions.EmptyArray<TKey>();
+        TValue[] _value = ArrayExtensions.EmptyArray<TValue>();
         int _index = 0;
 
         public int Length
@@ -24,7 +24,7 @@ namespace Zippy.Utility
         {
             get
             {
-                return Array.AsReadOnly(_key);
+                return new System.Collections.ObjectModel.ReadOnlyCollection<TKey>(_key);
             }
         }
 
@@ -32,7 +32,7 @@ namespace Zippy.Utility
         {
             get
             {
-                return Array.AsReadOnly(_value);
+                return new System.Collections.ObjectModel.ReadOnlyCollection<TValue>(_value);
             }
         }
 
@@ -42,8 +42,8 @@ namespace Zippy.Utility
 
         public void Clear()
         {
-            _key = Array.Empty<TKey>();
-            _value = Array.Empty<TValue>();
+            _key = ArrayExtensions.EmptyArray<TKey>();
+            _value = ArrayExtensions.EmptyArray<TValue>();
             _index = 0;
         }
 

@@ -67,7 +67,6 @@ namespace Zippy.Serialize
             return true;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeEnumerable(IEnumerable values, IValueMemberInfo valueMemberInfo)
         {
@@ -263,7 +262,7 @@ namespace Zippy.Serialize
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeMultidimensionalArray(Array values)
         {
-            return SerializeMultidimensionalArray(values, Array.Empty<int>());
+            return SerializeMultidimensionalArray(values, ArrayExtensions.EmptyArray<int>());
         }
 
 
@@ -529,6 +528,7 @@ namespace Zippy.Serialize
             return SerializeNonPrimitiveValue(value, valueMemberInfo);
         }
 
+#if !NETCOREAPP1_0
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SerializeDataSet(System.Data.DataSet ds)
         {
@@ -649,7 +649,7 @@ namespace Zippy.Serialize
 
             return true;
         }
-
+#endif
         private bool SerializeNonPrimitiveValue(object value, IValueMemberInfo valueMemberInfo)
         {
             //this prevents recursion
@@ -700,6 +700,7 @@ namespace Zippy.Serialize
                         {
                             return this.SerializeNameValueCollection((NameValueCollection)value);
                         }
+#if !NETCOREAPP1_0
                     case TypeSerializerUtils.TypeCode.DataSet:
                         {
                             return SerializeDataSet((System.Data.DataSet)value);
@@ -708,6 +709,7 @@ namespace Zippy.Serialize
                         {
                             return SerializeDataTable((System.Data.DataTable)value);
                         }
+#endif
                     default:
                         {
                             throw new NotImplementedException(valueMemberInfo.Code.ToString());

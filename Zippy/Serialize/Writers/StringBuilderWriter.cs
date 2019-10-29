@@ -6,7 +6,6 @@ namespace Zippy.Serialize.Writers
 {
     sealed class StringBuilderWriter : TextWriter
     {
-        private readonly static Encoding s_encoding = Encoding.Default;
         private readonly StringBuilder _sb = null;
 
         public StringBuilderWriter() : this(512)
@@ -19,13 +18,7 @@ namespace Zippy.Serialize.Writers
         }
 
 
-        public override Encoding Encoding
-        {
-            get
-            {
-                return s_encoding;
-            }
-        }
+        public override Encoding Encoding { get; }=Utility.StringExtension.DefaultEncoding;
 
         public override string ToString()
         {

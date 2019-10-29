@@ -6,7 +6,6 @@ namespace Zippy.Utility
 {
     internal sealed class BinaryUtil
     {
-        static readonly Encoding StringEncoding = new UTF8Encoding(false);
 
         public const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
 
@@ -29,7 +28,7 @@ namespace Zippy.Utility
        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FastResize<T>(ref T[] array, int newSize)
         {
-            if (newSize < 0) throw new ArgumentOutOfRangeException("newSize");
+            if (newSize < 0) throw new ArgumentOutOfRangeException(nameof(newSize));
 
             T[] array2 = array;
             if (array2 == null)

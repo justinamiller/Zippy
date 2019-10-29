@@ -89,7 +89,11 @@ namespace Zippy.Internal
             {
                 type = ObjectType.GetElementType();
             }
+#if !NETCOREAPP1_0
             else if (ObjectType.IsGenericType)
+#else
+            else if (ObjectType.GetTypeInfo().IsGenericType)
+#endif
             {
                 //generic list / dictionary
                 var args = ObjectType.GetGenericArguments();

@@ -8,7 +8,7 @@ namespace Zippy.Serialize.Writers
 {
     internal class UTF8Writer: TextWriter
     {
-        private byte[] _buffer;
+        private  byte[] _buffer;
         private int _index = 0;
 
         private readonly static Encoding s_encoding = Encoding.UTF8;

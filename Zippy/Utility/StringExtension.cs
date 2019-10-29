@@ -10,6 +10,7 @@ namespace Zippy.Utility
 {
     static class StringExtension
     {
+        public readonly static Encoding DefaultEncoding = Encoding.UTF8;
         /// <summary>
         /// check if string is null or empty
         /// </summary>

@@ -38,8 +38,7 @@ namespace ConsoleTest
 
         static void Main(string[] args)
         {
-
-        //   AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            //   AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             System.Threading.Thread.Sleep(250);
            //var c = new Models.ComplexModelObject();
             ////Zippy.JSON.SerializeObjectToString1(c);
