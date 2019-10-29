@@ -54,10 +54,8 @@ namespace Zippy.Utility
             DBNull = 41,
             Exception = 42,
             CustomObject = 100,
-#if !NETCOREAPP1_0
             DataTable = 101,
             DataSet = 102,
-#endif
             Dictionary = 103,
             NameValueCollection = 104,
             Enumerable = 105,
@@ -168,11 +166,9 @@ namespace Zippy.Utility
             {typeof(System.Collections.IDictionary), TypeCode.Dictionary},
             {typeof(object), TypeCode.CustomObject},
               {typeof(Array), TypeCode.Array},
-#if !NETCOREAPP1_0
             { typeof(DBNull), TypeCode.DBNull },
             {typeof(System.Data.DataTable), TypeCode.DataTable},
             {typeof(System.Data.DataSet), TypeCode.DataSet},
-#endif
 };
 
 
@@ -184,22 +180,12 @@ namespace Zippy.Utility
                 return typeCode;
             }
 
-#if NETCOREAPP1_0
-            var genericType = type.GetTypeInfo().IsGenericType;
-#else
-            var genericType = type.IsGenericType;
-#endif
-
-            if (genericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
+            if (type.IsGenericType && TypeCodeMap.TryGetValue(type.GetGenericTypeDefinition(), out typeCode))
             {
                 return typeCode;
             }
 
-#if NETCOREAPP1_0
-            var baseType = type.GetTypeInfo().BaseType;
-#else
             var baseType = type.BaseType;
-#endif
             if (baseType == typeof(object))
             {
                 return TypeCode.CustomObject;
@@ -258,14 +244,7 @@ namespace Zippy.Utility
             }
             else if (anEnumerable is System.Collections.IList)
             {
-
-#if NETCOREAPP1_0
-                var genericType = type.GetTypeInfo().IsGenericType;
-#else
-                var genericType = type.IsGenericType;
-#endif
-
-                if (genericType)
+                if (type.IsGenericType)
                 {
                     return type.GetGenericArguments()[0];
                 }

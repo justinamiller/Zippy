@@ -17,11 +17,7 @@ namespace Zippy.Utility
             List<MemberInfo> fieldInfos = new List<MemberInfo>(type.GetFields(bindingFlags));
 
             // GetInterfaces on an interface doesn't return properties from its interfaces
-#if NETCOREAPP1_0
-            if (type.GetTypeInfo().IsInterface)
-#else
             if (type.IsInterface)
-#endif
             {
                 foreach (Type i in type.GetInterfaces())
                 {
@@ -45,11 +41,7 @@ namespace Zippy.Utility
                 // modify flags to not search for public fields
                 BindingFlags nonPublicBindingAttr = bindingAttr.RemoveFlag(BindingFlags.Public);
 
-#if !NETCOREAPP1_0
                 while ((targetType = targetType.BaseType) != null)
-#else
-                while ((targetType = targetType.GetTypeInfo().BaseType) != null)
-#endif
                 {
                     // filter out protected fields
                     IEnumerable<MemberInfo> childPrivateFields =
@@ -76,30 +68,15 @@ namespace Zippy.Utility
             Type expressionType = expression.Type;
 
             // check if a cast or conversion is required
-            if (expressionType == targetType || (
-#if !NETCOREAPP1_0
-                           !expressionType.IsValueType 
-#else
-                           !expressionType.GetTypeInfo().IsValueType
-#endif
-
-                && targetType.IsAssignableFrom(expressionType)))
+            if (expressionType == targetType || (!expressionType.IsValueType && targetType.IsAssignableFrom(expressionType)))
             {
                 return expression;
             }
 
-#if !NETCOREAPP1_0
             if (targetType.IsValueType)
-#else
-            if (targetType.GetTypeInfo().IsValueType)
-#endif
             {
                 Expression convert = Expression.Unbox(expression, targetType);
-#if !NETCOREAPP1_0
                 if (allowWidening && targetType.IsPrimitive)
-#else
-                if (allowWidening && targetType.GetTypeInfo().IsPrimitive)
-#endif
                 {
                     MethodInfo toTargetTypeMethod = typeof(Convert)
                         .GetMethod("To" + targetType.Name, new[] { typeof(object) });
@@ -193,11 +170,7 @@ namespace Zippy.Utility
             List<PropertyInfo> propertyInfos = new List<PropertyInfo>(type.GetProperties(bindingFlags));
 
             // GetProperties on an interface doesn't return properties from its interfaces
-#if !NETCOREAPP1_0
             if (type.IsInterface)
-#else
-                    if (type.GetTypeInfo().IsInterface)
-#endif
             {
                 foreach (Type i in type.GetInterfaces())
                 {
@@ -263,12 +236,7 @@ namespace Zippy.Utility
             // find base type properties and add them to result
             // also find base properties that have been hidden by subtype properties with the same name
 
-#if !NETCOREAPP1_0
             while ((targetType = targetType.BaseType) != null)
-#else
-                  while ((targetType = targetType.GetTypeInfo().BaseType) != null)
-#endif
-
             {
                 foreach (PropertyInfo propertyInfo in targetType.GetProperties(bindingAttr))
                 {
@@ -411,20 +379,12 @@ namespace Zippy.Utility
                 PropertyInfo propertyInfo = (PropertyInfo)memberInfo;
 
                 Type[] types = propertyInfo.GetIndexParameters().Select(p => p.ParameterType).ToArray();
-#if NETCOREAPP1_0
-               return targetType.GetProperty(propertyInfo.Name, propertyInfo.PropertyType, types);
-#else
+
                 return targetType.GetProperty(propertyInfo.Name, bindingAttr, null, propertyInfo.PropertyType, types, null);
-#endif
             }
             else
             {
-#if NETCOREAPP1_0
-                return targetType.GetMember(memberInfo.Name, bindingAttr).SingleOrDefault();
-#else
                 return targetType.GetMember(memberInfo.Name, memberInfo.MemberType, bindingAttr).SingleOrDefault();
-#endif
-
             }
         }
 

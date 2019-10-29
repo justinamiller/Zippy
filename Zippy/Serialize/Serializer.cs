@@ -700,7 +700,6 @@ namespace Zippy.Serialize
                         {
                             return this.SerializeNameValueCollection((NameValueCollection)value);
                         }
-#if !NETCOREAPP1_0
                     case TypeSerializerUtils.TypeCode.DataSet:
                         {
                             return SerializeDataSet((System.Data.DataSet)value);
@@ -709,7 +708,6 @@ namespace Zippy.Serialize
                         {
                             return SerializeDataTable((System.Data.DataTable)value);
                         }
-#endif
                     default:
                         {
                             throw new NotImplementedException(valueMemberInfo.Code.ToString());

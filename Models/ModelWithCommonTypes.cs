@@ -2,7 +2,9 @@
 
 namespace Models
 {
+#if !NETCOREAPP1_0
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+#endif
     public class ModelWithCommonTypes
     {
         public char CharValue { get; set; }

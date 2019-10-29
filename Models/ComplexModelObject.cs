@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
@@ -9,7 +8,9 @@ using Zippy;
 
 namespace Models
 {
+#if !NETCOREAPP1_0
     [ExcludeFromCodeCoverage]
+#endif
     public class ComplexModelObject
     {
 
@@ -77,7 +78,9 @@ namespace Models
         public Uri Uri { get; set; } = new Uri("http://www.google.com");
         public Guid? Gnull { get; set; }
         public Int64? BInull { get; set; }
+#if !NETCOREAPP1_0
         public AppDomain Domain { get; set; } = AppDomain.CurrentDomain;
+#endif
 
         public char[] Chars { get; set; } = new char[2] { 'a', 'b' };
 

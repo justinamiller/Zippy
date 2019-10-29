@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;net46;netcoreapp1.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net45;net46;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Description>.NET Fast, Light, Flexible JSON Serializer</Description>
     <Authors>Justin</Authors>
     <Company />
@@ -15,18 +15,18 @@
     <Version>1.0.1.0</Version>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
+  <!--<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
     <PackageReference Include="System.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <!--<PackageReference Include="System.Xml.XmlDocument" Version="4.3.0" />-->
-    <!--<PackageReference Include="System.Runtime.Serialization.Formatters" Version="4.3.0" />-->
-    <!--<PackageReference Include="System.Reflection.TypeExtensions" Version="4.6.0" />-->
-    <!--<PackageReference Include="System.Data.Common" Version="4.3.0" />-->
-  </ItemGroup>
+    --><!--<PackageReference Include="System.Xml.XmlDocument" Version="4.3.0" />--><!--
+    --><!--<PackageReference Include="System.Runtime.Serialization.Formatters" Version="4.3.0" />--><!--
+    --><!--<PackageReference Include="System.Reflection.TypeExtensions" Version="4.6.0" />--><!--
+    --><!--<PackageReference Include="System.Data.Common" Version="4.3.0" />--><!--
+  </ItemGroup>-->
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
