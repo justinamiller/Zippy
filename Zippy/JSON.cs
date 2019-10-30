@@ -16,7 +16,7 @@ namespace Zippy
 {
     public sealed class JSON
     {
-        private static Options s_DefaultOptions = new Options();
+        private static readonly Options s_DefaultOptions = new Options();
 
         /// <summary>
         /// Gets the Options objectwill use to calls of Serialize....
