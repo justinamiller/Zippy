@@ -78,9 +78,9 @@ namespace Models
         public Uri Uri { get; set; } = new Uri("http://www.google.com");
         public Guid? Gnull { get; set; }
         public Int64? BInull { get; set; }
-#if !NETCOREAPP1_0
-        public AppDomain Domain { get; set; } = AppDomain.CurrentDomain;
-#endif
+//#if !NETCOREAPP1_0
+//        public AppDomain Domain { get; set; } = AppDomain.CurrentDomain;
+//#endif
 
         public char[] Chars { get; set; } = new char[2] { 'a', 'b' };
 

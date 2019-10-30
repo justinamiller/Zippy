@@ -18,14 +18,11 @@ namespace Zippy.Serialize
 
         private static readonly long DatetimeMinTimeTicks = (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks;
         private static readonly TimeZoneInfo LocalTimeZone = TimeZoneInfo.Local;
-        internal static readonly CultureInfo CurrentCulture = CultureInfo.InvariantCulture;
+        private static readonly CultureInfo CurrentCulture = CultureInfo.InvariantCulture;
         private bool _propertyInUse;
         private readonly TextWriter _writer;
         private int _arrayIndex = 0;
         private int _objectIndex = 0;
-        private readonly DateHandler _dateHandler;
-        private readonly bool _escapeHtmlChars;
-        private readonly TextCase _textCase;
         private readonly Options _options;
 
         public JsonWriter(TextWriter writer, Options options)
@@ -94,14 +91,14 @@ namespace Zippy.Serialize
 
         public void WritePropertyName(string value, bool encode)
         {
-            WritePropertyNameFast(TypeSerializerUtils.BuildPropertyName(value, _textCase, encode));
+            WritePropertyNameFast(TypeSerializerUtils.BuildPropertyName(value, _options.TextCase, encode));
         }
 
 
         public void WriteString(string value)
         {
             //force encode.
-            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
+            _writer.Write(StringExtension.GetEncodeString(value, _options.EscapeHtmlChars));
         }
 
 
@@ -114,7 +111,7 @@ namespace Zippy.Serialize
             }
 
             //force encode.
-            _writer.Write(StringExtension.GetEncodeString(value, _escapeHtmlChars));
+            _writer.Write(StringExtension.GetEncodeString(value, _options.EscapeHtmlChars));
         }
 
 
@@ -140,7 +137,7 @@ namespace Zippy.Serialize
         public void WriteDateTime(object oDateTime)
         {
             var dateTime = (DateTime)oDateTime;
-            switch (_dateHandler)
+            switch (_options.DateHandler)
             {
                 case DateHandler.TimestampOffset:
                     WriteTimeStampOffset(dateTime);
@@ -244,7 +241,7 @@ namespace Zippy.Serialize
                 WriteNull();
             else
             {
-                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), _escapeHtmlChars));
+                _writer.Write(StringExtension.GetEncodeString(charValue.ToString(), _options.EscapeHtmlChars));
             }
         }
 

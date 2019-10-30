@@ -38,31 +38,32 @@ namespace ConsoleTest
 
         static void Main(string[] args)
         {
-            //   AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+          AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             System.Threading.Thread.Sleep(250);
-           //var c = new Models.ComplexModelObject();
+            //var c = new Models.ComplexModelObject();
             ////Zippy.JSON.SerializeObjectToString1(c);
 
-           // var largeString = File.ReadAllText("CSharpHtml.txt");
-//Zippy.JSON.SerializeObjectToString(largeString);
+            // var largeString = File.ReadAllText("CSharpHtml.txt");
+            //Zippy.JSON.SerializeObjectToString(largeString);
 
-          //  Zippy.JSON.Options.EscapeHtmlChars = true;
-             var c = new Models.ComplexModelObject();
-         //   var c = Enumerable.Range(1000, 1000).Select(x => new Models.TinyObject("Name<Data/>" + x.ToString(), x, Models.TinyObject.State.Running)).ToArray();
-       var strData=   Zippy.JSON.SerializeObjectToString(c);
-         //   c = new Models.ComplexModelObject();
-       //     Test(c);
-       ////     c = new Models.ComplexModelObject();
-       //     Test1(c);
-          return;
+            //   //  Zippy.JSON.Options.EscapeHtmlChars = true;
+            //      var c = new Models.ComplexModelObject();
+            //  //   var c = Enumerable.Range(1000, 1000).Select(x => new Models.TinyObject("Name<Data/>" + x.ToString(), x, Models.TinyObject.State.Running)).ToArray();
+            //var strData=   Zippy.JSON.SerializeObjectToString(c);
+            //  //   c = new Models.ComplexModelObject();
+            ////     Test(c);
+            //////     c = new Models.ComplexModelObject();
+            ////     Test1(c);
+            //   return;
 
-            //for (var i = 0; i < 10000; i++)
-            //{
-            //    Zippy.JSON.SerializeObjectToString(c);
-            //}
-            //Console.WriteLine("DONE");
+            var c = new Models.SimpleModelType();
+            for (var i = 0; i < 10000; i++)
+            {
+                Zippy.JSON.SerializeObjectToString(c);
+            }
+          //  Console.WriteLine("DONE");
             //Console.ReadLine();
-            //return;
+            return;
 
             for (var i = 0; i < 10; i++)
             {

@@ -9,6 +9,7 @@ using Zippy.Utility;
 [assembly: InternalsVisibleTo("Zippy.UnitTest")]
 [assembly: InternalsVisibleTo("ConsoleTest")]
 [assembly: InternalsVisibleTo("PerformanceComparison")]
+[assembly: InternalsVisibleTo("Benchmarks")]
 
 
 namespace Zippy
@@ -24,12 +25,13 @@ namespace Zippy
         public static Options GetDefaultOptions()
         {
             return s_DefaultOptions;
-        } 
+        }
 
         /// <summary>
-        /// use default settings
+        /// Serializes the given data to string.
         /// </summary>
         /// <param name="Object">serializable object</param>
+        /// <param name="options">when not provided will use default</param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static string SerializeObjectToString(object Object, Options options=null)
@@ -53,6 +55,9 @@ namespace Zippy
             }
         }
 
+        /// <summary>
+        /// Serializes the given data to the provided TextWriter.
+        /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
         public static TextWriter SerializeObject(object Object, TextWriter writer, Options options=null)
         {

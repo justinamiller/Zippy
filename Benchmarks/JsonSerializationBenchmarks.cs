@@ -28,56 +28,63 @@ namespace Benchmarks
         }
 
 
-        [Benchmark]
-        public void NewtonSoft_ComplexModelObject()
-        {
-            string result = Newtonsoft.Json.JsonConvert.SerializeObject(_ComplexModelObject);
-        }
-
-        [Benchmark]
-        public void Jil_ComplexModelObject()
-        {
-            string result = Jil.JSON.Serialize<object>(_ComplexModelObject);
-        }
-
-        [Benchmark]
-        public void ServiceStack_ComplexModelObject()
-        {
-            string result = ServiceStack.Text.JsonSerializer.SerializeToString(_ComplexModelObject);
-        }
-
-        [Benchmark]
-        public void Zippy_ComplexModelObject()
-        {
-            string result = Zippy.JSON.SerializeObjectToString(_ComplexModelObject);
-        }
-
-
-
         //[Benchmark]
-        //public void NewtonSoft_SimpleModelType()
+        //public void NewtonSoft_ComplexModelObject()
         //{
-        //    string result = Newtonsoft.Json.JsonConvert.SerializeObject(_SimpleModelType);
+        //    string result = Newtonsoft.Json.JsonConvert.SerializeObject(_ComplexModelObject);
         //}
 
         //[Benchmark]
-        //public void Jil_SimpleModelType()
+        //public void Jil_ComplexModelObject()
         //{
-        //    string result = Jil.JSON.Serialize<object>(_SimpleModelType);
+        //    string result = Jil.JSON.Serialize<object>(_ComplexModelObject);
         //}
 
         //[Benchmark]
-        //public void ServiceStack_SimpleModelType()
+        //public void ServiceStack_ComplexModelObject()
         //{
-        //    string result = ServiceStack.Text.JsonSerializer.SerializeToString(_SimpleModelType);
+        //    string result = ServiceStack.Text.JsonSerializer.SerializeToString(_ComplexModelObject);
         //}
 
         //[Benchmark]
-        //public void Zippy_SimpleModelType()
+        //public void Zippy_ComplexModelObject()
         //{
-        //    string result = Zippy.JSON.SerializeObjectToString(_SimpleModelType);
+        //    string result = Zippy.JSON.SerializeObjectToString(_ComplexModelObject);
         //}
 
+
+
+        [Benchmark]
+        public void NewtonSoft_SimpleModelType()
+        {
+            string result = Newtonsoft.Json.JsonConvert.SerializeObject(_SimpleModelType);
+        }
+
+        [Benchmark]
+        public void Jil_SimpleModelType()
+        {
+            string result = Jil.JSON.Serialize<object>(_SimpleModelType);
+        }
+
+        [Benchmark]
+        public void ServiceStack_SimpleModelType()
+        {
+            string result = ServiceStack.Text.JsonSerializer.SerializeToString(_SimpleModelType);
+        }
+
+        [Benchmark]
+        public void Zippy_SimpleModelType()
+        {
+            string result = Zippy.JSON.SerializeObjectToString(_SimpleModelType);
+        }
+
+
+        private readonly static System.IO.TextWriter _nullWriter = new Zippy.Serialize.Writers.NullTextWriter();
+        [Benchmark]
+        public void ZippyNullWriter_SimpleModelType()
+        {
+            var result = Zippy.JSON.SerializeObject(_SimpleModelType, _nullWriter);
+        }
 
 
 

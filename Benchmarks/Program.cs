@@ -14,6 +14,7 @@ namespace Benchmarks
     {
         static void Main(string[] args)
         {
+          //  AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             BenchmarkRunner.Run<JsonSerializationBenchmarks>(
                ManualConfig
                  .Create(DefaultConfig.Instance)
@@ -23,6 +24,15 @@ namespace Benchmarks
           // .With(new BenchmarkDotNet.Diagnosers.CompositeDiagnoser())
                  .With(ExecutionValidator.FailOnError)
              );
+            Console.WriteLine("DONE!!!!");
+            Console.ReadLine();
+           
+        }
+
+        private static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
+            Console.WriteLine(e.Exception.ToString());
+            Console.ReadLine();
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Zippy
     {
         internal readonly static IJsonSerializerStrategy CurrentJsonSerializerStrategy = new LambdaJsonSerializerStrategy();
 
-        private const int MAXJSONLENGTH = 2097152;
+        //private const int MAXJSONLENGTH = 2097152;
         private const int RECURSIONLIMIT = 7;
 
    //     int _MaxJsonLength;
