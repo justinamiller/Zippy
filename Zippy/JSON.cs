@@ -30,19 +30,19 @@ namespace Zippy
         /// <summary>
         /// Serializes the given data to string.
         /// </summary>
-        /// <param name="Object">serializable object</param>
+        /// <param name="obj">serializable object</param>
         /// <param name="options">when not provided will use default</param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static string SerializeObjectToString(object Object, Options options=null)
+        public static string SerializeObjectToString(object obj, Options options=null)
         {
-            if (Object == null)
+            if (obj == null)
             {
                 return null;
             }
             options = options ?? s_DefaultOptions;
             var writer = StringWriterThreadStatic.Allocate();
-            new Serializer(options).SerializeObjectInternal(Object, writer);
+            new Serializer(options).SerializeObjectInternal(obj, writer);
             var json = StringWriterThreadStatic.ReturnAndFree(writer);
 
             if (options.PrettyPrint)
@@ -59,18 +59,18 @@ namespace Zippy
         /// Serializes the given data to the provided TextWriter.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Logging should not affect program behavior.")]
-        public static TextWriter SerializeObject(object Object, TextWriter writer, Options options=null)
+        public static TextWriter SerializeObject(object obj, TextWriter writer, Options options=null)
         {
             if (writer == null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }
-            else if (Object == null)
+            else if (obj == null)
             {
                 return null;
             }
 
-            new Serializer(options ?? s_DefaultOptions).SerializeObjectInternal(Object, writer);
+            new Serializer(options ?? s_DefaultOptions).SerializeObjectInternal(obj, writer);
 
             return writer;
         }

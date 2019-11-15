@@ -484,12 +484,12 @@ namespace Zippy.Serialize
                     {
                         item.TryGetValue(instance, ref value);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         if (_options.SerializationErrorHandling == SerializationErrorHandling.ThrowException)
                         {
                             //throw up to application
-                            throw ex;
+                            throw;
                         }
                         else if (_options.SerializationErrorHandling == SerializationErrorHandling.SkipProperty)
                         {
