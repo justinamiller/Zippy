@@ -1,4 +1,4 @@
-[NuGet Package](https://www.nuget.org/packages/Zippy/)
+[![NuGet Badge](https://buildstats.info/nuget/Zippy)](https://www.nuget.org/packages/Zippy/)
 
 #### Zippy
 .NET Standard, Fast JSON Serializer.
